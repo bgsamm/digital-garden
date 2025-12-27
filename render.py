@@ -1,10 +1,12 @@
 import os
+import shutil
 import jinja2
 import pandoc
 
 PAGES_DIR = 'pages'
-BUILD_DIR = 'build'
+STYLES_DIR = 'styles'
 TEMPLATES_DIR = 'templates'
+BUILD_DIR = 'build'
 
 def unwrap_metadata(metadata):
     # Unwrap 'Meta' object
@@ -23,8 +25,15 @@ def write_to_file(fpath, s):
 
 os.makedirs(BUILD_DIR, exist_ok=True)
 
+outdir = os.path.join(BUILD_DIR, STYLES_DIR)
+shutil.copytree(STYLES_DIR, outdir, dirs_exist_ok=True)
+
 file_system_loader = jinja2.FileSystemLoader(TEMPLATES_DIR)
-jinja_env = jinja2.Environment(loader=file_system_loader)
+jinja_env = jinja2.Environment(
+    loader=file_system_loader,
+    trim_blocks=True,
+    lstrip_blocks=True
+)
 
 home_template = jinja_env.get_template('index.html')
 page_template = jinja_env.get_template('page.html')

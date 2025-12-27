@@ -1,4 +1,10 @@
 {% extends "base.html" %}
+
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="styles/page.css" />
+{% endblock %}
+
 {% block content %}
     {{ content }}
 {% endblock %}

@@ -8,21 +8,24 @@
 #+PROPERTY: header-args+   :results none
 #+PROPERTY: header-args+   :tangle ../render.py
 
+* Site build system
+
 This build system generates a static site from Emacs [[https://orgmode.org/][Org]] files using
 [[https://boisgera.github.io/pandoc/][Pandoc]] to convert said files to HTML, and [[https://jinja.palletsprojects.com/en/stable/][Jinja]] for generating pages
 from templates.
 
-We start by importing our dependencies and defining the page (input),
-build (output), and template directories.
+We start by importing our dependencies and defining directories.
 
 #+begin_src python
   import os
+  import shutil
   import jinja2
   import pandoc
 
   PAGES_DIR = 'pages'
-  BUILD_DIR = 'build'
+  STYLES_DIR = 'styles'
   TEMPLATES_DIR = 'templates'
+  BUILD_DIR = 'build'
 #+end_src
 
 As mentioned, we will be using Pandoc to process our Org
@@ -52,17 +55,28 @@ We also define a simple function for writing a string to a file.
           f.write(s)
 #+end_src
 
-After ensuring the build directory exists, we prepare a Jinja
-environment and load our templates.
+Now, we create the build directory if it does not exist, then copy our
+styles over.
 
 #+begin_src python
-    os.makedirs(BUILD_DIR, exist_ok=True)
+  os.makedirs(BUILD_DIR, exist_ok=True)
 
-    file_system_loader = jinja2.FileSystemLoader(TEMPLATES_DIR)
-    jinja_env = jinja2.Environment(loader=file_system_loader)
+  outdir = os.path.join(BUILD_DIR, STYLES_DIR)
+  shutil.copytree(STYLES_DIR, outdir, dirs_exist_ok=True)
+#+end_src
 
-    home_template = jinja_env.get_template('index.html')
-    page_template = jinja_env.get_template('page.html')
+We also prepare a Jinja environment and load our templates.
+
+#+begin_src python
+  file_system_loader = jinja2.FileSystemLoader(TEMPLATES_DIR)
+  jinja_env = jinja2.Environment(
+      loader=file_system_loader,
+      trim_blocks=True,
+      lstrip_blocks=True
+  )
+
+  home_template = jinja_env.get_template('index.html')
+  page_template = jinja_env.get_template('page.html')
 #+end_src
 
 We will now iterate through the site's pages and convert them to HTML
@@ -71,27 +85,27 @@ page. Emacs likes to create backup files when editing, so we filter
 files based on their extension.
 
 #+begin_src python
-    pages = []
-    for dirpath, dirnames, filenames in os.walk(PAGES_DIR):
-        for filename in filenames:
-            fname, ext = os.path.splitext(filename)
-            if ext != '.org':
-                continue
-          
-            inpath = os.path.join(dirpath, filename)
+  pages = []
+  for dirpath, dirnames, filenames in os.walk(PAGES_DIR):
+      for filename in filenames:
+          fname, ext = os.path.splitext(filename)
+          if ext != '.org':
+              continue
 
-            doc = pandoc.read(file=inpath)
-            metadata = unwrap_metadata(doc[0])
+          inpath = os.path.join(dirpath, filename)
 
-            content = pandoc.write(doc, format='html')
-            html = page_template.render(metadata, content=content)
+          doc = pandoc.read(file=inpath)
+          metadata = unwrap_metadata(doc[0])
 
-            url = f'{fname}.html'
-            outpath = os.path.join(BUILD_DIR, url)
-            write_to_file(outpath, html)
+          content = pandoc.write(doc, format='html')
+          html = page_template.render(metadata, content=content)
 
-            metadata['url'] = url
-            pages.append(metadata)
+          url = f'{fname}.html'
+          outpath = os.path.join(BUILD_DIR, url)
+          write_to_file(outpath, html)
+
+          metadata['url'] = url
+          pages.append(metadata)
 #+end_src
 
 Lastly, we generate the home page.
