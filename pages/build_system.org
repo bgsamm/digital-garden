@@ -94,7 +94,7 @@ tightly to =Pandoc=, which I consider undesirable (see 4).
 
 The overall structure of the program is as follows:
 
-#+begin_src python :tangle ../render.py
+#+begin_src python :tangle ../build.py
   <<Imports>>
 
   <<Global constants>>
