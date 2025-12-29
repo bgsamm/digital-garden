@@ -68,7 +68,7 @@ body {
 /* UI button base */
 
 .ui-button {
-    position: absolute;
+    position: fixed;
     bottom: 40px;
 
     display: flex;
