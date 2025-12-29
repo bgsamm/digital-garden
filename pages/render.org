@@ -1,18 +1,582 @@
 :PROPERTIES:
-:Title: Build system
+:Title: Site design
 :Author: pjsamm
 :Date: 2025-12-26
 :END:
 
 #+PROPERTY: header-args    :session
 #+PROPERTY: header-args+   :results none
-#+PROPERTY: header-args+   :tangle ../render.py
+#+PROPERTY: header-args+   :noweb yes
+#+PROPERTY: header-args+   :eval never-export
 
-* Site build system
+**** TODO Figure out intra-file linking (like linking to list items) (gwern.net for inspiration?)
+**** TODO Implement to-do tracking pages (per-page + global)
+**** TODO Figure out site-wide quote integration
+
+* Design overview
+
+*** Principles
+
+**** TODO Add link to (2) in 4
+**** TODO Add "are you having any fun" quote to 1
+
+The following are the primary "mantras" I am keeping in mind as I
+build this site:
+
+1. *Have fun with it* - This website is meant as a creative outlet and
+   means of personal expression, so my own enjoyment and interest will
+   always take priority over concerns like practicality.
+2. *Put a pin in it* - I always want to be able to put a project down
+   if my interests have shifted, with the knowledge that I have
+   systems in place to facilitate picking up where I left off in the
+   future.
+3. *Reinvent the wheel* - I find reimplementing something (if it's
+   something I'm interested in) far more rewarding and instructive
+   than using someone else's solution, even if the final result is of
+   inferior quality.
+4. *"Good enough" is good enough* - I want systems for leaving
+   something incomplete or imperfect, and for recording how I might
+   like to improve it or extend it in the future (similar to 2)
+5. *Make it public* - I want to err on the side of expressing
+   interests, making mistakes, and being wrong out in the open.
+6. *Don't be silly, wrap your... dependencies* - Always wrap
+   dependencies to make them easy to replace later!
+7. *Follow the data* - Programs should always be designed around the
+   data they manipulate.
+
+*** Non-goals
+
+**** TODO Add link to Principles-(4) in 2
+**** TODO Add link to Principles-(4) in 3
+**** TODO Add "and that's good enough" (Frank Ocean, Nikes) quote to 4
+**** TODO Either "Show me the money" (Jerry Maguire) or "Follow the money" (All the President's Men) for 7; also "The purpose of all programs..." Mike Acton quote
+
+The following are explicit non-goals of this project, meaning I am intentionally deprioritizing them:
+
+1. *Mobile friendly design* - Fuck phones.
+2. *Cross-browser compatibility* - I'm not going to stress about making sure
+   the website looks and functions identically across all versions of
+   all browsers on all platforms. As long as it looks good on the
+   latest version of FireFox, I'm content.
+3. *Production-quality code* - While it's great if others find my code
+   useful, I make no claims as to its robustness nor commitments to
+   its maintenance.
+
+** Site infrastructure
+
+**** TODO Infrastructure overview section
+***** TODO Digital gardening system
+***** TODO Literate programming system
+***** TODO Project tracking system
+
+* Build system
+
+**** TODO Auto-insert page title element
+**** TODO Replace pandoc.write() with custom writer for better output formatting and control
+**** TODO Incorporate styles, templates as literate programs
 
 This build system generates a static site from Emacs [[https://orgmode.org/][Org]] files using
 [[https://boisgera.github.io/pandoc/][Pandoc]] to convert said files to HTML, and [[https://jinja.palletsprojects.com/en/stable/][Jinja]] for generating pages
 from templates.
+
+**** TODO Insert links to Pandoc documentation as appropriate
+**** TODO Link to "wrap your dependencies"
+
+While it could have been possible to use the =Pandoc= executable
+directly with filters and templates, that approach couples me more
+tightly to =Pandoc=, which I consider undesirable (see 4).
+
+** Program outline
+
+The overall structure of the program is as follows:
+
+#+begin_src python :tangle ../render.py
+  <<Imports>>
+
+  <<Global constants>>
+
+  <<Function definitions>>
+
+  <<Visit org files>>
+#+end_src
+
+** Iterating over Org files
+
+To start, we must walk the directory containing our Org files and process each one.
+
+#+begin_src python :noweb-ref Imports
+  import os
+#+end_src
+
+#+begin_src python :noweb-ref Global constants
+  PAGES_DIR = 'pages'
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def walk_directory(root, extension='*'):
+      for dirpath, dirnames, filenames in os.walk(root):
+          for filename in filenames:
+              fname, ext = os.path.splitext(filename)
+              if extension == '*' or ext == extension:
+                  fpath = os.path.join(dirpath, filename)
+                  yield fpath
+
+#+end_src
+
+#+name: Visit org files
+#+begin_src python
+  for fpath in walk_directory(PAGES_DIR, extension='.org'):
+      <<Process org file>>
+#+end_src
+
+Processing an Org file involves parsing it into an abstract syntax
+tree, converting that tree into an HTML string, then using that HTML
+string (and any other relevant metadata) to populate a static page
+template.
+
+#+name: Process org file
+#+begin_src python
+  <<Parse org file into AST>>
+
+  <<Generate page content from AST>>
+
+  <<Create page from template>>
+#+end_src
+
+** Parsing an Org file
+
+**** TODO Insert link to "wrap dependencies" mantra
+
+Currently, I am using Pandoc to perform the initial reading and
+parsing of an Org file. I still perform a second filtering pass over
+its output, however, both to keep from exposing its types to the rest
+of the build system, and to gain greater control over the final
+representation since things like to-do's are not handled well
+out-of-the-box.
+
+#+name: Parse org file into AST
+#+begin_src python
+  ast = parse_org_file(fpath)
+#+end_src
+
+#+begin_src python :noweb-ref Imports
+  import pandoc
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def parse_org_file(fpath):
+      ast = pandoc.read(file=fpath)
+
+      <<Unwrap metadata>>
+
+      <<Unwrap blocks>>
+
+      return tuple(ast)
+
+#+end_src
+
+**** TODO Link to org-mode documentation on property drawers
+**** TODO Link to pandoc Python documentation on types
+
+Every Org file in this repository starts with a property drawer that
+defines its metadata, like title, author, date, etc. This is stored as
+the first element of the root =Pandoc= object, as a =Meta= object
+containing a dictionary of (=str=, =MetaString=) pairs.
+
+#+name: Unwrap metadata
+#+begin_src python
+  # Unwrap 'Meta' object
+  metadata = ast[0][0]
+  for k, v in metadata.items():
+      # Unwrap 'MetaString' object
+      metadata[k] = v[0]
+  
+  ast[0] = metadata
+#+end_src
+
+The second element of the root =Pandoc= object is a list of =Block=
+objects, which represent each of the individual blocks in the Org file
+as one of several different subtypes (e.g. =Header=, =Para=,
+=CodeBlock=, etc.). Filters for each block type are added and expanded
+on an as-needed basis.
+
+#+name: Unwrap blocks
+#+begin_src python
+  ast[1] = unwrap_blocks(ast[1])
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def unwrap_blocks(blocks):
+      return [unwrap_block(block) for block in blocks]
+
+#+end_src
+
+**** TODO Order type checks alphabetically
+**** TODO Determine whether 'tokens' is really the appropriate term
+
+#+begin_src python :noweb-ref Function definitions
+  def unwrap_block(block):
+      pandoc_type = type(block)
+      if pandoc_type is pandoc.types.RawBlock:
+          <<Unwrap RawBlock>>
+      elif pandoc_type is pandoc.types.Header:
+          <<Unwrap Header>>
+      elif pandoc_type is pandoc.types.Para:
+          node_type = 'paragraph'
+          node_attrs = { 'children': unwrap_blocks(block[0]) }
+      elif pandoc_type is pandoc.types.Plain:
+          node_type = 'plain-text'
+          node_attrs = { 'children': unwrap_blocks(block[0]) }
+      elif pandoc_type is pandoc.types.Strong:
+          node_type = 'strong-text'
+          node_attrs = { 'children': unwrap_blocks(block[0]) }
+      elif pandoc_type is pandoc.types.Emph:
+          node_type = 'emphasized-text'
+          node_attrs = { 'children': unwrap_blocks(block[0]) }
+      elif pandoc_type is pandoc.types.OrderedList:
+          <<Unwrap OrderedList>>
+      elif pandoc_type is pandoc.types.CodeBlock:
+          <<Unwrap CodeBlock>>
+      elif pandoc_type is pandoc.types.Code:
+          <<Unwrap Code>>
+      elif pandoc_type is pandoc.types.Link:
+          <<Unwrap Link>>
+      elif pandoc_type is pandoc.types.Span:
+          <<Unwrap Span>>
+      elif pandoc_type is pandoc.types.Str:
+          node_type = 'string'
+          node_attrs = { 'text': block[0] }
+      elif pandoc_type is pandoc.types.Space:
+          node_type = 'space'
+          node_attrs = {}
+      elif pandoc_type is pandoc.types.SoftBreak:
+          node_type = 'soft-break'
+          node_attrs = {}
+      else:
+          raise TypeError(f'Unhandled block type: {pandoc_type}')
+
+      <<Special case for TODO items>>
+
+      return (node_type, node_attrs)
+
+#+end_src
+
+Because =TODO= items are represented in an Org mode using the same
+syntax as headings, they end up getting parsed as a =Span= in either a
+=Header= or a =Para= object's =Inline= tokens (since Pandoc exports
+headings deeper than =org-export-headline-levels= as paragraphs).
+
+To address this, a special case is added to catch such =TODO= items
+and convert them to the proper node type.
+
+**** TODO Clean up TODO detection/unwrapping logic
+
+#+name: Special case for TODO items
+#+begin_src python
+  if node_type == 'heading' or node_type == 'paragraph':
+      children = node_attrs['children']
+      assert(len(children) > 0)
+      first_child_type, first_child_attrs = children[0]
+      if first_child_type == 'span' and first_child_attrs['is-todo']:
+          node_type = 'todo-item'
+          children[0] = first_child_attrs['children'][0]
+
+#+end_src
+
+=RawBlock= objects contain the block format (expected to be 'org') and
+the block text. All we care about is the text, which we perform a
+regular expression match on to determine the raw block's type.
+
+#+begin_src python :noweb-ref Imports
+  import re
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def regex_match(pattern, string):
+      match_obj = re.match(pattern, string)
+      if match_obj is not None:
+          return match_obj.groups()
+      return None
+
+#+end_src
+
+**** TODO Determine what directives beside 'property' get emitted by Pandoc
+
+#+name: Unwrap RawBlock
+#+begin_src python
+    assert(block[0][0] == 'org')
+    matches = regex_match(r'#\+(\w+):\s+(.+)', block[1])
+    assert(matches is not None)
+    node_type = 'org-directive'
+    node_attrs = {
+        'type': matches[0].lower(),
+        'value': matches[1]
+    }
+#+end_src
+
+=Header= objects contain the header level (1, 2, 3, etc.), an =Attr=
+tuple of the form (id, classes, attributes), and then a list
+representing the parsed header tokens (type =Inline=). These must be
+unwrapped recursively.
+
+**** TODO Verify the class and attribute lists are unused
+
+#+name: Unwrap Header
+#+begin_src python
+  assert(block[1][1] == [] and block[1][2] == [])
+  node_type = 'heading'
+  node_attrs = {
+      'level': block[0],
+      'children': unwrap_blocks(block[2])
+  }
+#+end_src
+
+An =OrderedList= contains a tuple of list attributes of the form
+(start, style, delim), then a list of the list's items (each of which
+is itself a list of blocks).
+
+#+name: Unwrap OrderedList
+#+begin_src python
+  node_type = 'ordered-list'
+  node_attrs = {
+      'start': block[0][0],
+      'style': str(block[0][1])[:-2], # Strip trailing parens
+      'delim': str(block[0][2])[:-2], # ""
+      'children': [(
+          'list-item',
+          { 'children': unwrap_blocks(item) }
+      ) for item in block[1]]
+  }
+#+end_src
+
+Code blocks are represented by =CodeBlock= objects, which consist of
+an =Attr= tuple and the contained code (text). The language is
+specified in the class list of the =Attr= tuple.
+
+**** TODO Determine whether attributes list contains anything useful
+**** TODO Verify language is only element of class list
+
+#+name: Unwrap CodeBlock
+#+begin_src python
+  assert(len(block[0][1]) == 1)
+  node_type = 'code-block'
+  node_attrs = {
+      'name': block[0][0],
+      'language': block[0][1][0],
+      'text': block[1]
+  }
+#+end_src
+
+Inline code blocks are represented by =Code= objects and consist of an
+=Attr= tuple and the contained code (text).
+
+**** TODO Determine significance of 'verbatim' class
+**** TODO Verify rest of =Attr= tuple goes unused
+
+#+name: Unwrap Code
+#+begin_src python
+  assert(block[0][0] == '' and block[0][2] == [])
+  assert(len(block[0][1]) == 1 and block[0][1][0] == 'verbatim')
+  node_type = 'inline-code'
+  node_attrs = {
+      'text': block[1]
+  }
+#+end_src
+
+=Link= objects contain an =Attr= tuple (currently ignored), a list of
+=Inline= tokens (the link text), and the link's =Target= (a 2-tuple).
+
+I am currently ignoring the second element of the =Target=, which I
+/believe/ to be a title or description and which is likely unused by
+Org files.
+
+**** TODO Verify the Attr tuple is unused
+**** TODO Verify that second element of Target is title (and unused)
+
+#+name: Unwrap Link
+#+begin_src python
+  assert(block[0] == ('', [], []))
+  assert(block[2][1] == '')
+  node_type = 'link'
+  node_attrs = {
+      'children': unwrap_blocks(block[1]),
+      'target': block[2][0]
+  }
+#+end_src
+
+=Span= objects consist of an =Attr= tuple and a list of =Inline=
+tokens, much like a header. This gets emitted for =TODO= items, in
+which case the class list in the =Attr= tuple will be =['todo',
+'TODO']=.
+
+**** TODO Determine under what other circumstances Span gets emitted
+**** TODO Check how 'DONE' tasks get emitted
+
+#+name: Unwrap Span
+#+begin_src python
+  node_type = 'span'
+  node_attrs = {
+      'is-todo': 'todo' in block[0][1],
+      'children': unwrap_blocks(block[1])
+  }
+#+end_src
+
+** Generating the page content
+
+Now that the Org file has been parsed into an AST, the AST can be
+converted to HTML representing the page content by visiting each node
+in the AST node list.
+
+#+name: Generate page content from AST
+#+begin_src python
+  content = ast_to_html(ast)
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def ast_to_html(ast):
+      html = '<div id="content">'
+
+      <<Process AST nodes>>
+
+      html += '</div>'
+
+      return html
+
+#+end_src
+
+Similarly to the way parsing was handled, each node type will need its
+own case, with support for recursively converting children.
+
+#+name: Process AST nodes
+#+begin_src python
+  html += ast_nodes_to_html(ast[1])
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def ast_nodes_to_html(nodes):
+      html = ''
+      for node in nodes:
+          html += ast_node_to_html(node)
+      return html
+#+end_src
+
+**** TODO Use integer constants instead of strings
+**** TODO Remove soft breaks from AST entirely?
+
+#+begin_src python :noweb-ref Function definitions
+  def ast_node_to_html(node):
+      html = ''
+
+      node_type, node_attrs = node
+
+      if node_type == 'org-directive':
+          pass
+      elif node_type == 'todo-item':
+          pass
+      elif node_type == 'soft-break':
+          pass
+      elif node_type == 'heading':
+          <<Heading to HTML>>
+      elif node_type == 'paragraph':
+          <<Paragraph to HTML>>
+      elif node_type == 'plain-text':
+          html += ast_nodes_to_html(node_attrs['children'])
+      elif node_type == 'strong-text':
+          <<Strong text to HTML>>
+      elif node_type == 'emphasized-text':
+          <<Emphasized text to HTML>>
+      elif node_type == 'ordered-list':
+          <<Ordered list to HTML>>
+      elif node_type == 'list-item':
+          <<List item to HTML>>
+      elif node_type == 'inline-code':
+          <<Inline code to HTML>>
+      elif node_type == 'code-block':
+          <<Code block to HTML>>
+      elif node_type == 'link':
+          <<Link to HTML>>
+      elif node_type == 'string':
+          html += node_attrs['text']
+      elif node_type == 'space':
+          html += ' '
+      else:
+          print(node)
+          raise TypeError(f'Unhandled node type: {node_type}')
+
+      return html
+
+#+end_src
+
+**** TODO Merge logic for parent tags
+
+#+name: Heading to HTML
+#+begin_src python
+  n = node_attrs['level']
+  html += f'<h{n}>'
+  html += ast_nodes_to_html(node_attrs['children'])
+  html += f'</h{n}>'
+#+end_src
+
+#+name: Paragraph to HTML
+#+begin_src python
+  html += '<p>'
+  html += ast_nodes_to_html(node_attrs['children'])
+  html += '</p>'
+#+end_src
+
+#+name: Strong text to HTML
+#+begin_src python
+  html += '<strong>'
+  html += ast_nodes_to_html(node_attrs['children'])
+  html += '</strong>'
+#+end_src
+
+#+name: Emphasized text to HTML
+#+begin_src python
+  html += '<em>'
+  html += ast_nodes_to_html(node_attrs['children'])
+  html += '</em>'
+#+end_src
+
+**** TODO Add support for start, style, & delim
+
+#+name: Ordered list to HTML
+#+begin_src python
+  html += '<ol>'
+  html += ast_nodes_to_html(node_attrs['children'])
+  html += '</ol>'
+#+end_src
+
+#+name: List item to HTML
+#+begin_src python
+  html += '<li>'
+  html += ast_nodes_to_html(node_attrs['children'])
+  html += '</li>'
+#+end_src
+
+#+name: Link to HTML
+#+begin_src python
+  target = node_attrs['target']
+  html += f'<a href="{target}">'
+  html += ast_nodes_to_html(node_attrs['children'])
+  html += '</a>'
+#+end_src
+
+#+name: Inline code to HTML
+#+begin_src python
+  html += '<code class="code-inline">'
+  html += node_attrs['text']
+  html += '</code>'
+#+end_src
+
+#+name: Code block to HTML
+#+begin_src python
+  html += '<code class="code-block">'
+  html += node_attrs['text']
+  html += '</code>' 
+#+end_src
+
+* Old version
 
 We start by importing our dependencies and defining directories.
 
@@ -47,11 +611,11 @@ not careful. The following helper function unwraps the values in a
       return unwrapped  
 #+end_src
 
-We also define a simple function for writing a string to a file.
+We also define a simple function for writing a string to a utf-8 file.
 
 #+begin_src python
   def write_to_file(fpath, s):
-      with open(fpath, 'w+') as f:
+      with open(fpath, 'w+', encoding='utf-8') as f:
           f.write(s)
 #+end_src
 
