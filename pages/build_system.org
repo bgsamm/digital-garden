@@ -1,77 +1,20 @@
 :PROPERTIES:
-:Title: Site design
+:Title: Build system
 :Author: pjsamm
 :Date: 2025-12-26
 :END:
 
 #+OPTIONS: H:5
 
-#+PROPERTY: header-args    :session
-#+PROPERTY: header-args+   :results none
-#+PROPERTY: header-args+   :noweb yes
+#+PROPERTY: header-args    :noweb yes
 #+PROPERTY: header-args+   :eval never-export
 
+**** TODO Better handling of heading export level setting
 **** TODO Figure out intra-file linking (like linking to list items) (gwern.net for inspiration?)
 **** TODO Implement to-do tracking pages (per-page + global)
 **** TODO Figure out site-wide quote integration
 **** TODO Organize this page!!
 **** TODO Better integration of TODOs into outline
-
-* Design overview
-
-*** Principles
-
-**** TODO Add link to (2) in 4
-**** TODO Add "are you having any fun" quote to 1
-
-The following are the primary "mantras" I am keeping in mind as I
-build this site:
-
-1. *Have fun with it* - This website is meant as a creative outlet and
-   means of personal expression, so my own enjoyment and interest will
-   always take priority over concerns like practicality.
-2. *Put a pin in it* - I always want to be able to put a project down
-   if my interests have shifted, with the knowledge that I have
-   systems in place to facilitate picking up where I left off in the
-   future.
-3. *Reinvent the wheel* - I find reimplementing something (if it's
-   something I'm interested in) far more rewarding and instructive
-   than using someone else's solution, even if the final result is of
-   inferior quality.
-4. *"Good enough" is good enough* - I want systems for leaving
-   something incomplete or imperfect, and for recording how I might
-   like to improve it or extend it in the future (similar to 2)
-5. *Make it public* - I want to err on the side of expressing
-   interests, making mistakes, and being wrong out in the open.
-6. *Don't be silly, wrap your... dependencies* - Always wrap
-   dependencies to make them easy to replace later!
-7. *Follow the data* - Programs should always be designed around the
-   data they manipulate.
-
-*** Non-goals
-
-**** TODO Add link to Principles-(4) in 2
-**** TODO Add link to Principles-(4) in 3
-**** TODO Add "and that's good enough" (Frank Ocean, Nikes) quote to 4
-**** TODO Either "Show me the money" (Jerry Maguire) or "Follow the money" (All the President's Men) for 7; also "The purpose of all programs..." Mike Acton quote
-
-The following are explicit non-goals of this project, meaning I am intentionally deprioritizing them:
-
-1. *Mobile friendly design* - Fuck phones.
-2. *Cross-browser compatibility* - I'm not going to stress about making sure
-   the website looks and functions identically across all versions of
-   all browsers on all platforms. As long as it looks good on the
-   latest version of FireFox, I'm content.
-3. *Production-quality code* - While it's great if others find my code
-   useful, I make no claims as to its robustness nor commitments to
-   its maintenance.
-
-** Site infrastructure
-
-**** TODO Infrastructure overview section
-***** TODO Digital gardening system
-***** TODO Literate programming system
-***** TODO Project tracking system
 
 * Build system
 
