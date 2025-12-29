@@ -1,7 +1,7 @@
 /* Background striping */
 
 body::before {
-    display: block;
+    content: "";
     
     position: absolute;
     top: 0; left: 0; bottom: 0; right: 0;
@@ -11,7 +11,6 @@ body::before {
     z-index: -1;
     
     pointer-events: none;
-    content: " ";
 }
 
 /* Content panels */
@@ -27,6 +26,11 @@ body::before {
 }
 
 .channel {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    
+    position: relative;
     padding: 15px;
     
     background-color: var(--theme-panel);
@@ -34,20 +38,24 @@ body::before {
     border: 2px solid transparent;
     border-radius: 8px / 50%;
     
-    cursor: pointer;
-    
-    transition: all 0.3s ease;
+    transition: border 0.3s ease, box-shadow 0.3s ease;
 }
 
-.channel:hover {
+.channel:not(.empty):hover {
     border: 2px solid var(--theme-highlight);
     box-shadow: 0 0 15px var(--theme-glow);
-    transition: all 0.3s ease;
+    transition: border 0.3s ease, box-shadow 0.3s ease;
 }
 
 .channel.empty {
     background: linear-gradient(var(--theme-panel) 0%, rgba(0, 0, 0, 0.5) 100%);
     background-size: 100% 8px;
+}
+
+.channel div {
+    position: relative;
+    
+    z-index: 10;
 }
 
 .channel-category {
@@ -68,6 +76,15 @@ body::before {
 .channel-tags {
     font-size: 0.8rem;
     color: #666;
+}
+
+.channel-link::after {
+    content: "";
+    
+    position: absolute;
+    top: 0; left: 0; bottom: 0; right: 0;
+    
+    z-index: 0;
 }
 
 /* Menu bar */

@@ -12,6 +12,7 @@
             <div class="channel-category">// Placeholder</div>
             <div class="channel-title">{{ page.title }}</div>
             <div class="channel-tags">tag1, tag2, tag3</div>
+            <a class="channel-link" href="{{ page.url }}"></a>
         </div>
     {% endfor %}
     {% for i in range(12 - pages|count) %}
