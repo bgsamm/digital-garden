@@ -644,15 +644,15 @@ handles caching for us), then use the template to render the final
 output.
 
 #+begin_src python :noweb-ref Function definitions
-  def render_page(template, metadata, content):
+  def render_page(template, *args, **kwargs):
       jinja_template = jinja_env.get_template(template)
-      return jinja_template.render(metadata, content=content)
+      return jinja_template.render(*args, **kwargs)
 
 #+end_src
 
 #+name: Create page from Template
 #+begin_src python
-  page_html = render_page('page.html', metadata, page_content)
+  page_html = render_page('page.html', metadata, content=page_content)
 #+end_src
 
 ** Writing the page to file
@@ -735,6 +735,17 @@ Then, I copy over static files (such as stylesheets).
 
   metadata['url'] = url
   pages.append(metadata)
+#+end_src
+
+** Generating the home page
+
+Last but not least, I generate the home page.
+
+#+name: Generate home page
+#+begin_src python
+  homepage_html = render_page('index.html', title='Home', pages=pages)
+  outpath = os.path.join(BUILD_DIR, 'index.html')
+  write_to_file(outpath, homepage_html)
 #+end_src
 
 * Old version

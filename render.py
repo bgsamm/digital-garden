@@ -218,9 +218,9 @@ def ast_node_to_html(node):
 
     return html
 
-def render_page(template, metadata, content):
+def render_page(template, *args, **kwargs):
     jinja_template = jinja_env.get_template(template)
-    return jinja_template.render(metadata, content=content)
+    return jinja_template.render(*args, **kwargs)
 
 def make_dir(path):
     """ Create a directory (and all necessary parent directories)
@@ -271,7 +271,7 @@ for dirpath, fname, ext in walk_directory(PAGES_DIR, extension='.org'):
     
     page_content = ast_to_html(ast)
     
-    page_html = render_page('page.html', metadata, page_content)
+    page_html = render_page('page.html', metadata, content=page_content)
     
     url = fname + '.html'
     outpath = path_join(BUILD_DIR, url)
@@ -279,3 +279,7 @@ for dirpath, fname, ext in walk_directory(PAGES_DIR, extension='.org'):
     
     metadata['url'] = url
     pages.append(metadata)
+
+homepage_html = render_page('index.html', title='Home', pages=pages)
+outpath = os.path.join(BUILD_DIR, 'index.html')
+write_to_file(outpath, homepage_html)
