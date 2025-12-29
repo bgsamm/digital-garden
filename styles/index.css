@@ -73,12 +73,17 @@ body::before {
 .channel-title {
     font-size: 1.2rem;
     font-weight: 700;
-    margin-bottom: 5px;
+    margin-bottom: 2px;
 }
 
 .channel-tags {
     font-size: 0.8rem;
     color: #666;
+    margin-bottom: 10px;
+}
+
+.channel-summary {
+    color: #bbb;
 }
 
 .channel-link::after {
