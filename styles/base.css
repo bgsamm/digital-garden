@@ -1,14 +1,14 @@
 /* Site palette */
 :root {
-  --theme-bg: #303030;
-  --theme-text: #e0e0e0;
-  --theme-panel: #1e1e1e;
-  --theme-border: #3e3e3e;
-  --theme-highlight: #29a3ca;
-  --theme-shadow: rgba(0, 0, 0, 0.5);
-  --theme-glow: rgba(0, 218, 255, 0.4);
-  
-  --highlight-transition: border 0.3s ease, box-shadow 0.3s ease;
+    --theme-bg: #303030;
+    --theme-text: #e0e0e0;
+    --theme-panel: #1e1e1e;
+    --theme-border: #3e3e3e;
+    --theme-highlight: #29a3ca;
+    --theme-shadow: rgba(0, 0, 0, 0.5);
+    --theme-glow: rgba(0, 218, 255, 0.4);
+
+    --highlight-transition: border 0.3s ease, box-shadow 0.3s ease;
 }
 
 /*
@@ -17,51 +17,52 @@
 */
 
 *, *::before, *::after {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 *:not(dialog) {
-  margin: 0;
+    margin: 0;
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  html {
-    interpolate-size: allow-keywords;
-  }
+    html {
+        interpolate-size: allow-keywords;
+    }
 }
 
 body {
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
 }
 
 img, picture, video, canvas, svg {
-  display: block;
-  max-width: 100%;
+    display: block;
+    max-width: 100%;
 }
 
 input, button, textarea, select {
-  font: inherit;
+    font: inherit;
 }
 
 p, h1, h2, h3, h4, h5, h6 {
-  overflow-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 p {
-  text-wrap: pretty;
+    text-wrap: pretty;
 }
+
 h1, h2, h3, h4, h5, h6 {
-  text-wrap: balance;
+    text-wrap: balance;
 }
 
 /* Site-wide styling */
 
 body {
-  background-color: var(--theme-bg);
-  color: var(--theme-text);
-  font-family: Arial, sans-serif;
-  padding: 20px;
+    background-color: var(--theme-bg);
+    color: var(--theme-text);
+    font-family: Arial, sans-serif;
+    padding: 20px;
 }
 
 /* UI button base */
@@ -69,24 +70,24 @@ body {
 .ui-button {
     position: absolute;
     bottom: 40px;
-    
+
     display: flex;
     justify-content: center;
     align-items: center;
-    
+
     width: 100px;
     height: 100px;
-    
+
     background-color: var(--theme-panel);
-    
+
     border: 2px solid var(--theme-border);
     border-radius: 50px;
-    
+
     box-shadow: 0px 0px 15px var(--theme-shadow);
     transition: var(--highlight-transition);
-    
-    font-size:3.5rem;
-    
+
+    font-size: 3.5rem;
+
     cursor: pointer;
 }
 

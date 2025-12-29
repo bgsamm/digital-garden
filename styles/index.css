@@ -2,14 +2,17 @@
 
 body::before {
     content: "";
-    
+
     position: absolute;
-    top: 0; left: 0; bottom: 0; right: 0;
-    
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+
     background: linear-gradient(rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.25) 100%);
     background-size: 100% 4px;
     z-index: -1;
-    
+
     pointer-events: none;
 }
 
@@ -17,11 +20,11 @@ body::before {
 
 #channel-grid {
     display: grid;
-    
+
     grid-template-columns: repeat(4, minmax(260px, 1fr));
     grid-template-rows: repeat(3, 180px);
     gap: 15px;
-    
+
     padding: 0 100px;
 }
 
@@ -29,15 +32,15 @@ body::before {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    
+
     position: relative;
     padding: 15px;
-    
+
     background-color: var(--theme-panel);
-    
+
     border: 2px solid transparent;
     border-radius: 8px / 50%;
-    
+
     transition: border 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -54,7 +57,7 @@ body::before {
 
 .channel div {
     position: relative;
-    
+
     z-index: 10;
 }
 
@@ -80,10 +83,13 @@ body::before {
 
 .channel-link::after {
     content: "";
-    
+
     position: absolute;
-    top: 0; left: 0; bottom: 0; right: 0;
-    
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+
     z-index: 0;
 }
 
@@ -93,23 +99,23 @@ body::before {
     position: fixed;
     left: 0;
     bottom: 0;
-    
+
     width: 100%;
 }
 
 #menu-bar-inner {
     position: absolute;
     bottom: 0;
-    
+
     width: 100%;
     height: 98px;
-    
+
     background-color: var(--theme-panel);
 }
 
 #menu-bar h1 {
     padding-bottom: 115px;
-    
+
     color: var(--theme-highlight);
     font-weight: normal;
     letter-spacing: 3px;
@@ -119,10 +125,10 @@ body::before {
 .menu-bar-wing-border {
     position: absolute;
     bottom: 0;
-    
+
     width: 425px;
     height: 170px;
-    
+
     background-color: var(--theme-highlight);
 }
 
@@ -139,10 +145,10 @@ body::before {
 .menu-bar-wing {
     position: absolute;
     bottom: 0;
-    
+
     width: 425px;
     height: 168px;
-    
+
     background-color: var(--theme-panel);
 }
 
@@ -159,44 +165,44 @@ body::before {
 #menu-bar-center-border {
     position: absolute;
     bottom: 0;
-    
+
     width: 100%;
     height: 100px;
-    
+
     background-color: var(--theme-highlight);
 }
 
 #menu-bar-center {
     position: absolute;
     bottom: 0;
-    
+
     width: 100%;
     height: 98px;
-    
+
     background-color: var(--theme-panel);
 }
 
 .menu-bar-button {
     position: absolute;
     bottom: 40px;
-    
+
     display: flex;
     justify-content: center;
     align-items: center;
-    
+
     width: 100px;
     height: 100px;
-    
+
     background-color: var(--theme-panel);
-    
+
     border: 2px solid var(--theme-border);
     border-radius: 50px;
-    
+
     box-shadow: 0px 0px 15px var(--theme-shadow);
     transition: all 0.3s ease;
-    
-    font-size:3.5rem;
-    
+
+    font-size: 3.5rem;
+
     cursor: pointer;
 }
 
