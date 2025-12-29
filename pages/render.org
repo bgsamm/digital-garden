@@ -4,6 +4,8 @@
 :Date: 2025-12-26
 :END:
 
+#+OPTIONS: H:5
+
 #+PROPERTY: header-args    :session
 #+PROPERTY: header-args+   :results none
 #+PROPERTY: header-args+   :noweb yes
@@ -266,8 +268,12 @@ syntax as headings, they end up getting parsed as a =Span= in either a
 =Header= or a =Para= object's =Inline= tokens (since Pandoc exports
 headings deeper than =org-export-headline-levels= as paragraphs).
 
-To address this, a special case is added to catch such =TODO= items
-and convert them to the proper node type.
+Additionally, there appears to be a bug in the way Pandoc handles an
+ordered list following one or more TODO items - it groups the TODOs in
+an ordered list, then adds the following ordered list as a sublist.
+
+To address these issues, a special case is added to catch such =TODO=
+items and convert them to the proper node type.
 
 **** TODO Clean up TODO detection/unwrapping logic
 
@@ -280,7 +286,6 @@ and convert them to the proper node type.
       if first_child_type == 'span' and first_child_attrs['is-todo']:
           node_type = 'todo-item'
           children[0] = first_child_attrs['children'][0]
-
 #+end_src
 
 =RawBlock= objects contain the block format (expected to be 'org') and
@@ -453,6 +458,14 @@ own case, with support for recursively converting children.
 #+end_src
 
 #+begin_src python :noweb-ref Function definitions
+  def html_escape(s):
+      return s.replace('&', '&amp;') \
+              .replace('<', '&lt;') \
+              .replace('>', '&gt;')
+
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
   def ast_nodes_to_html(nodes):
       html = ''
       for node in nodes:
@@ -472,8 +485,6 @@ own case, with support for recursively converting children.
       if node_type == 'org-directive':
           pass
       elif node_type == 'todo-item':
-          pass
-      elif node_type == 'soft-break':
           pass
       elif node_type == 'heading':
           <<Heading to HTML>>
@@ -496,8 +507,10 @@ own case, with support for recursively converting children.
       elif node_type == 'link':
           <<Link to HTML>>
       elif node_type == 'string':
-          html += node_attrs['text']
+          html += html_escape(node_attrs['text'])
       elif node_type == 'space':
+          html += ' '
+      elif node_type == 'soft-break':
           html += ' '
       else:
           print(node)
@@ -564,16 +577,22 @@ own case, with support for recursively converting children.
 
 #+name: Inline code to HTML
 #+begin_src python
-  html += '<code class="code-inline">'
-  html += node_attrs['text']
+  html += '<code>'
+  html += html_escape(node_attrs['text'])
   html += '</code>'
 #+end_src
 
 #+name: Code block to HTML
 #+begin_src python
-  html += '<code class="code-block">'
-  html += node_attrs['text']
-  html += '</code>' 
+  name = node_attrs['name']
+  html += '<figure>'
+  if len(name) > 0:
+      html += '<figcaption>'
+      html += html_escape(name)
+      html += '</figcaption>'
+  html += '<pre><code>'
+  html += html_escape(node_attrs['text'])
+  html += '</code></pre></figure>'
 #+end_src
 
 * Old version

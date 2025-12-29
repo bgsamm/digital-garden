@@ -119,7 +119,6 @@ def unwrap_block(block):
         if first_child_type == 'span' and first_child_attrs['is-todo']:
             node_type = 'todo-item'
             children[0] = first_child_attrs['children'][0]
-    
 
     return (node_type, node_attrs)
 
@@ -138,6 +137,11 @@ def ast_to_html(ast):
 
     return html
 
+def html_escape(s):
+    return s.replace('&', '&amp;') \
+            .replace('<', '&lt;') \
+            .replace('>', '&gt;')
+
 def ast_nodes_to_html(nodes):
     html = ''
     for node in nodes:
@@ -151,8 +155,6 @@ def ast_node_to_html(node):
     if node_type == 'org-directive':
         pass
     elif node_type == 'todo-item':
-        pass
-    elif node_type == 'soft-break':
         pass
     elif node_type == 'heading':
         n = node_attrs['level']
@@ -182,21 +184,29 @@ def ast_node_to_html(node):
         html += ast_nodes_to_html(node_attrs['children'])
         html += '</li>'
     elif node_type == 'inline-code':
-        html += '<code class="code-inline">'
-        html += node_attrs['text']
+        html += '<code>'
+        html += html_escape(node_attrs['text'])
         html += '</code>'
     elif node_type == 'code-block':
-        html += '<code class="code-block">'
-        html += node_attrs['text']
-        html += '</code>' 
+        name = node_attrs['name']
+        html += '<figure>'
+        if len(name) > 0:
+            html += '<figcaption>'
+            html += html_escape(name)
+            html += '</figcaption>'
+        html += '<pre><code>'
+        html += html_escape(node_attrs['text'])
+        html += '</code></pre></figure>'
     elif node_type == 'link':
         target = node_attrs['target']
         html += f'<a href="{target}">'
         html += ast_nodes_to_html(node_attrs['children'])
         html += '</a>'
     elif node_type == 'string':
-        html += node_attrs['text']
+        html += html_escape(node_attrs['text'])
     elif node_type == 'space':
+        html += ' '
+    elif node_type == 'soft-break':
         html += ' '
     else:
         print(node)
@@ -209,4 +219,5 @@ for fpath in walk_directory(PAGES_DIR, extension='.org'):
     ast = parse_org_file(fpath)
     
     content = ast_to_html(ast)
-    print(content)
+    with open('test.html', 'w+') as f:
+        f.write(content)
