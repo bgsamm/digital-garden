@@ -458,22 +458,35 @@ in the AST node list.
 
 #+begin_src python :noweb-ref Function definitions
   def ast_to_html(ast):
-      html = '<div id="content">'
+      headings = []
 
+      content = ''
       <<Process AST nodes>>
 
-      html += '</div>'
+      toc = '<h1>Table of Contents</h1>'
+      <<Generate table of contents>>
+
+      html = '<div id="table-of-contents">' + toc + '</div>' + \
+             '<div id="content">' + content + '</div>'
 
       return html
 
 #+end_src
 
+*** Processing AST nodes
+
 Similarly to the way parsing was handled, each node type will need its
 own case, with support for recursively converting children.
 
+**** TODO Better method for stripping tags than hard-coded values
+
 #+name: Process AST nodes
 #+begin_src python
-  html += ast_nodes_to_html(ast[1])
+  for node in ast[1]:
+      node_html = ast_node_to_html(node)
+      if node[0] == 'heading':
+          headings.append((node[1]['level'], node_html[4:-5]))
+      content += node_html
 #+end_src
 
 #+begin_src python :noweb-ref Function definitions
@@ -490,6 +503,7 @@ own case, with support for recursively converting children.
       for node in nodes:
           html += ast_node_to_html(node)
       return html
+
 #+end_src
 
 **** TODO Use integer constants instead of strings
@@ -612,6 +626,23 @@ own case, with support for recursively converting children.
   html += '<pre><code>'
   html += html_escape(node_attrs['text'])
   html += '</code></pre></figure>'
+#+end_src
+
+*** Generating the table of contents
+
+#+name: Generate table of contents
+#+begin_src python
+  prev_level = 0
+  for level, text in headings:
+      if level > prev_level:
+          toc += '<ul><li>' * (level - prev_level)
+      else:
+          if level < prev_level:
+              toc += '</li></ul>' * (prev_level - level)
+          toc += '</li><li>'
+      toc += text
+      prev_level = level
+  toc += '</li></ul>' * prev_level
 #+end_src
 
 ** Populating the HTML template

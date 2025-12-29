@@ -133,11 +133,30 @@ def regex_match(pattern, string):
     return None
 
 def ast_to_html(ast):
-    html = '<div id="content">'
+    headings = []
 
-    html += ast_nodes_to_html(ast[1])
+    content = ''
+    for node in ast[1]:
+        node_html = ast_node_to_html(node)
+        if node[0] == 'heading':
+            headings.append((node[1]['level'], node_html[4:-5]))
+        content += node_html
 
-    html += '</div>'
+    toc = '<h1>Table of Contents</h1>'
+    prev_level = 0
+    for level, text in headings:
+        if level > prev_level:
+            toc += '<ul><li>' * (level - prev_level)
+        else:
+            if level < prev_level:
+                toc += '</li></ul>' * (prev_level - level)
+            toc += '</li><li>'
+        toc += text
+        prev_level = level
+    toc += '</li></ul>' * prev_level
+
+    html = '<div id="table-of-contents">' + toc + '</div>' + \
+           '<div id="content">' + content + '</div>'
 
     return html
 
@@ -151,6 +170,7 @@ def ast_nodes_to_html(nodes):
     for node in nodes:
         html += ast_node_to_html(node)
     return html
+
 def ast_node_to_html(node):
     html = ''
 
