@@ -14,6 +14,8 @@
 **** TODO Figure out intra-file linking (like linking to list items) (gwern.net for inspiration?)
 **** TODO Implement to-do tracking pages (per-page + global)
 **** TODO Figure out site-wide quote integration
+**** TODO Organize this page!!
+**** TODO Better integration of TODOs into outline
 
 * Design overview
 
@@ -99,10 +101,18 @@ The overall structure of the program is as follows:
 
   <<Function definitions>>
 
-  <<Visit org files>>
+  <<Set up Jinja environment>>
+
+  <<Ensure build directory exists>>
+
+  <<Copy static files to build directory>>
+
+  <<Process org files>>
+
+  <<Generate home page>>
 #+end_src
 
-** Iterating over Org files
+** Processing Org files
 
 To start, we must walk the directory containing our Org files and process each one.
 
@@ -114,20 +124,22 @@ To start, we must walk the directory containing our Org files and process each o
   PAGES_DIR = 'pages'
 #+end_src
 
+**** TODO More advanced/robust filtering
+
 #+begin_src python :noweb-ref Function definitions
   def walk_directory(root, extension='*'):
       for dirpath, dirnames, filenames in os.walk(root):
           for filename in filenames:
               fname, ext = os.path.splitext(filename)
               if extension == '*' or ext == extension:
-                  fpath = os.path.join(dirpath, filename)
-                  yield fpath
+                  yield dirpath, fname, ext
 
 #+end_src
 
-#+name: Visit org files
+#+name: Process org files
 #+begin_src python
-  for fpath in walk_directory(PAGES_DIR, extension='.org'):
+  pages = []
+  for dirpath, fname, ext in walk_directory(PAGES_DIR, extension='.org'):
       <<Process org file>>
 #+end_src
 
@@ -143,6 +155,8 @@ template.
   <<Generate page content from AST>>
 
   <<Create page from template>>
+
+  <<Write page to file>>
 #+end_src
 
 ** Parsing an Org file
@@ -158,7 +172,10 @@ out-of-the-box.
 
 #+name: Parse org file into AST
 #+begin_src python
+  fpath = path_join(dirpath, fname + ext)
   ast = parse_org_file(fpath)
+
+  metadata = ast[0]
 #+end_src
 
 #+begin_src python :noweb-ref Imports
@@ -434,8 +451,10 @@ in the AST node list.
 
 #+name: Generate page content from AST
 #+begin_src python
-  content = ast_to_html(ast)
+  page_content = ast_to_html(ast)
 #+end_src
+
+**** TODO "Prettify" the HTML output (newlines & indentation)
 
 #+begin_src python :noweb-ref Function definitions
   def ast_to_html(ast):
@@ -593,6 +612,129 @@ own case, with support for recursively converting children.
   html += '<pre><code>'
   html += html_escape(node_attrs['text'])
   html += '</code></pre></figure>'
+#+end_src
+
+** Populating the HTML template
+
+Jinja uses an =Environment= object to manage templates. Thus, at the
+start of the program, such an =Environment= is created to load
+templates from the =TEMPLATES_DIR= directory and trim whitespace from
+blocks (see [[https://jinja.palletsprojects.com/en/stable/api/#high-level-api][documentation]] here).
+
+#+begin_src python :noweb-ref Imports
+  import jinja2
+#+end_src
+
+#+begin_src python :noweb-ref Global constants
+  TEMPLATES_DIR = 'templates'
+#+end_src
+
+#+name: Set up Jinja environment
+#+begin_src python
+  jinja_env = jinja2.Environment(
+      loader=jinja2.FileSystemLoader(TEMPLATES_DIR),
+      trim_blocks=True,
+      lstrip_blocks=True
+  )
+#+end_src
+
+When it comes time to actually render a page, we use the Jinja
+=Environment= created earlier to load the template (AFAIK Jinja
+handles caching for us), then use the template to render the final
+output.
+
+#+begin_src python :noweb-ref Function definitions
+  def render_page(template, metadata, content):
+      jinja_template = jinja_env.get_template(template)
+      return jinja_template.render(metadata, content=content)
+
+#+end_src
+
+#+name: Create page from Template
+#+begin_src python
+  page_html = render_page('page.html', metadata, page_content)
+#+end_src
+
+** Writing the page to file
+
+First, I ensure the build directory exists and is empty.
+
+#+begin_src python :noweb-ref Imports
+  import shutil
+#+end_src
+
+#+begin_src python :noweb-ref Global constants
+  BUILD_DIR = 'build'
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def make_dir(path):
+      """ Create a directory (and all necessary parent directories)
+          if it does not already exist.
+      """
+      os.makedirs(path, exist_ok=True)
+
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def del_dir(root):
+      """ Delete the contents of a directory.
+      """
+      for itemname in os.listdir(root):
+          itempath = os.path.join(root, itemname)
+          if os.path.isdir(itempath):
+              shutil.rmtree(itempath)
+          else:
+              os.remove(itempath)
+#+end_src
+
+#+name: Ensure build directory exists
+#+begin_src python
+  make_dir(BUILD_DIR)
+  del_dir(BUILD_DIR)
+#+end_src
+
+Then, I copy over static files (such as stylesheets).
+
+#+begin_src python :noweb-ref Global constants
+  STYLES_DIR = 'styles'
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def copy_dir(indir, outdir):
+      """ Copy the contents of one directory to another
+      """
+      shutil.copytree(indir, outdir, dirs_exist_ok=True)
+
+#+end_src
+
+#+name: Copy static files to build directory
+#+begin_src python
+  outdir = os.path.join(BUILD_DIR, STYLES_DIR)
+  copy_dir(STYLES_DIR, outdir)
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def path_join(*args):
+      return os.path.join(*args)
+
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def write_to_file(fpath, string):
+      with open(fpath, 'w+', encoding='utf-8') as f:
+          f.write(string)
+
+#+end_src
+
+#+name: Write page to file
+#+begin_src python
+  url = fname + '.html'
+  outpath = path_join(BUILD_DIR, url)
+  write_to_file(outpath, page_html)
+
+  metadata['url'] = url
+  pages.append(metadata)
 #+end_src
 
 * Old version

@@ -1,16 +1,20 @@
 import os
 import pandoc
 import re
+import jinja2
+import shutil
 
 PAGES_DIR = 'pages'
+TEMPLATES_DIR = 'templates'
+BUILD_DIR = 'build'
+STYLES_DIR = 'styles'
 
 def walk_directory(root, extension='*'):
     for dirpath, dirnames, filenames in os.walk(root):
         for filename in filenames:
             fname, ext = os.path.splitext(filename)
             if extension == '*' or ext == extension:
-                fpath = os.path.join(dirpath, filename)
-                yield fpath
+                yield dirpath, fname, ext
 
 def parse_org_file(fpath):
     ast = pandoc.read(file=fpath)
@@ -214,10 +218,64 @@ def ast_node_to_html(node):
 
     return html
 
+def render_page(template, metadata, content):
+    jinja_template = jinja_env.get_template(template)
+    return jinja_template.render(metadata, content=content)
 
-for fpath in walk_directory(PAGES_DIR, extension='.org'):
+def make_dir(path):
+    """ Create a directory (and all necessary parent directories)
+        if it does not already exist.
+    """
+    os.makedirs(path, exist_ok=True)
+
+def del_dir(root):
+    """ Delete the contents of a directory.
+    """
+    for itemname in os.listdir(root):
+        itempath = os.path.join(root, itemname)
+        if os.path.isdir(itempath):
+            shutil.rmtree(itempath)
+        else:
+            os.remove(itempath)
+def copy_dir(indir, outdir):
+    """ Copy the contents of one directory to another
+    """
+    shutil.copytree(indir, outdir, dirs_exist_ok=True)
+
+def path_join(*args):
+    return os.path.join(*args)
+
+def write_to_file(fpath, string):
+    with open(fpath, 'w+', encoding='utf-8') as f:
+        f.write(string)
+
+
+jinja_env = jinja2.Environment(
+    loader=jinja2.FileSystemLoader(TEMPLATES_DIR),
+    trim_blocks=True,
+    lstrip_blocks=True
+)
+
+make_dir(BUILD_DIR)
+del_dir(BUILD_DIR)
+
+outdir = os.path.join(BUILD_DIR, STYLES_DIR)
+copy_dir(STYLES_DIR, outdir)
+
+pages = []
+for dirpath, fname, ext in walk_directory(PAGES_DIR, extension='.org'):
+    fpath = path_join(dirpath, fname + ext)
     ast = parse_org_file(fpath)
     
-    content = ast_to_html(ast)
-    with open('test.html', 'w+') as f:
-        f.write(content)
+    metadata = ast[0]
+    
+    page_content = ast_to_html(ast)
+    
+    page_html = render_page('page.html', metadata, page_content)
+    
+    url = fname + '.html'
+    outpath = path_join(BUILD_DIR, url)
+    write_to_file(outpath, page_html)
+    
+    metadata['url'] = url
+    pages.append(metadata)
