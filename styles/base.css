@@ -4,7 +4,7 @@
   --theme-text: #e0e0e0;
   --theme-panel: #1e1e1e;
   --theme-border: #3e3e3e;
-  --theme-highlight: #44bfe9;
+  --theme-highlight: #29a3ca;
   --theme-shadow: rgba(0, 0, 0, 0.5);
   --theme-glow: rgba(0, 218, 255, 0.4);
 }
@@ -51,4 +51,13 @@ p {
 }
 h1, h2, h3, h4, h5, h6 {
   text-wrap: balance;
+}
+
+/* Site-wide styling */
+
+body {
+  background-color: var(--theme-bg);
+  color: var(--theme-text);
+  font-family: Arial, sans-serif;
+  padding: 20px;
 }
