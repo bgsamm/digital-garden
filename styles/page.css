@@ -53,3 +53,16 @@ code.verbatim {
   padding: 2px 6px;
   color: var(--theme-highlight);
 }
+
+/* UI buttons */
+
+#home-button {
+  left: 100px;
+}
+
+#home-button a {
+  content: "";
+  
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+}
