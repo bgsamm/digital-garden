@@ -1,13 +1,39 @@
 import os
+import shutil
+import jinja2
 import pandoc
 import re
-import jinja2
-import shutil
 
-PAGES_DIR = 'pages'
-TEMPLATES_DIR = 'templates'
 BUILD_DIR = 'build'
+TEMPLATES_DIR = 'templates'
+PAGES_DIR = 'pages'
 STYLES_DIR = 'styles'
+
+def path_join(*args):
+    """Join several path elements together with the OS-appropriate
+    path separator.
+    """
+    return os.path.join(*args)
+
+def make_dir(path):
+    """Create a directory (and all necessary parent directories)
+    if it does not already exist.
+    """
+    os.makedirs(path, exist_ok=True)
+
+def empty_dir(root):
+    """Delete the contents of a directory.
+    """
+    for itemname in os.listdir(root):
+        itempath = os.path.join(root, itemname)
+        if os.path.isdir(itempath):
+            shutil.rmtree(itempath)
+        else:
+            os.remove(itempath)
+def copy_dir(indir, outdir):
+    """Copy the contents of one directory to another.
+    """
+    shutil.copytree(indir, outdir, dirs_exist_ok=True)
 
 def walk_directory(root, extension='*'):
     for dirpath, dirnames, filenames in os.walk(root):
@@ -101,7 +127,7 @@ def unwrap_block(block):
     elif pandoc_type is pandoc.types.Span:
         node_type = 'span'
         node_attrs = {
-            'is-todo': 'todo' in block[0][1],
+            'is-todo': 'todo' in block[0][1] or 'done' in block[0][1],
             'children': unwrap_blocks(block[1])
         }
     elif pandoc_type is pandoc.types.Str:
@@ -242,45 +268,19 @@ def render_page(template, *args, **kwargs):
     jinja_template = jinja_env.get_template(template)
     return jinja_template.render(*args, **kwargs)
 
-def make_dir(path):
-    """ Create a directory (and all necessary parent directories)
-        if it does not already exist.
-    """
-    os.makedirs(path, exist_ok=True)
-
-def del_dir(root):
-    """ Delete the contents of a directory.
-    """
-    for itemname in os.listdir(root):
-        itempath = os.path.join(root, itemname)
-        if os.path.isdir(itempath):
-            shutil.rmtree(itempath)
-        else:
-            os.remove(itempath)
-def copy_dir(indir, outdir):
-    """ Copy the contents of one directory to another
-    """
-    shutil.copytree(indir, outdir, dirs_exist_ok=True)
-
-def path_join(*args):
-    return os.path.join(*args)
-
 def write_to_file(fpath, string):
     with open(fpath, 'w+', encoding='utf-8') as f:
         f.write(string)
 
+
+make_dir(BUILD_DIR)
+empty_dir(BUILD_DIR)
 
 jinja_env = jinja2.Environment(
     loader=jinja2.FileSystemLoader(TEMPLATES_DIR),
     trim_blocks=True,
     lstrip_blocks=True
 )
-
-make_dir(BUILD_DIR)
-del_dir(BUILD_DIR)
-
-outdir = os.path.join(BUILD_DIR, STYLES_DIR)
-copy_dir(STYLES_DIR, outdir)
 
 pages = []
 for dirpath, fname, ext in walk_directory(PAGES_DIR, extension='.org'):
@@ -301,5 +301,8 @@ for dirpath, fname, ext in walk_directory(PAGES_DIR, extension='.org'):
     pages.append(metadata)
 
 homepage_html = render_page('index.html', title='Home', pages=pages)
-outpath = os.path.join(BUILD_DIR, 'index.html')
+outpath = path_join(BUILD_DIR, 'index.html')
 write_to_file(outpath, homepage_html)
+
+outdir = path_join(BUILD_DIR, STYLES_DIR)
+copy_dir(STYLES_DIR, outdir)

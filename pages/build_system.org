@@ -10,28 +10,24 @@
 #+PROPERTY: header-args+   :eval never-export
 
 **** TODO Better handling of heading export level setting
-**** TODO Figure out intra-file linking (like linking to list items) (gwern.net for inspiration?)
-**** TODO Implement to-do tracking pages (per-page + global)
-**** TODO Figure out site-wide quote integration
+**** TODO Incorporate Jinja templates as literate programs
 **** TODO Organize this page!!
-**** TODO Better integration of TODOs into outline
 
-* Build system
+* Overview
 
-**** TODO Auto-insert page title element
-**** TODO Replace pandoc.write() with custom writer for better output formatting and control
-**** TODO Incorporate styles, templates as literate programs
+This page details the source code for the build system used to
+generate this site. For a more general overview of this site's
+structure, see [[file:site_overview.org][Site Overview]].
 
-This build system generates a static site from Emacs [[https://orgmode.org/][Org]] files using
-[[https://boisgera.github.io/pandoc/][Pandoc]] to convert said files to HTML, and [[https://jinja.palletsprojects.com/en/stable/][Jinja]] for generating pages
-from templates.
+The build system is implemented as a Python script, which generates a
+static site from Emacs [[https://orgmode.org/][Org]] files using [[https://boisgera.github.io/pandoc/][Pandoc]] to convert said files to
+HTML, and [[https://jinja.palletsprojects.com/en/stable/][Jinja]] for generating pages from templates.
 
-**** TODO Insert links to Pandoc documentation as appropriate
-**** TODO Link to "wrap your dependencies"
+**** TODO Link to "wrap your dependencies" design principle
 
-While it could have been possible to use the =Pandoc= executable
-directly with filters and templates, that approach couples me more
-tightly to =Pandoc=, which I consider undesirable (see 4).
+While it would be possible to use Pandoc from the CLI directly with
+its built-in support for filters and templates, that approach couples
+me more tightly to Pandoc, which I consider undesirable.
 
 ** Program outline
 
@@ -44,24 +40,133 @@ The overall structure of the program is as follows:
 
   <<Function definitions>>
 
-  <<Set up Jinja environment>>
+  <<Prepare build directory>>
 
-  <<Ensure build directory exists>>
-
-  <<Copy static files to build directory>>
+  <<Initialize Jinja>>
 
   <<Process org files>>
 
   <<Generate home page>>
+
+  <<Export static files>>
 #+end_src
 
-** Processing Org files
+**** DONE Add section for pre-build setup
 
-To start, we must walk the directory containing our Org files and process each one.
+* Utility functions
+
+The following are a collection of utility functions that will be
+useful throughout the build script.
+
+** File system utilities
+
+**** TODO Add link to "wrap your dependencies" mantra
+
+These functions primarily serve to wrap dependencies on the =os= and
+=shutil= libraries.
 
 #+begin_src python :noweb-ref Imports
   import os
 #+end_src
+
+#+begin_src python :noweb-ref Imports
+  import shutil
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def path_join(*args):
+      """Join several path elements together with the OS-appropriate
+      path separator.
+      """
+      return os.path.join(*args)
+
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def make_dir(path):
+      """Create a directory (and all necessary parent directories)
+      if it does not already exist.
+      """
+      os.makedirs(path, exist_ok=True)
+
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def empty_dir(root):
+      """Delete the contents of a directory.
+      """
+      for itemname in os.listdir(root):
+          itempath = os.path.join(root, itemname)
+          if os.path.isdir(itempath):
+              shutil.rmtree(itempath)
+          else:
+              os.remove(itempath)
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def copy_dir(indir, outdir):
+      """Copy the contents of one directory to another.
+      """
+      shutil.copytree(indir, outdir, dirs_exist_ok=True)
+
+#+end_src
+
+* Preparing the build environment
+
+Before the actual build process can begin, some initial setup must be
+performed. First, the build directory must be prepared, and second, a
+Jinja environment must be created.
+
+** Preparing the build directory
+
+If the build directory does not exist, it must be created; if it
+does exist, its contents must be deleted (to ensure a deleted, moved,
+or renamed "zombie" page does not persist between builds).
+
+(This step is trivialized by the utility functions defined above.)
+
+#+begin_src python :noweb-ref Global constants
+  BUILD_DIR = 'build'
+#+end_src
+
+#+name: Prepare build directory
+#+begin_src python
+  make_dir(BUILD_DIR)
+  empty_dir(BUILD_DIR)
+#+end_src
+
+** Initializing Jinja
+
+**** TODO Remove file prefix from link once intra-file links supported
+
+Jinja uses an =Environment= object as a high-level API for configuring
+and loading templates. This is created as a global variable for later
+use (see [[file:build_system.org::*Populating the HTML template][Populating the HTML template]]) and is set to load templates
+from a file system directory and trim whitespace from template blocks
+(see [[https://jinja.palletsprojects.com/en/stable/api/#high-level-api][documentation]]).
+
+**** TODO Determine why the library is called jinja*2*
+
+#+begin_src python :noweb-ref Imports
+  import jinja2
+#+end_src
+
+#+begin_src python :noweb-ref Global constants
+  TEMPLATES_DIR = 'templates'
+#+end_src
+
+#+name: Initialize Jinja
+#+begin_src python
+  jinja_env = jinja2.Environment(
+      loader=jinja2.FileSystemLoader(TEMPLATES_DIR),
+      trim_blocks=True,
+      lstrip_blocks=True
+  )
+#+end_src
+
+* Processing Org files
+
+To start, we must walk the directory containing our Org files and process each one.
 
 #+begin_src python :noweb-ref Global constants
   PAGES_DIR = 'pages'
@@ -375,18 +480,22 @@ which case the class list in the =Attr= tuple will be =['todo',
 'TODO']=.
 
 **** TODO Determine under what other circumstances Span gets emitted
+**** TODO Add support for intra-file links ('spurious-link' class)
 **** TODO Check how 'DONE' tasks get emitted
 
 #+name: Unwrap Span
 #+begin_src python
   node_type = 'span'
   node_attrs = {
-      'is-todo': 'todo' in block[0][1],
+      'is-todo': 'todo' in block[0][1] or 'done' in block[0][1],
       'children': unwrap_blocks(block[1])
   }
 #+end_src
 
 ** Generating the page content
+
+**** TODO Auto-insert page title element
+**** DONE Replace pandoc.write() with custom writer for better output formatting and control
 
 Now that the Org file has been parsed into an AST, the AST can be
 converted to HTML representing the page content by visiting each node
@@ -543,6 +652,9 @@ own case, with support for recursively converting children.
   html += '</li>'
 #+end_src
 
+**** TODO Detect links to other Org files and convert appropriately
+**** TODO Open external links in new tab & allow for separate styling
+
 #+name: Link to HTML
 #+begin_src python
   target = node_attrs['target']
@@ -590,28 +702,6 @@ own case, with support for recursively converting children.
 
 ** Populating the HTML template
 
-Jinja uses an =Environment= object to manage templates. Thus, at the
-start of the program, such an =Environment= is created to load
-templates from the =TEMPLATES_DIR= directory and trim whitespace from
-blocks (see [[https://jinja.palletsprojects.com/en/stable/api/#high-level-api][documentation]] here).
-
-#+begin_src python :noweb-ref Imports
-  import jinja2
-#+end_src
-
-#+begin_src python :noweb-ref Global constants
-  TEMPLATES_DIR = 'templates'
-#+end_src
-
-#+name: Set up Jinja environment
-#+begin_src python
-  jinja_env = jinja2.Environment(
-      loader=jinja2.FileSystemLoader(TEMPLATES_DIR),
-      trim_blocks=True,
-      lstrip_blocks=True
-  )
-#+end_src
-
 When it comes time to actually render a page, we use the Jinja
 =Environment= created earlier to load the template (AFAIK Jinja
 handles caching for us), then use the template to render the final
@@ -631,69 +721,6 @@ output.
 
 ** Writing the page to file
 
-First, I ensure the build directory exists and is empty.
-
-#+begin_src python :noweb-ref Imports
-  import shutil
-#+end_src
-
-#+begin_src python :noweb-ref Global constants
-  BUILD_DIR = 'build'
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def make_dir(path):
-      """ Create a directory (and all necessary parent directories)
-          if it does not already exist.
-      """
-      os.makedirs(path, exist_ok=True)
-
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def del_dir(root):
-      """ Delete the contents of a directory.
-      """
-      for itemname in os.listdir(root):
-          itempath = os.path.join(root, itemname)
-          if os.path.isdir(itempath):
-              shutil.rmtree(itempath)
-          else:
-              os.remove(itempath)
-#+end_src
-
-#+name: Ensure build directory exists
-#+begin_src python
-  make_dir(BUILD_DIR)
-  del_dir(BUILD_DIR)
-#+end_src
-
-Then, I copy over static files (such as stylesheets).
-
-#+begin_src python :noweb-ref Global constants
-  STYLES_DIR = 'styles'
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def copy_dir(indir, outdir):
-      """ Copy the contents of one directory to another
-      """
-      shutil.copytree(indir, outdir, dirs_exist_ok=True)
-
-#+end_src
-
-#+name: Copy static files to build directory
-#+begin_src python
-  outdir = os.path.join(BUILD_DIR, STYLES_DIR)
-  copy_dir(STYLES_DIR, outdir)
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def path_join(*args):
-      return os.path.join(*args)
-
-#+end_src
-
 #+begin_src python :noweb-ref Function definitions
   def write_to_file(fpath, string):
       with open(fpath, 'w+', encoding='utf-8') as f:
@@ -711,14 +738,33 @@ Then, I copy over static files (such as stylesheets).
   pages.append(metadata)
 #+end_src
 
-** Generating the home page
+* Generating the home page
 
 Last but not least, I generate the home page.
 
 #+name: Generate home page
 #+begin_src python
   homepage_html = render_page('index.html', title='Home', pages=pages)
-  outpath = os.path.join(BUILD_DIR, 'index.html')
+  outpath = path_join(BUILD_DIR, 'index.html')
   write_to_file(outpath, homepage_html)
 #+end_src
 
+* Exporting static files
+
+Lastly, static files (those that should be exported directly as-is,
+without any further processing, such as stylesheets) must be copied to
+the build directory.
+
+**** TODO Add link to "Preparing the build directtory"
+
+(Again, this amounts to a couple of utility function calls.)
+
+#+begin_src python :noweb-ref Global constants
+  STYLES_DIR = 'styles'
+#+end_src
+
+#+name: Export static files
+#+begin_src python
+  outdir = path_join(BUILD_DIR, STYLES_DIR)
+  copy_dir(STYLES_DIR, outdir)
+#+end_src

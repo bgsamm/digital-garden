@@ -7,7 +7,6 @@
 /* Headers and text */
 h1 {
     margin-bottom: 0.5rem;
-    text-align: center;
     color: var(--theme-highlight);
     font-weight: 300;
     letter-spacing: 1px;

@@ -9,6 +9,22 @@
 #+PROPERTY: header-args    :noweb yes
 #+PROPERTY: header-args+   :eval never-export
 
+**** TODO Move these to an Emacs-specific page
+# Emacs/org-mode TODOs
+**** TODO Figure out whether linking to list items is possible
+**** TODO System for organizing TODO & DONE items
+
+**** TODO Implement to-do tracking pages (per-page + global)
+**** TODO Figure out site-wide quote integration
+**** TODO TODO priority tagging system
+**** TODO Implement stylesheets as litprog(s) (+ find a home for them)
+**** TODO Reference tracking system (scrape links from page?)
+**** TODO Keep table of contents fixed in left sidebar
+**** TODO Collapsible page sections
+**** TODO Code block syntax highlighting
+**** TODO Code block linking to noweb references and symbol definitions
+**** TODO Tangled source code view
+
 * Design overview
 
 *** Principles
