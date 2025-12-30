@@ -9,6 +9,8 @@
 #+PROPERTY: header-args    :noweb yes
 #+PROPERTY: header-args+   :eval never-export
 
+**** TODO Organize these to-do's....
+
 **** TODO Move these to an Emacs-specific page
 # Emacs/org-mode TODOs
 **** TODO Figure out whether linking to list items is possible
@@ -24,6 +26,10 @@
 **** TODO Code block syntax highlighting
 **** TODO Code block linking to noweb references and symbol definitions
 **** TODO Tangled source code view
+**** TODO Jump links to usage locations for a noweb block/symbol
+**** TODO Design principle regarding "premature optimization"?
+**** TODO Something about "assert assumptions rather than cover for every case"
+**** TODO Something about "the rule of three" (e.g. max three levels of nesting)
 
 * Design overview
 

@@ -1,13 +1,35 @@
+import re
 import os
 import shutil
 import jinja2
 import pandoc
-import re
 
 BUILD_DIR = 'build'
 TEMPLATES_DIR = 'templates'
 PAGES_DIR = 'pages'
 STYLES_DIR = 'styles'
+
+class AST:
+    def __init__(self, metadata, nodes):
+        self.metadata = metadata
+        self.nodes = nodes
+
+def regex_match(pattern, string):
+    """Return the list of match groups for a given regex pattern
+    and input string, or None if the string was not a match
+    """
+    match_obj = re.match(pattern, string)
+    if match_obj is not None:
+        return match_obj.groups()
+    return None
+
+def html_escape(string):
+    """Replace the '&', '<', and '>' characters in a string with their
+    corresponding HTML escape sequences.
+    """
+    return string.replace('&', '&amp;') \
+                 .replace('<', '&lt;') \
+                 .replace('>', '&gt;')
 
 def path_join(*args):
     """Join several path elements together with the OS-appropriate
@@ -16,8 +38,8 @@ def path_join(*args):
     return os.path.join(*args)
 
 def make_dir(path):
-    """Create a directory (and all necessary parent directories)
-    if it does not already exist.
+    """Create a directory (and all necessary parent directories) if it
+    does not already exist.
     """
     os.makedirs(path, exist_ok=True)
 
@@ -35,12 +57,15 @@ def copy_dir(indir, outdir):
     """
     shutil.copytree(indir, outdir, dirs_exist_ok=True)
 
-def walk_directory(root, extension='*'):
+def walk_dir(root):
+    """Walk recursively through the files in a directory tree,
+    yielding for each file its containing directory, name, and
+    extension.
+    """
     for dirpath, dirnames, filenames in os.walk(root):
         for filename in filenames:
             fname, ext = os.path.splitext(filename)
-            if extension == '*' or ext == extension:
-                yield dirpath, fname, ext
+            yield dirpath, fname, ext
 
 def parse_org_file(fpath):
     ast = pandoc.read(file=fpath)
@@ -48,14 +73,13 @@ def parse_org_file(fpath):
     # Unwrap 'Meta' object
     metadata = ast[0][0]
     for k, v in metadata.items():
+        assert(type(v) is pandoc.types.MetaString)
         # Unwrap 'MetaString' object
         metadata[k] = v[0]
-    
-    ast[0] = metadata
 
-    ast[1] = unwrap_blocks(ast[1])
+    nodes = unwrap_blocks(ast[1])
 
-    return tuple(ast)
+    return AST(metadata, nodes)
 
 def unwrap_blocks(blocks):
     return [unwrap_block(block) for block in blocks]
@@ -152,17 +176,11 @@ def unwrap_block(block):
 
     return (node_type, node_attrs)
 
-def regex_match(pattern, string):
-    match_obj = re.match(pattern, string)
-    if match_obj is not None:
-        return match_obj.groups()
-    return None
-
 def ast_to_html(ast):
     headings = []
 
     content = ''
-    for node in ast[1]:
+    for node in ast.nodes:
         node_html = ast_node_to_html(node)
         if node[0] == 'heading':
             headings.append((node[1]['level'], node_html[4:-5]))
@@ -185,11 +203,6 @@ def ast_to_html(ast):
            '<div id="content">' + content + '</div>'
 
     return html
-
-def html_escape(s):
-    return s.replace('&', '&amp;') \
-            .replace('<', '&lt;') \
-            .replace('>', '&gt;')
 
 def ast_nodes_to_html(nodes):
     html = ''
@@ -283,22 +296,23 @@ jinja_env = jinja2.Environment(
 )
 
 pages = []
-for dirpath, fname, ext in walk_directory(PAGES_DIR, extension='.org'):
+for dirpath, fname, ext in walk_dir(PAGES_DIR):
+    if ext != '.org':
+        continue
+
     fpath = path_join(dirpath, fname + ext)
     ast = parse_org_file(fpath)
-    
-    metadata = ast[0]
-    
+
     page_content = ast_to_html(ast)
-    
-    page_html = render_page('page.html', metadata, content=page_content)
-    
+
+    page_html = render_page('page.html', ast.metadata, content=page_content)
+
     url = fname + '.html'
     outpath = path_join(BUILD_DIR, url)
     write_to_file(outpath, page_html)
     
-    metadata['url'] = url
-    pages.append(metadata)
+    ast.metadata['url'] = url
+    pages.append(ast.metadata)
 
 homepage_html = render_page('index.html', title='Home', pages=pages)
 outpath = path_join(BUILD_DIR, 'index.html')
