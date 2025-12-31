@@ -22,7 +22,7 @@ class OrgNode:
         self.text = ''
         self.children = []
 
-        self.id_ = None
+        self.id_ = ''
         self.cls = []
         self.attrs = {}
 
@@ -93,6 +93,36 @@ def walk_dir(root):
             fname, ext = os.path.splitext(filename)
             yield dirpath, fname, ext
 
+def debug_print_ast(ast):
+    print(f'Metadata: {ast.metadata}')
+    print('Nodes:')
+    for node in ast.nodes:
+        debug_print_node(node, indent=1)
+
+def debug_print_node(node, indent=0):
+    tab = ' ' * 2
+    ind = tab * indent
+
+    print(f'{ind}Type: {node.type_.name}', end=' ')
+    if len(node.text) > 0:
+        print(f'("{node.text}")', end='')
+    print()
+
+    ind += tab
+
+    if len(node.id_) > 0:
+        print(f'{ind}id: {node.id_}')
+    if len(node.cls) > 0:
+        print(f'{ind}cls: {node.cls}')
+    if len(node.attrs) > 0:
+        print(f'{ind}attrs: {node.attrs}')
+
+    n_children = len(node.children)
+    if n_children > 0:
+        print(f'{ind}Children: {n_children}')
+        for child in node.children:
+            debug_print_node(child, indent=indent + 2)
+
 def parse_org_file(fpath):
     ast = pandoc.read(file=fpath)
 
@@ -135,7 +165,8 @@ def unwrap_head_or_para(block):
     if is_todo or is_done:
         node.type_ = NodeType.TODO
         node.done = is_done
-        del node.children[0]
+        # Skip TODO keyword and first space
+        node.children = node.children[2:]
 
     return node
 
@@ -169,6 +200,7 @@ def unwrap_list(block):
     for item in block[i]:
         item_node = OrgNode(NodeType.ITEM)
         item_node.children = unwrap_blocks(item)
+        node.children.append(item_node)
 
     return node
 
