@@ -344,7 +344,7 @@ jinja_env = jinja2.Environment(
 
 pages = []
 for dirpath, fname, ext in walk_dir(PAGES_DIR):
-    if ext != '.org':
+    if fname[0] == '.' or ext != '.org':
         continue
 
     fpath = path_join(dirpath, fname + ext)
