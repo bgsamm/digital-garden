@@ -3,16 +3,42 @@ import os
 import shutil
 import jinja2
 import pandoc
+import enum
+import pandoc.types as pdt
 
 BUILD_DIR = 'build'
 TEMPLATES_DIR = 'templates'
 PAGES_DIR = 'pages'
 STYLES_DIR = 'styles'
 
-class AST:
+class OrgTree:
     def __init__(self, metadata, nodes):
         self.metadata = metadata
         self.nodes = nodes
+
+class OrgNode:
+    def __init__(self, type_):
+        self.type_ = type_
+        self.text = ''
+        self.children = []
+
+        self.id_ = None
+        self.cls = []
+        self.attrs = {}
+
+class NodeType(enum.Enum):
+    CODE = enum.auto()
+    HEAD = enum.auto()
+    ITEM = enum.auto()
+    LINK = enum.auto()
+    LIST = enum.auto()
+    META = enum.auto()
+    PARA = enum.auto()
+    SPAN = enum.auto()
+    TEXT = enum.auto()
+    TODO = enum.auto()
+    TOKN = enum.auto()
+
 
 def regex_match(pattern, string):
     """Return the list of match groups for a given regex pattern
@@ -79,111 +105,139 @@ def parse_org_file(fpath):
 
     nodes = unwrap_blocks(ast[1])
 
-    return AST(metadata, nodes)
+    return OrgTree(metadata, nodes)
 
 def unwrap_blocks(blocks):
     return [unwrap_block(block) for block in blocks]
 
+def unwrap_code(block):
+    node = OrgNode(NodeType.CODE)
+    node.text = block[1]
+    node.inline = (type(block) is pdt.Code)
+    node.id_, node.cls, node.attrs = block[0]
+
+    return node
+
+def unwrap_head_or_para(block):
+    if type(block) is pdt.Header:
+        node = OrgNode(NodeType.HEAD)
+        node.level = block[0]
+        node.id_, node.cls, node.attrs = block[1]
+        i = 2
+    else:
+        node = OrgNode(NodeType.PARA)
+        i = 0
+
+    node.children = unwrap_blocks(block[i])
+
+    is_todo = 'todo' in node.children[0].cls
+    is_done = 'done' in node.children[0].cls
+    if is_todo or is_done:
+        node.type_ = NodeType.TODO
+        node.done = is_done
+        del node.children[0]
+
+    return node
+
+def unwrap_link_or_span(block):
+    if type(block) is pdt.Link:
+        node = OrgNode(NodeType.LINK)
+        node.target = block[2][0]
+        # Appears to be unused
+        node.title = block[2][1]
+    else:
+        node = OrgNode(NodeType.SPAN)
+
+    node.id_, node.cls, node.attrs = block[0]
+    node.children = unwrap_blocks(block[1])
+
+    return node
+
+def unwrap_list(block):
+    node = OrgNode(NodeType.LIST)
+
+    node.ordered = (type(block) is pdt.OrderedList)
+
+    if node.ordered:
+        node.start = block[0][0]
+        node.style = str(block[0][1])[:-2] # Strip trailing parens
+        node.delim = str(block[0][2])[:-2] # ""
+        i = 1
+    else:
+        i = 0
+
+    for item in block[i]:
+        item_node = OrgNode(NodeType.ITEM)
+        item_node.children = unwrap_blocks(item)
+
+    return node
+
+def unwrap_rawblock(block):
+    assert(block[0][0] == 'org')
+
+    matches = regex_match(r'#\+(\w+):\s+(.+)', block[1])
+    assert(matches is not None)
+
+    node = OrgNode(NodeType.META)
+    node.key = matches[0].lower()
+    node.value = matches[1]
+
+    return node
+
+def unwrap_textblock(block):
+    node = OrgNode(NodeType.TEXT)
+    node.children = unwrap_blocks(block[0])
+
+    node.strong = (type(block) is pdt.Strong)
+    node.emph = (type(block) is pdt.Emph)
+
+    return node
+
+def unwrap_token(block):
+    node = OrgNode(NodeType.TOKN)
+
+    if type(block) is pdt.Str:
+        node.text = block[0]
+    else:
+        node.text = ' '
+
+    return node
+
+pandoc_type_map = {
+    pdt.Code: unwrap_code,
+    pdt.CodeBlock: unwrap_code,
+    pdt.Emph: unwrap_textblock,
+    pdt.Header: unwrap_head_or_para,
+    pdt.Link: unwrap_link_or_span,
+    pdt.OrderedList: unwrap_list,
+    pdt.Para: unwrap_head_or_para,
+    pdt.Plain: unwrap_textblock,
+    pdt.RawBlock: unwrap_rawblock,
+    pdt.SoftBreak: unwrap_token,
+    pdt.Space: unwrap_token,
+    pdt.Span: unwrap_link_or_span,
+    pdt.Str: unwrap_token,
+    pdt.Strong: unwrap_textblock
+}
+
 def unwrap_block(block):
     pandoc_type = type(block)
-    if pandoc_type is pandoc.types.RawBlock:
-        assert(block[0][0] == 'org')
-        matches = regex_match(r'#\+(\w+):\s+(.+)', block[1])
-        assert(matches is not None)
-        node_type = 'org-directive'
-        node_attrs = {
-            'type': matches[0].lower(),
-            'value': matches[1]
-        }
-    elif pandoc_type is pandoc.types.Header:
-        assert(block[1][1] == [] and block[1][2] == [])
-        node_type = 'heading'
-        node_attrs = {
-            'level': block[0],
-            'children': unwrap_blocks(block[2])
-        }
-    elif pandoc_type is pandoc.types.Para:
-        node_type = 'paragraph'
-        node_attrs = { 'children': unwrap_blocks(block[0]) }
-    elif pandoc_type is pandoc.types.Plain:
-        node_type = 'plain-text'
-        node_attrs = { 'children': unwrap_blocks(block[0]) }
-    elif pandoc_type is pandoc.types.Strong:
-        node_type = 'strong-text'
-        node_attrs = { 'children': unwrap_blocks(block[0]) }
-    elif pandoc_type is pandoc.types.Emph:
-        node_type = 'emphasized-text'
-        node_attrs = { 'children': unwrap_blocks(block[0]) }
-    elif pandoc_type is pandoc.types.OrderedList:
-        node_type = 'ordered-list'
-        node_attrs = {
-            'start': block[0][0],
-            'style': str(block[0][1])[:-2], # Strip trailing parens
-            'delim': str(block[0][2])[:-2], # ""
-            'children': [(
-                'list-item',
-                { 'children': unwrap_blocks(item) }
-            ) for item in block[1]]
-        }
-    elif pandoc_type is pandoc.types.CodeBlock:
-        assert(len(block[0][1]) == 1)
-        node_type = 'code-block'
-        node_attrs = {
-            'name': block[0][0],
-            'language': block[0][1][0],
-            'text': block[1]
-        }
-    elif pandoc_type is pandoc.types.Code:
-        assert(block[0][0] == '' and block[0][2] == [])
-        assert(len(block[0][1]) == 1 and block[0][1][0] == 'verbatim')
-        node_type = 'inline-code'
-        node_attrs = {
-            'text': block[1]
-        }
-    elif pandoc_type is pandoc.types.Link:
-        assert(block[0] == ('', [], []))
-        assert(block[2][1] == '')
-        node_type = 'link'
-        node_attrs = {
-            'children': unwrap_blocks(block[1]),
-            'target': block[2][0]
-        }
-    elif pandoc_type is pandoc.types.Span:
-        node_type = 'span'
-        node_attrs = {
-            'is-todo': 'todo' in block[0][1] or 'done' in block[0][1],
-            'children': unwrap_blocks(block[1])
-        }
-    elif pandoc_type is pandoc.types.Str:
-        node_type = 'string'
-        node_attrs = { 'text': block[0] }
-    elif pandoc_type is pandoc.types.Space:
-        node_type = 'space'
-        node_attrs = {}
-    elif pandoc_type is pandoc.types.SoftBreak:
-        node_type = 'soft-break'
-        node_attrs = {}
-    else:
+
+    if pandoc_type not in pandoc_type_map:
         raise TypeError(f'Unhandled block type: {pandoc_type}')
 
-    if node_type == 'heading' or node_type == 'paragraph':
-        children = node_attrs['children']
-        assert(len(children) > 0)
-        first_child_type, first_child_attrs = children[0]
-        if first_child_type == 'span' and first_child_attrs['is-todo']:
-            node_type = 'todo-item'
-            children[0] = first_child_attrs['children'][0]
+    node = pandoc_type_map[pandoc_type](block)
 
-    return (node_type, node_attrs)
+    return node
 
 def ast_to_html(ast):
     headings = []
 
     content = ''
     for node in ast.nodes:
-        node_html = ast_node_to_html(node)
-        if node[0] == 'heading':
-            headings.append((node[1]['level'], node_html[4:-5]))
+        node_html = render_node(node)
+        if node.type_ == NodeType.HEAD:
+            headings.append((node.level, node_html[4:-5]))
         content += node_html
 
     toc = '<h1>Table of Contents</h1>'
@@ -204,76 +258,69 @@ def ast_to_html(ast):
 
     return html
 
-def ast_nodes_to_html(nodes):
+def render_nodes(nodes):
     html = ''
     for node in nodes:
-        html += ast_node_to_html(node)
+        html += render_node(node)
     return html
 
-def ast_node_to_html(node):
-    html = ''
+def render_code(node):
+    text = html_escape(node.text)
 
-    node_type, node_attrs = node
+    html = f'<code>{text}</code>'
+    if not node.inline:
+        html = f'<figure><pre>{html}</pre></figure>'
 
-    if node_type == 'org-directive':
-        pass
-    elif node_type == 'todo-item':
-        pass
-    elif node_type == 'heading':
-        n = node_attrs['level']
-        html += f'<h{n}>'
-        html += ast_nodes_to_html(node_attrs['children'])
-        html += f'</h{n}>'
-    elif node_type == 'paragraph':
-        html += '<p>'
-        html += ast_nodes_to_html(node_attrs['children'])
-        html += '</p>'
-    elif node_type == 'plain-text':
-        html += ast_nodes_to_html(node_attrs['children'])
-    elif node_type == 'strong-text':
-        html += '<strong>'
-        html += ast_nodes_to_html(node_attrs['children'])
-        html += '</strong>'
-    elif node_type == 'emphasized-text':
-        html += '<em>'
-        html += ast_nodes_to_html(node_attrs['children'])
-        html += '</em>'
-    elif node_type == 'ordered-list':
-        html += '<ol>'
-        html += ast_nodes_to_html(node_attrs['children'])
-        html += '</ol>'
-    elif node_type == 'list-item':
-        html += '<li>'
-        html += ast_nodes_to_html(node_attrs['children'])
-        html += '</li>'
-    elif node_type == 'inline-code':
-        html += '<code>'
-        html += html_escape(node_attrs['text'])
-        html += '</code>'
-    elif node_type == 'code-block':
-        name = node_attrs['name']
-        html += '<figure>'
-        if len(name) > 0:
-            html += '<figcaption>'
-            html += html_escape(name)
-            html += '</figcaption>'
-        html += '<pre><code>'
-        html += html_escape(node_attrs['text'])
-        html += '</code></pre></figure>'
-    elif node_type == 'link':
-        target = node_attrs['target']
-        html += f'<a href="{target}">'
-        html += ast_nodes_to_html(node_attrs['children'])
-        html += '</a>'
-    elif node_type == 'string':
-        html += html_escape(node_attrs['text'])
-    elif node_type == 'space':
-        html += ' '
-    elif node_type == 'soft-break':
-        html += ' '
-    else:
-        print(node)
-        raise TypeError(f'Unhandled node type: {node_type}')
+    return html
+
+def render_default(node, tag, **kwargs):
+    body = render_nodes(node.children)
+    attrs = ''.join([f' {k}="{v}"' for k,v in kwargs.items()])
+    return f'<{tag}{attrs}>{body}</{tag}>'
+
+def render_heading(node):
+    tag = f'h{node.level}'
+    return render_default(node, tag)
+
+def render_link(node):
+    return render_default(node, 'a', href=node.target)
+
+def render_list(node):
+    tag = 'ol' if node.ordered else 'ul'
+    return render_default(node, tag)
+
+def render_ignore(node):
+    return ''
+
+def render_text(node):
+    if node.strong:
+        return render_default(node, 'strong')
+    if node.emph:
+        return render_default(node, 'em')
+    return render_nodes(node.children)
+
+def render_token(node):
+    return html_escape(node.text)
+
+html_render_map = {
+    NodeType.CODE: render_code,
+    NodeType.HEAD: render_heading,
+    NodeType.ITEM: lambda node: render_default(node, 'li'),
+    NodeType.LINK: render_link,
+    NodeType.LIST: render_list,
+    NodeType.META: render_ignore,
+    NodeType.PARA: lambda node: render_default(node, 'p'),
+    NodeType.SPAN: render_ignore,
+    NodeType.TEXT: render_text,
+    NodeType.TODO: render_ignore,
+    NodeType.TOKN: render_token,
+}
+
+def render_node(node):
+    if node.type_ not in html_render_map:
+        raise TypeError(f'Unhandled node type: {node.type_}')
+
+    html = html_render_map[node.type_](node)
 
     return html
 

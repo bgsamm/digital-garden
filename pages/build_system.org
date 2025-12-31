@@ -13,6 +13,7 @@
 **** TODO Incorporate Jinja templates as literate programs
 **** TODO Organize this page!!
 **** TODO Better handling of the repeated references to design philosophies (footnotes/sidenotes?)
+**** TODO Use ~code~ instead of =verbatim= where appropriate
 
 * Overview
 
@@ -67,10 +68,24 @@ improved usability compared to dictionaries is worth the additional
 boilerplate.
 
 #+begin_src python :noweb-ref Class definitions
-  class AST:
+  class OrgTree:
       def __init__(self, metadata, nodes):
           self.metadata = metadata
           self.nodes = nodes
+
+#+end_src 
+
+#+begin_src python :noweb-ref Class definitions
+  class OrgNode:
+      def __init__(self, type_):
+          self.type_ = type_
+          self.text = ''
+          self.children = []
+
+          self.id_ = None
+          self.cls = []
+          self.attrs = {}
+
 #+end_src
 
 * Utility functions
@@ -80,7 +95,7 @@ useful throughout the build script.
 
 ** String utilities
 
-**** TODO Split into "Regex" and "HTML" sections?
+**** DONE Split into "Regex" and "HTML" sections
 **** TODO Add reference to "wrap your dependencies"
 
 The functions here provide miscellaneous utilities for working with
@@ -311,6 +326,7 @@ hide the Pandoc dependency, so on the surface it is quite simple:
 
 **** TODO Insert link to pandoc library documentation
 **** TODO Insert link to to-do handling
+**** TODO Better document my knowledge of how Pandoc exports Org files
 
 However, the function itself is rather involved. The =pandoc= library
 uses a wide range of custom types to represent the various possible
@@ -337,7 +353,7 @@ two elements.
 
       <<Unwrap blocks>>
 
-      return AST(metadata, nodes)
+      return OrgTree(metadata, nodes)
 
 #+end_src
 
@@ -396,131 +412,53 @@ on an as-needed basis.
 
 #+end_src
 
-**** TODO Order type checks alphabetically
-**** TODO Determine whether 'tokens' is really the appropriate term
+To start, an =Enum= is created to represent the various output node
+types.
 
-#+begin_src python :noweb-ref Function definitions
-  def unwrap_block(block):
-      pandoc_type = type(block)
-      if pandoc_type is pandoc.types.RawBlock:
-          <<Unwrap RawBlock>>
-      elif pandoc_type is pandoc.types.Header:
-          <<Unwrap Header>>
-      elif pandoc_type is pandoc.types.Para:
-          node_type = 'paragraph'
-          node_attrs = { 'children': unwrap_blocks(block[0]) }
-      elif pandoc_type is pandoc.types.Plain:
-          node_type = 'plain-text'
-          node_attrs = { 'children': unwrap_blocks(block[0]) }
-      elif pandoc_type is pandoc.types.Strong:
-          node_type = 'strong-text'
-          node_attrs = { 'children': unwrap_blocks(block[0]) }
-      elif pandoc_type is pandoc.types.Emph:
-          node_type = 'emphasized-text'
-          node_attrs = { 'children': unwrap_blocks(block[0]) }
-      elif pandoc_type is pandoc.types.OrderedList:
-          <<Unwrap OrderedList>>
-      elif pandoc_type is pandoc.types.CodeBlock:
-          <<Unwrap CodeBlock>>
-      elif pandoc_type is pandoc.types.Code:
-          <<Unwrap Code>>
-      elif pandoc_type is pandoc.types.Link:
-          <<Unwrap Link>>
-      elif pandoc_type is pandoc.types.Span:
-          <<Unwrap Span>>
-      elif pandoc_type is pandoc.types.Str:
-          node_type = 'string'
-          node_attrs = { 'text': block[0] }
-      elif pandoc_type is pandoc.types.Space:
-          node_type = 'space'
-          node_attrs = {}
-      elif pandoc_type is pandoc.types.SoftBreak:
-          node_type = 'soft-break'
-          node_attrs = {}
-      else:
-          raise TypeError(f'Unhandled block type: {pandoc_type}')
+#+begin_src python :noweb-ref Imports
+  import enum
+#+end_src
 
-      <<Special case for TODO items>>
-
-      return (node_type, node_attrs)
+#+begin_src python :noweb-ref Class definitions
+  class NodeType(enum.Enum):
+      CODE = enum.auto()
+      HEAD = enum.auto()
+      ITEM = enum.auto()
+      LINK = enum.auto()
+      LIST = enum.auto()
+      META = enum.auto()
+      PARA = enum.auto()
+      SPAN = enum.auto()
+      TEXT = enum.auto()
+      TODO = enum.auto()
+      TOKN = enum.auto()
 
 #+end_src
 
-Because =TODO= items are represented in an Org mode using the same
-syntax as headings, they end up getting parsed as a =Span= in either a
-=Header= or a =Para= object's =Inline= tokens (since Pandoc exports
-headings deeper than =org-export-headline-levels= as paragraphs).
+Then, a map from Pandoc types to the functions responsible for
+unwrapping them is set up.
 
-Additionally, there appears to be a bug in the way Pandoc handles an
-ordered list following one or more TODO items - it groups the TODOs in
-an ordered list, then adds the following ordered list as a sublist.
-
-To address these issues, a special case is added to catch such =TODO=
-items and convert them to the proper node type.
-
-**** TODO Clean up TODO detection/unwrapping logic
-
-#+name: Special case for TODO items
-#+begin_src python
-  if node_type == 'heading' or node_type == 'paragraph':
-      children = node_attrs['children']
-      assert(len(children) > 0)
-      first_child_type, first_child_attrs = children[0]
-      if first_child_type == 'span' and first_child_attrs['is-todo']:
-          node_type = 'todo-item'
-          children[0] = first_child_attrs['children'][0]
+#+begin_src python :noweb-ref Imports
+  import pandoc.types as pdt
 #+end_src
 
-=RawBlock= objects contain the block format (expected to be 'org') and
-the block text. All we care about is the text, which we perform a
-regular expression match on to determine the raw block's type.
-
-**** TODO Determine what directives beside 'property' get emitted by Pandoc
-
-#+name: Unwrap RawBlock
-#+begin_src python
-    assert(block[0][0] == 'org')
-    matches = regex_match(r'#\+(\w+):\s+(.+)', block[1])
-    assert(matches is not None)
-    node_type = 'org-directive'
-    node_attrs = {
-        'type': matches[0].lower(),
-        'value': matches[1]
-    }
-#+end_src
-
-=Header= objects contain the header level (1, 2, 3, etc.), an =Attr=
-tuple of the form (id, classes, attributes), and then a list
-representing the parsed header tokens (type =Inline=). These must be
-unwrapped recursively.
-
-**** TODO Verify the class and attribute lists are unused
-
-#+name: Unwrap Header
-#+begin_src python
-  assert(block[1][1] == [] and block[1][2] == [])
-  node_type = 'heading'
-  node_attrs = {
-      'level': block[0],
-      'children': unwrap_blocks(block[2])
-  }
-#+end_src
-
-An =OrderedList= contains a tuple of list attributes of the form
-(start, style, delim), then a list of the list's items (each of which
-is itself a list of blocks).
-
-#+name: Unwrap OrderedList
-#+begin_src python
-  node_type = 'ordered-list'
-  node_attrs = {
-      'start': block[0][0],
-      'style': str(block[0][1])[:-2], # Strip trailing parens
-      'delim': str(block[0][2])[:-2], # ""
-      'children': [(
-          'list-item',
-          { 'children': unwrap_blocks(item) }
-      ) for item in block[1]]
+#+name: Pandoc type unwrapping map
+#+begin_src python :noweb-ref
+  pandoc_type_map = {
+      pdt.Code: unwrap_code,
+      pdt.CodeBlock: unwrap_code,
+      pdt.Emph: unwrap_textblock,
+      pdt.Header: unwrap_head_or_para,
+      pdt.Link: unwrap_link_or_span,
+      pdt.OrderedList: unwrap_list,
+      pdt.Para: unwrap_head_or_para,
+      pdt.Plain: unwrap_textblock,
+      pdt.RawBlock: unwrap_rawblock,
+      pdt.SoftBreak: unwrap_token,
+      pdt.Space: unwrap_token,
+      pdt.Span: unwrap_link_or_span,
+      pdt.Str: unwrap_token,
+      pdt.Strong: unwrap_textblock
   }
 #+end_src
 
@@ -528,56 +466,71 @@ Code blocks are represented by =CodeBlock= objects, which consist of
 an =Attr= tuple and the contained code (text). The language is
 specified in the class list of the =Attr= tuple.
 
-**** TODO Determine whether attributes list contains anything useful
-**** TODO Verify language is only element of class list
+**** DONE Determine whether attributes list contains anything useful
+**** DONE Verify whether language is only element of class list
 
-#+name: Unwrap CodeBlock
-#+begin_src python
-  assert(len(block[0][1]) == 1)
-  node_type = 'code-block'
-  node_attrs = {
-      'name': block[0][0],
-      'language': block[0][1][0],
-      'text': block[1]
-  }
-#+end_src
-
-Inline code blocks are represented by =Code= objects and consist of an
+Inline code blocks are represented by ~Code~ objects and consist of an
 =Attr= tuple and the contained code (text).
 
-**** TODO Determine significance of 'verbatim' class
-**** TODO Verify rest of =Attr= tuple goes unused
+**** DONE Determine significance of 'verbatim' class
+**** DONE Verify whether rest of =Attr= tuple goes unused
 
-#+name: Unwrap Code
-#+begin_src python
-  assert(block[0][0] == '' and block[0][2] == [])
-  assert(len(block[0][1]) == 1 and block[0][1][0] == 'verbatim')
-  node_type = 'inline-code'
-  node_attrs = {
-      'text': block[1]
-  }
+#+begin_src python :noweb-ref Function definitions
+  def unwrap_code(block):
+      node = OrgNode(NodeType.CODE)
+      node.text = block[1]
+      node.inline = (type(block) is pdt.Code)
+      node.id_, node.cls, node.attrs = block[0]
+
+      return node
+
 #+end_src
 
-=Link= objects contain an =Attr= tuple (currently ignored), a list of
-=Inline= tokens (the link text), and the link's =Target= (a 2-tuple).
+**** TODO Determine whether 'tokens' is really the appropriate term
 
-I am currently ignoring the second element of the =Target=, which I
-/believe/ to be a title or description and which is likely unused by
-Org files.
+=Header= objects contain the header level (1, 2, 3, etc.), an =Attr=
+tuple of the form (id, classes, attributes), and then a list
+representing the parsed header tokens (type =Inline=). These must be
+unwrapped recursively.
 
-**** TODO Verify the Attr tuple is unused
-**** TODO Verify that second element of Target is title (and unused)
+Because =TODO= items are represented in an Org mode using the same
+syntax as headings, they end up getting parsed as a =Span= in either a
+=Header= or a =Para= object's =Inline= tokens (since Pandoc exports
+headings deeper than =org-export-headline-levels= as paragraphs).
 
-#+name: Unwrap Link
-#+begin_src python
-  assert(block[0] == ('', [], []))
-  assert(block[2][1] == '')
-  node_type = 'link'
-  node_attrs = {
-      'children': unwrap_blocks(block[1]),
-      'target': block[2][0]
-  }
+**** DONE Verify whether the class and attribute lists are unused
+**** DONE Clean up TODO detection/unwrapping logic
+
+#+begin_src python :noweb-ref Function definitions
+  def unwrap_head_or_para(block):
+      if type(block) is pdt.Header:
+          node = OrgNode(NodeType.HEAD)
+          node.level = block[0]
+          node.id_, node.cls, node.attrs = block[1]
+          i = 2
+      else:
+          node = OrgNode(NodeType.PARA)
+          i = 0
+
+      node.children = unwrap_blocks(block[i])
+
+      is_todo = 'todo' in node.children[0].cls
+      is_done = 'done' in node.children[0].cls
+      if is_todo or is_done:
+          node.type_ = NodeType.TODO
+          node.done = is_done
+          del node.children[0]
+
+      return node
+
 #+end_src
+
+=Link= objects contain an =Attr= tuple, a list of =Inline= tokens (the
+link text), and the link's =Target= (a 2-tuple).
+
+**** DONE Verify whether the Attr tuple is unused
+**** DONE Verify that second element of Target is title (and unused)
+**** TODO Pandoc categories certain valid internal links as "spurious" and emits them as spans; add custom handling for these
 
 =Span= objects consist of an =Attr= tuple and a list of =Inline=
 tokens, much like a header. This gets emitted for =TODO= items, in
@@ -585,16 +538,112 @@ which case the class list in the =Attr= tuple will be =['todo',
 'TODO']=.
 
 **** TODO Determine under what other circumstances Span gets emitted
-**** TODO Add support for intra-file links ('spurious-link' class)
-**** TODO Check how 'DONE' tasks get emitted
+**** DONE Check how 'DONE' tasks get emitted
 
-#+name: Unwrap Span
-#+begin_src python
-  node_type = 'span'
-  node_attrs = {
-      'is-todo': 'todo' in block[0][1] or 'done' in block[0][1],
-      'children': unwrap_blocks(block[1])
-  }
+#+begin_src python :noweb-ref Function definitions
+  def unwrap_link_or_span(block):
+      if type(block) is pdt.Link:
+          node = OrgNode(NodeType.LINK)
+          node.target = block[2][0]
+          # Appears to be unused
+          node.title = block[2][1]
+      else:
+          node = OrgNode(NodeType.SPAN)
+
+      node.id_, node.cls, node.attrs = block[0]
+      node.children = unwrap_blocks(block[1])
+
+      return node
+
+#+end_src
+
+An =OrderedList= contains a tuple of list attributes of the form
+(start, style, delim), then a list of the list's items (each of which
+is itself a list of blocks).
+
+#+begin_src python :noweb-ref Function definitions
+  def unwrap_list(block):
+      node = OrgNode(NodeType.LIST)
+
+      node.ordered = (type(block) is pdt.OrderedList)
+
+      if node.ordered:
+          node.start = block[0][0]
+          node.style = str(block[0][1])[:-2] # Strip trailing parens
+          node.delim = str(block[0][2])[:-2] # ""
+          i = 1
+      else:
+          i = 0
+
+      for item in block[i]:
+          item_node = OrgNode(NodeType.ITEM)
+          item_node.children = unwrap_blocks(item)
+
+      return node
+
+#+end_src
+
+**** TODO More testing of other cases that emit RawBlock (see Pandoc source code)
+
+=RawBlock= objects contain their =Format= and associated =Text=. This
+gets emitted by unhandled meta lines (lines starting with "#+").
+
+#+begin_src python :noweb-ref Function definitions
+  def unwrap_rawblock(block):
+      assert(block[0][0] == 'org')
+
+      matches = regex_match(r'#\+(\w+):\s+(.+)', block[1])
+      assert(matches is not None)
+
+      node = OrgNode(NodeType.META)
+      node.key = matches[0].lower()
+      node.value = matches[1]
+
+      return node
+
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def unwrap_textblock(block):
+      node = OrgNode(NodeType.TEXT)
+      node.children = unwrap_blocks(block[0])
+
+      node.strong = (type(block) is pdt.Strong)
+      node.emph = (type(block) is pdt.Emph)
+
+      return node
+
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def unwrap_token(block):
+      node = OrgNode(NodeType.TOKN)
+
+      if type(block) is pdt.Str:
+          node.text = block[0]
+      else:
+          node.text = ' '
+
+      return node
+
+#+end_src
+
+Finally, unwrapping a block consists of looking up the block type's
+unwrapper in our map and applying it.
+
+#+begin_src python :noweb-ref Function definitions
+  <<Pandoc type unwrapping map>>
+
+  def unwrap_block(block):
+      pandoc_type = type(block)
+
+      if pandoc_type not in pandoc_type_map:
+          raise TypeError(f'Unhandled block type: {pandoc_type}')
+
+      node = pandoc_type_map[pandoc_type](block)
+
+      return node
+
 #+end_src
 
 ** Generating the page content
@@ -617,10 +666,8 @@ in the AST node list.
   def ast_to_html(ast):
       headings = []
 
-      content = ''
       <<Process AST nodes>>
 
-      toc = '<h1>Table of Contents</h1>'
       <<Generate table of contents>>
 
       html = '<div id="table-of-contents">' + toc + '</div>' + \
@@ -639,151 +686,135 @@ own case, with support for recursively converting children.
 
 #+name: Process AST nodes
 #+begin_src python
+  content = ''
   for node in ast.nodes:
-      node_html = ast_node_to_html(node)
-      if node[0] == 'heading':
-          headings.append((node[1]['level'], node_html[4:-5]))
+      node_html = render_node(node)
+      if node.type_ == NodeType.HEAD:
+          headings.append((node.level, node_html[4:-5]))
       content += node_html
 #+end_src
 
 #+begin_src python :noweb-ref Function definitions
-  def ast_nodes_to_html(nodes):
+  def render_nodes(nodes):
       html = ''
       for node in nodes:
-          html += ast_node_to_html(node)
+          html += render_node(node)
       return html
 
 #+end_src
 
-**** TODO Use integer constants instead of strings
-**** TODO Remove soft breaks from AST entirely?
+The strategy for rendering the page's contents is similar to that for
+generating the AST - define a map from node type to its corresponding
+render function.
+
+#+name: HTML render map
+#+begin_src python
+  html_render_map = {
+      NodeType.CODE: render_code,
+      NodeType.HEAD: render_heading,
+      NodeType.ITEM: lambda node: render_default(node, 'li'),
+      NodeType.LINK: render_link,
+      NodeType.LIST: render_list,
+      NodeType.META: render_ignore,
+      NodeType.PARA: lambda node: render_default(node, 'p'),
+      NodeType.SPAN: render_ignore,
+      NodeType.TEXT: render_text,
+      NodeType.TODO: render_ignore,
+      NodeType.TOKN: render_token,
+  }
+#+end_src
+
+**** TODO Add figcaption for named blocks
 
 #+begin_src python :noweb-ref Function definitions
-  def ast_node_to_html(node):
-      html = ''
+  def render_code(node):
+      text = html_escape(node.text)
 
-      node_type, node_attrs = node
-
-      if node_type == 'org-directive':
-          pass
-      elif node_type == 'todo-item':
-          pass
-      elif node_type == 'heading':
-          <<Heading to HTML>>
-      elif node_type == 'paragraph':
-          <<Paragraph to HTML>>
-      elif node_type == 'plain-text':
-          html += ast_nodes_to_html(node_attrs['children'])
-      elif node_type == 'strong-text':
-          <<Strong text to HTML>>
-      elif node_type == 'emphasized-text':
-          <<Emphasized text to HTML>>
-      elif node_type == 'ordered-list':
-          <<Ordered list to HTML>>
-      elif node_type == 'list-item':
-          <<List item to HTML>>
-      elif node_type == 'inline-code':
-          <<Inline code to HTML>>
-      elif node_type == 'code-block':
-          <<Code block to HTML>>
-      elif node_type == 'link':
-          <<Link to HTML>>
-      elif node_type == 'string':
-          html += html_escape(node_attrs['text'])
-      elif node_type == 'space':
-          html += ' '
-      elif node_type == 'soft-break':
-          html += ' '
-      else:
-          print(node)
-          raise TypeError(f'Unhandled node type: {node_type}')
+      html = f'<code>{text}</code>'
+      if not node.inline:
+          html = f'<figure><pre>{html}</pre></figure>'
 
       return html
 
 #+end_src
 
-**** TODO Merge logic for parent tags
+#+begin_src python :noweb-ref Function definitions
+  def render_default(node, tag, **kwargs):
+      body = render_nodes(node.children)
+      attrs = ''.join([f' {k}="{v}"' for k,v in kwargs.items()])
+      return f'<{tag}{attrs}>{body}</{tag}>'
 
-#+name: Heading to HTML
-#+begin_src python
-  n = node_attrs['level']
-  html += f'<h{n}>'
-  html += ast_nodes_to_html(node_attrs['children'])
-  html += f'</h{n}>'
 #+end_src
 
-#+name: Paragraph to HTML
-#+begin_src python
-  html += '<p>'
-  html += ast_nodes_to_html(node_attrs['children'])
-  html += '</p>'
-#+end_src
+#+begin_src python :noweb-ref Function definitions
+  def render_heading(node):
+      tag = f'h{node.level}'
+      return render_default(node, tag)
 
-#+name: Strong text to HTML
-#+begin_src python
-  html += '<strong>'
-  html += ast_nodes_to_html(node_attrs['children'])
-  html += '</strong>'
-#+end_src
-
-#+name: Emphasized text to HTML
-#+begin_src python
-  html += '<em>'
-  html += ast_nodes_to_html(node_attrs['children'])
-  html += '</em>'
-#+end_src
-
-**** TODO Add support for start, style, & delim
-
-#+name: Ordered list to HTML
-#+begin_src python
-  html += '<ol>'
-  html += ast_nodes_to_html(node_attrs['children'])
-  html += '</ol>'
-#+end_src
-
-#+name: List item to HTML
-#+begin_src python
-  html += '<li>'
-  html += ast_nodes_to_html(node_attrs['children'])
-  html += '</li>'
 #+end_src
 
 **** TODO Detect links to other Org files and convert appropriately
 **** TODO Open external links in new tab & allow for separate styling
 
-#+name: Link to HTML
-#+begin_src python
-  target = node_attrs['target']
-  html += f'<a href="{target}">'
-  html += ast_nodes_to_html(node_attrs['children'])
-  html += '</a>'
+#+begin_src python :noweb-ref Function definitions
+  def render_link(node):
+      return render_default(node, 'a', href=node.target)
+
 #+end_src
 
-#+name: Inline code to HTML
-#+begin_src python
-  html += '<code>'
-  html += html_escape(node_attrs['text'])
-  html += '</code>'
+**** TODO Add support for start, style, & delim
+
+#+begin_src python :noweb-ref Function definitions
+  def render_list(node):
+      tag = 'ol' if node.ordered else 'ul'
+      return render_default(node, tag)
+
 #+end_src
 
-#+name: Code block to HTML
-#+begin_src python
-  name = node_attrs['name']
-  html += '<figure>'
-  if len(name) > 0:
-      html += '<figcaption>'
-      html += html_escape(name)
-      html += '</figcaption>'
-  html += '<pre><code>'
-  html += html_escape(node_attrs['text'])
-  html += '</code></pre></figure>'
+#+begin_src python :noweb-ref Function definitions
+  def render_ignore(node):
+      return ''
+
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def render_text(node):
+      if node.strong:
+          return render_default(node, 'strong')
+      if node.emph:
+          return render_default(node, 'em')
+      return render_nodes(node.children)
+
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def render_token(node):
+      return html_escape(node.text)
+
+#+end_src
+
+**** TODO Merge logic for parent tags
+**** DONE Use integer constants instead of strings
+**** DONE Remove soft breaks from AST entirely
+
+#+begin_src python :noweb-ref Function definitions
+  <<HTML render map>>
+
+  def render_node(node):
+      if node.type_ not in html_render_map:
+          raise TypeError(f'Unhandled node type: {node.type_}')
+
+      html = html_render_map[node.type_](node)
+
+      return html
+
 #+end_src
 
 *** Generating the table of contents
 
 #+name: Generate table of contents
 #+begin_src python
+  toc = '<h1>Table of Contents</h1>'
   prev_level = 0
   for level, text in headings:
       if level > prev_level:

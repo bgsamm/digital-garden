@@ -4,7 +4,7 @@
 :Date: 2025-12-29
 :END:
 
-#+OPTIONS: H:5
+#+OPTIONS: H:3
 
 #+PROPERTY: header-args    :noweb yes
 #+PROPERTY: header-args+   :eval never-export
@@ -30,6 +30,7 @@
 **** TODO Design principle regarding "premature optimization"?
 **** TODO Something about "assert assumptions rather than cover for every case"
 **** TODO Something about "the rule of three" (e.g. max three levels of nesting)
+**** TODO "Don't solve problems you don't yet have"
 
 * Design overview
 
