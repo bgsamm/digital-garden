@@ -1,7 +1,32 @@
 #table-of-contents,
 #content {
-    max-width: 65%;
+    max-width: 50%;
     margin: 0 auto;
+}
+
+/* View switcher */
+
+.top-nav {
+    display: flex;
+    height: 50px;
+    padding: 0 20px;
+    margin-bottom: 10px;
+    background-color: var(--theme-panel);
+    border-bottom: 2px solid var(--theme-border);
+    box-shadow: 0 2px 10px var(--theme-shadow);
+}
+
+.nav-tab {
+    background-color: var(--theme-panel);
+    color: var(--theme-text);
+    padding: 0 20px;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+}
+
+.nav-tab:hover {
+    border-bottom: 2px solid var(--theme-highlight);
 }
 
 /* Headers and text */

@@ -6,6 +6,12 @@
 {% endblock %}
 
 {% block content %}
+    <nav class="top-nav">
+        <button class="nav-tab active" data-target="page">Content</button>
+        <button class="nav-tab" data-target="tasks">Tasks</button>
+        <button class="nav-tab" data-target="source">Source</button>
+    </nav>
+
     {{ content }}
 
     <div id="home-button" class="ui-button">

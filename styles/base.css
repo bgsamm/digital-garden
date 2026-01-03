@@ -62,7 +62,6 @@ body {
     background-color: var(--theme-bg);
     color: var(--theme-text);
     font-family: Arial, sans-serif;
-    padding: 20px;
 }
 
 /* UI button base */
