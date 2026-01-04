@@ -29,7 +29,7 @@
 .hljs-deletion,
 .hljs-meta,
 .hljs-quote {
-  color: #777;
+  color: var(--theme-text2);
 }
 
 .hljs-doctag,

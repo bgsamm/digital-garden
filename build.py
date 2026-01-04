@@ -27,6 +27,11 @@ class OrgNode:
         self.cls = []
         self.attrs = {}
 
+    def inner_text(self):
+        if len(self.text) > 0:
+            return self.text
+        return ''.join([child.inner_text() for child in self.children])
+
 class Page:
     def __init__(self, title):
         self.title = title
@@ -388,16 +393,26 @@ def render_node(node):
 def generate_task_view(ast):
     html = '<div class="task-list">'
 
+    stack = []
     for node in ast.nodes:
+        if node.type == NodeType.HEAD:
+            while len(stack) > 0 and node.level <= stack[-1].level:
+                stack.pop()
+            stack.append(node)
+
         if node.type != NodeType.TASK:
             continue
 
         state = 'done' if node.done else 'todo'
-        description = ''.join([tkn.text for tkn in node.children])
+        if len(stack) == 0:
+            section = '---'
+        else:
+            section = ' > '.join([heading.inner_text() for heading in stack])
 
         html += f'<div class="task {state}">'
         html += f'<div class="task-state">{state.upper()}</div>'
-        html += f'<div class="task-desc">{description}</div>'
+        html += f'<div class="task-section">{section}</div>'
+        html += f'<div class="task-desc">{node.inner_text()}</div>'
         html += '</div>'
 
     html += '</div>'

@@ -191,6 +191,10 @@ code {
     color: var(--theme-highlight);
 }
 
+#view-tasks .task-section {
+    color: var(--theme-text2);
+}
+
 /* UI buttons */
 
 #home-button {
