@@ -3,6 +3,8 @@
 {% block head %}
     {{ super() }}
     <link rel="stylesheet" href="styles/page.css" />
+    <script src="scripts/page.js"></script>
+
     <link rel="stylesheet" href="styles/highlight.min.css">
     <script src="scripts/highlight.min.js"></script>
     <script>hljs.highlightAll();</script>
@@ -11,7 +13,7 @@
 {% block content %}
     <nav class="top-nav">
     {% for view in views %}
-        <button class="nav-tab" data-target="page">{{ view.name }}</button>
+        <button class="nav-tab" onclick="setView('{{ view.id }}')">{{ view.name }}</button>
     {% endfor %}
     </nav>
 

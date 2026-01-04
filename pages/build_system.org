@@ -89,9 +89,12 @@ boilerplate.
 
 #+end_src
 
+**** TODO More robust ID generation
+
 #+begin_src python :noweb-ref Class definitions
   class PageView:
       def __init__(self, name):
+          self.id = name.lower().replace(' ', '-')
           self.name = name
 
 #+end_src

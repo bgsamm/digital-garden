@@ -29,6 +29,7 @@ class OrgNode:
 
 class PageView:
     def __init__(self, name):
+        self.id = name.lower().replace(' ', '-')
         self.name = name
 
 class NodeType(enum.Enum):
