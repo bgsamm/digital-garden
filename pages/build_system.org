@@ -722,8 +722,8 @@ in the AST node list.
 
       <<Generate table of contents>>
 
-      html = '<div id="table-of-contents">' + toc + '</div>' + \
-             '<div id="content">' + content + '</div>'
+      html = '<div class="table-of-contents">' + toc + '</div>' + \
+             '<div class="content">' + content + '</div>'
 
       return html
 

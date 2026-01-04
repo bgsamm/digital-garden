@@ -292,8 +292,8 @@ def ast_to_html(ast):
         prev_level = level
     toc += '</li></ul>' * prev_level
 
-    html = '<div id="table-of-contents">' + toc + '</div>' + \
-           '<div id="content">' + content + '</div>'
+    html = '<div class="table-of-contents">' + toc + '</div>' + \
+           '<div class="content">' + content + '</div>'
 
     return html
 
