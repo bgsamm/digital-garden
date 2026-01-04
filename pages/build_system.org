@@ -769,11 +769,12 @@ render function.
 
 #+begin_src python :noweb-ref Function definitions
   def render_code(node):
-      text = html_escape(node.text)
+      text = html_escape(node.text).strip()
 
-      html = f'<code>{text}</code>'
-      if not node.inline:
-          html = f'<figure><pre>{html}</pre></figure>'
+      if node.inline:
+          html = f'<code class="code-inline">{text}</code>'
+      else:
+          html = f'<figure class="code-block"><pre><code>{text}</code></pre></figure>'
 
       return html
 
