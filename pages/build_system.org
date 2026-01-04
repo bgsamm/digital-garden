@@ -766,6 +766,7 @@ render function.
 #+end_src
 
 **** TODO Add figcaption for named blocks
+**** TODO Don't hard code language
 
 #+begin_src python :noweb-ref Function definitions
   def render_code(node):
@@ -774,7 +775,10 @@ render function.
       if node.inline:
           html = f'<code class="code-inline">{text}</code>'
       else:
-          html = f'<figure class="code-block"><pre><code>{text}</code></pre></figure>'
+          html = '<figure class="code-block">'
+          html += '<pre><code class="language-python">'
+          html += text
+          html += '</code></pre></figure>'
 
       return html
 
@@ -935,10 +939,14 @@ build directory.
 
 #+begin_src python :noweb-ref Global constants
   STYLES_DIR = 'styles'
+  SCRIPTS_DIR = 'scripts'
 #+end_src
 
 #+name: Export static files
 #+begin_src python
   outdir = path_join(BUILD_DIR, STYLES_DIR)
   copy_dir(STYLES_DIR, outdir)
+
+  outdir = path_join(BUILD_DIR, SCRIPTS_DIR)
+  copy_dir(SCRIPTS_DIR, outdir)
 #+end_src

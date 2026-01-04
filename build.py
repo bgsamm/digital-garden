@@ -10,6 +10,7 @@ BUILD_DIR = 'build'
 TEMPLATES_DIR = 'templates'
 PAGES_DIR = 'pages'
 STYLES_DIR = 'styles'
+SCRIPTS_DIR = 'scripts'
 
 class OrgTree:
     def __init__(self, metadata, nodes):
@@ -302,7 +303,10 @@ def render_code(node):
     if node.inline:
         html = f'<code class="code-inline">{text}</code>'
     else:
-        html = f'<figure class="code-block"><pre><code>{text}</code></pre></figure>'
+        html = '<figure class="code-block">'
+        html += '<pre><code class="language-python">'
+        html += text
+        html += '</code></pre></figure>'
 
     return html
 
@@ -400,3 +404,6 @@ write_to_file(outpath, homepage_html)
 
 outdir = path_join(BUILD_DIR, STYLES_DIR)
 copy_dir(STYLES_DIR, outdir)
+
+outdir = path_join(BUILD_DIR, SCRIPTS_DIR)
+copy_dir(SCRIPTS_DIR, outdir)

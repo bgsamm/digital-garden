@@ -3,6 +3,9 @@
 {% block head %}
     {{ super() }}
     <link rel="stylesheet" href="styles/page.css" />
+    <link rel="stylesheet" href="styles/highlight.min.css">
+    <script src="scripts/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
 {% endblock %}
 
 {% block content %}
