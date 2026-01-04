@@ -13,11 +13,15 @@
 {% block content %}
     <nav class="top-nav">
     {% for view in views %}
-        <button class="nav-tab" onclick="setView('{{ view.id }}')">{{ view.name }}</button>
+        <button id="tab-{{ view.id }}" class="tab {{ 'active' if default_view == view else '' }}" onclick="setView('{{ view.id }}')">{{ view.name }}</button>
     {% endfor %}
     </nav>
 
-    {{ content }}
+    {% for view in views %}
+    <div id="view-{{ view.id }}" class="view {{ 'active' if default_view == view else '' }}">
+        {{ view.content }}
+    </div>
+    {% endfor %}
 
     <div id="home-button" class="ui-button">
         🏠
