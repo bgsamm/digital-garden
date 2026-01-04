@@ -51,6 +51,7 @@
 }
 
 /* Headers and text */
+
 h1 {
     color: var(--theme-highlight);
     font-weight: 300;
@@ -145,6 +146,33 @@ code {
     
     background-color: var(--theme-panel);
     border-radius: 10px;
+}
+
+/* Task view */
+
+#view-tasks .task-list {
+    width: 50%;
+    margin: 0 auto;
+}
+
+#view-tasks .task {
+    padding: 10px;
+    margin: 15px 0;
+    
+    background-color: var(--theme-panel);
+    box-shadow: 0 0 10px var(--theme-shadow);
+    
+    border: 2px solid var(--theme-border);
+    border-radius: 10px;
+    
+    transition: var(--highlight-transition);
+}
+
+#view-tasks .task:hover {
+    box-shadow: 0 0 10px var(--theme-glow);
+    border: 2px solid var(--theme-highlight);
+    
+    transition: var(--highlight-transition);
 }
 
 /* UI buttons */

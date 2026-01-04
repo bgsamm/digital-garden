@@ -386,13 +386,14 @@ def render_node(node):
     return html
 
 def generate_task_view(ast):
-    html = ''
+    html = '<div class="task-list">'
     for node in ast.nodes:
         if node.type != NodeType.TASK:
             continue
 
         task_text = ''.join([tkn.text for tkn in node.children])
-        html += f'<div>{task_text}</div>'
+        html += f'<div class="task">{task_text}</div>'
+    html += '</div>'
 
     return PageView('Tasks', html)
 
