@@ -19,7 +19,7 @@ class OrgTree:
 
 class OrgNode:
     def __init__(self, type_):
-        self.type_ = type_
+        self.type = type_
         self.text = ''
         self.children = []
 
@@ -48,8 +48,8 @@ class NodeType(enum.Enum):
     META = enum.auto()
     PARA = enum.auto()
     SPAN = enum.auto()
+    TASK = enum.auto()
     TEXT = enum.auto()
-    TODO = enum.auto()
     TOKN = enum.auto()
 
 
@@ -116,7 +116,7 @@ def debug_print_node(node, indent=0):
     tab = ' ' * 2
     ind = tab * indent
 
-    print(f'{ind}Type: {node.type_.name}', end=' ')
+    print(f'{ind}Type: {node.type}', end=' ')
     if len(node.text) > 0:
         print(f'("{node.text}")', end='')
     print()
@@ -176,7 +176,7 @@ def unwrap_head_or_para(block):
     is_todo = 'todo' in node.children[0].cls
     is_done = 'done' in node.children[0].cls
     if is_todo or is_done:
-        node.type_ = NodeType.TODO
+        node.type = NodeType.TASK
         node.done = is_done
         # Skip TODO keyword and first space
         node.children = node.children[2:]
@@ -293,7 +293,7 @@ def generate_main_view(ast):
     content = ''
     for node in ast.nodes:
         node_html = render_node(node)
-        if node.type_ == NodeType.HEAD:
+        if node.type == NodeType.HEAD:
             headings.append((node.level, node_html[4:-5]))
         content += node_html
 
@@ -372,21 +372,29 @@ html_render_map = {
     NodeType.META: render_ignore,
     NodeType.PARA: lambda node: render_default(node, 'p'),
     NodeType.SPAN: render_ignore,
+    NodeType.TASK: render_ignore,
     NodeType.TEXT: render_text,
-    NodeType.TODO: render_ignore,
     NodeType.TOKN: render_token,
 }
 
 def render_node(node):
-    if node.type_ not in html_render_map:
-        raise TypeError(f'Unhandled node type: {node.type_}')
+    if node.type not in html_render_map:
+        raise TypeError(f'Unhandled node type: {node.type}')
 
-    html = html_render_map[node.type_](node)
+    html = html_render_map[node.type](node)
 
     return html
 
 def generate_task_view(ast):
-    return PageView('Tasks', '')
+    html = ''
+    for node in ast.nodes:
+        if node.type != NodeType.TASK:
+            continue
+
+        task_text = ''.join([tkn.text for tkn in node.children])
+        html += f'<div>{task_text}</div>'
+
+    return PageView('Tasks', html)
 
 def render_page(template, *args, **kwargs):
     jinja_template = jinja_env.get_template(template)
