@@ -10,9 +10,9 @@
 
 {% block content %}
     <nav class="top-nav">
-        <button class="nav-tab active" data-target="page">Content</button>
-        <button class="nav-tab" data-target="tasks">Tasks</button>
-        <button class="nav-tab" data-target="source">Source</button>
+    {% for view in views %}
+        <button class="nav-tab" data-target="page">{{ view.name }}</button>
+    {% endfor %}
     </nav>
 
     {{ content }}

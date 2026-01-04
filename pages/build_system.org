@@ -89,6 +89,13 @@ boilerplate.
 
 #+end_src
 
+#+begin_src python :noweb-ref Class definitions
+  class PageView:
+      def __init__(self, name):
+          self.name = name
+
+#+end_src
+
 * Utility functions
 
 The following are a collection of utility functions that will be
@@ -767,6 +774,7 @@ render function.
 
 **** TODO Add figcaption for named blocks
 **** TODO Don't hard code language
+**** TODO Use Pandoc for build-time syntax highlighting
 
 #+begin_src python :noweb-ref Function definitions
   def render_code(node):
@@ -890,7 +898,8 @@ output.
 
 #+name: Create page from Template
 #+begin_src python
-  page_html = render_page('page.html', ast.metadata, content=page_content)
+  views = [PageView('Main'), PageView('Tasks')]
+  page_html = render_page('page.html', ast.metadata, views=views, content=page_content)
 #+end_src
 
 ** Writing the page to file

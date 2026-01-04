@@ -27,6 +27,10 @@ class OrgNode:
         self.cls = []
         self.attrs = {}
 
+class PageView:
+    def __init__(self, name):
+        self.name = name
+
 class NodeType(enum.Enum):
     CODE = enum.auto()
     HEAD = enum.auto()
@@ -389,7 +393,8 @@ for dirpath, fname, ext in walk_dir(PAGES_DIR):
 
     page_content = ast_to_html(ast)
 
-    page_html = render_page('page.html', ast.metadata, content=page_content)
+    views = [PageView('Main'), PageView('Tasks')]
+    page_html = render_page('page.html', ast.metadata, views=views, content=page_content)
 
     url = fname + '.html'
     outpath = path_join(BUILD_DIR, url)
