@@ -730,6 +730,9 @@ in the AST node list.
       main_view = generate_main_view(ast)
       page.views.append(main_view)
 
+      task_view = generate_task_view(ast)
+      page.views.append(task_view)
+
       page.default_view = main_view
 
       return page
@@ -889,8 +892,6 @@ render function.
 
 #+end_src
 
-*** Generating the table of contents
-
 #+name: Generate table of contents
 #+begin_src python
   toc = '<h1>Table of Contents</h1>'
@@ -905,6 +906,14 @@ render function.
       toc += text
       prev_level = level
   toc += '</li></ul>' * prev_level
+#+end_src
+
+*** Generating the task page view
+
+#+begin_src python :noweb-ref Function definitions
+  def generate_task_view(ast):
+      return PageView('Tasks', '')
+
 #+end_src
 
 ** Populating the HTML template

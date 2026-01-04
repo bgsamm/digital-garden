@@ -281,6 +281,9 @@ def generate_page(ast):
     main_view = generate_main_view(ast)
     page.views.append(main_view)
 
+    task_view = generate_task_view(ast)
+    page.views.append(task_view)
+
     page.default_view = main_view
 
     return page
@@ -381,6 +384,9 @@ def render_node(node):
     html = html_render_map[node.type_](node)
 
     return html
+
+def generate_task_view(ast):
+    return PageView('Tasks', '')
 
 def render_page(template, *args, **kwargs):
     jinja_template = jinja_env.get_template(template)
