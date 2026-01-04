@@ -27,6 +27,12 @@ class OrgNode:
         self.cls = []
         self.attrs = {}
 
+class Page:
+    def __init__(self, title):
+        self.title = title
+        self.views = []
+        self.default_view = None
+
 class PageView:
     def __init__(self, name, content):
         self.id = name.lower().replace(' ', '-')
@@ -269,9 +275,18 @@ def unwrap_block(block):
 
     return node
 
-def ast_to_html(ast):
-    headings = []
+def generate_page(ast):
+    page = Page(ast.metadata['title'])
 
+    main_view = generate_main_view(ast)
+    page.views.append(main_view)
+
+    page.default_view = main_view
+
+    return page
+
+def generate_main_view(ast):
+    headings = []
     content = ''
     for node in ast.nodes:
         node_html = render_node(node)
@@ -295,7 +310,7 @@ def ast_to_html(ast):
     html = '<div class="table-of-contents">' + toc + '</div>' + \
            '<div class="content">' + content + '</div>'
 
-    return html
+    return PageView('Main', html)
 
 def render_nodes(nodes):
     html = ''
@@ -393,10 +408,9 @@ for dirpath, fname, ext in walk_dir(PAGES_DIR):
     fpath = path_join(dirpath, fname + ext)
     ast = parse_org_file(fpath)
 
-    page_content = ast_to_html(ast)
+    page = generate_page(ast)
 
-    views = [PageView('Main', page_content), PageView('Tasks', '')]
-    page_html = render_page('page.html', ast.metadata, views=views, default_view=views[0])
+    page_html = render_page('page.html', title=page.title, page=page)
 
     url = fname + '.html'
     outpath = path_join(BUILD_DIR, url)

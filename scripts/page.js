@@ -16,6 +16,9 @@ function setView(viewId, updateHistory = true) {
         return;
     }
 
+    // Update view ID in case of using default view
+    viewId = targetView.dataset.viewId;
+
     if (targetView.classList.contains('active')) {
         // Already the active view - nothing to do
         return;
@@ -31,7 +34,7 @@ function setView(viewId, updateHistory = true) {
     // Add active class to new tab & view
     targetView.classList.add('active');
 
-    const targetTab = document.getElementById(targetView.dataset.tabTarget);
+    const targetTab = document.getElementById(`tab-${viewId}`);
     targetTab.classList.add('active');
 
     if (updateHistory) {

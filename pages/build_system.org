@@ -89,6 +89,15 @@ boilerplate.
 
 #+end_src
 
+#+begin_src python :noweb-ref Class definitions
+  class Page:
+      def __init__(self, title):
+          self.title = title
+          self.views = []
+          self.default_view = None
+
+#+end_src
+
 **** TODO More robust ID generation
 
 #+begin_src python :noweb-ref Class definitions
@@ -353,7 +362,7 @@ home page.
 
       <<Parse Org file into AST>>
 
-      <<Generate page content from AST>>
+      <<Generate page from AST>>
 
       <<Create page from template>>
 
@@ -707,17 +716,30 @@ Now that the Org file has been parsed into an AST, the AST can be
 converted to HTML representing the page content by visiting each node
 in the AST node list.
 
-#+name: Generate page content from AST
+#+name: Generate page from AST
 #+begin_src python
-  page_content = ast_to_html(ast)
+  page = generate_page(ast)
 #+end_src
 
 **** TODO "Prettify" the HTML output (newlines & indentation)
 
 #+begin_src python :noweb-ref Function definitions
-  def ast_to_html(ast):
-      headings = []
+  def generate_page(ast):
+      page = Page(ast.metadata['title'])
 
+      main_view = generate_main_view(ast)
+      page.views.append(main_view)
+
+      page.default_view = main_view
+
+      return page
+
+#+end_src
+
+*** Generating the main page view
+
+#+begin_src python :noweb-ref Function definitions
+  def generate_main_view(ast):
       <<Process AST nodes>>
 
       <<Generate table of contents>>
@@ -725,11 +747,9 @@ in the AST node list.
       html = '<div class="table-of-contents">' + toc + '</div>' + \
              '<div class="content">' + content + '</div>'
 
-      return html
+      return PageView('Main', html)
 
 #+end_src
-
-*** Processing AST nodes
 
 Similarly to the way parsing was handled, each node type will need its
 own case, with support for recursively converting children.
@@ -738,6 +758,7 @@ own case, with support for recursively converting children.
 
 #+name: Process AST nodes
 #+begin_src python
+  headings = []
   content = ''
   for node in ast.nodes:
       node_html = render_node(node)
@@ -900,10 +921,9 @@ output.
 
 #+end_src
 
-#+name: Create page from Template
+#+name: Create page from template
 #+begin_src python
-  views = [PageView('Main', page_content), PageView('Tasks', '')]
-  page_html = render_page('page.html', ast.metadata, views=views, default_view=views[0])
+  page_html = render_page('page.html', title=page.title, page=page)
 #+end_src
 
 ** Writing the page to file
