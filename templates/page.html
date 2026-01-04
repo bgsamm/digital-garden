@@ -22,7 +22,9 @@
 
     {% for view in views %}
     <div id="view-{{ view.id }}" class="view {{ 'active' if default_view == view else '' }}">
-        {{ view.content }}
+        <div class="container">
+            {{ view.content }}
+        </div>
     </div>
     {% endfor %}
 

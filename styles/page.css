@@ -102,7 +102,7 @@ code {
 
 /* Article view */
 
-#view-main {
+#view-main .container {
     display: grid;
     grid-template-columns: 25% 1fr 25%;
     grid-gap: 30px;

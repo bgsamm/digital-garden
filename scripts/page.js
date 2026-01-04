@@ -1,4 +1,6 @@
 function setView(viewId, updateHistory = true) {
+    console.log(`Setting view to '${viewId}'.`);
+
     const targetView = document.getElementById(`view-${viewId}`);
 
     if (targetView === null) {
