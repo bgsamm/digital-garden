@@ -15,13 +15,13 @@
         <div class="nav-item title">{{ title }}</div>
         <div class="nav-item tabs">
         {% for view in views %}
-            <button id="tab-{{ view.id }}" class="tab {{ 'active' if default_view == view else '' }}" onclick="setView('{{ view.id }}')">{{ view.name }}</button>
+            <button id="tab-{{ view.id }}" class="tab" onclick="setView('{{ view.id }}')">{{ view.name }}</button>
         {% endfor %}
         </div>
     </nav>
 
     {% for view in views %}
-    <div id="view-{{ view.id }}" class="view {{ 'active' if default_view == view else '' }}">
+    <div id="view-{{ view.id }}" class="view {{ 'default' if default_view == view }}" data-tab-target="tab-{{ view.id }}">
         <div class="container">
             {{ view.content }}
         </div>
