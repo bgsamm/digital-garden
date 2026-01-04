@@ -8,6 +8,8 @@
 
 .top-nav {
     display: flex;
+    justify-content: space-between;
+    align-items: stretch;
     height: 50px;
     padding: 0 20px;
     margin-bottom: 10px;
@@ -16,7 +18,21 @@
     box-shadow: 0 2px 10px var(--theme-shadow);
 }
 
+.nav-item.title {
+    display: flex;
+    align-items: center;
+    color: var(--theme-highlight);
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.nav-item.tabs {
+    display: flex;
+}
+
 .tab {
+    display: flex;
+    align-items: center;
     background-color: transparent;
     color: var(--theme-text);
     padding: 0 20px;

@@ -395,7 +395,7 @@ for dirpath, fname, ext in walk_dir(PAGES_DIR):
 
     page_content = ast_to_html(ast)
 
-    views = [PageView('Main', page_content), PageView('Tasks', '<h1>Hello World!</h1>')]
+    views = [PageView('Main', page_content), PageView('Tasks', '')]
     page_html = render_page('page.html', ast.metadata, views=views, default_view=views[0])
 
     url = fname + '.html'

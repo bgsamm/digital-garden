@@ -902,7 +902,7 @@ output.
 
 #+name: Create page from Template
 #+begin_src python
-  views = [PageView('Main', page_content), PageView('Tasks', '<h1>Hello World!</h1>')]
+  views = [PageView('Main', page_content), PageView('Tasks', '')]
   page_html = render_page('page.html', ast.metadata, views=views, default_view=views[0])
 #+end_src
 

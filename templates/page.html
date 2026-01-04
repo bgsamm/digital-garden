@@ -12,9 +12,12 @@
 
 {% block content %}
     <nav class="top-nav">
-    {% for view in views %}
-        <button id="tab-{{ view.id }}" class="tab {{ 'active' if default_view == view else '' }}" onclick="setView('{{ view.id }}')">{{ view.name }}</button>
-    {% endfor %}
+        <div class="nav-item title">{{ title }}</div>
+        <div class="nav-item tabs">
+        {% for view in views %}
+            <button id="tab-{{ view.id }}" class="tab {{ 'active' if default_view == view else '' }}" onclick="setView('{{ view.id }}')">{{ view.name }}</button>
+        {% endfor %}
+        </div>
     </nav>
 
     {% for view in views %}
