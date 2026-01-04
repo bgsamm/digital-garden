@@ -913,12 +913,19 @@ render function.
 #+begin_src python :noweb-ref Function definitions
   def generate_task_view(ast):
       html = '<div class="task-list">'
+
       for node in ast.nodes:
           if node.type != NodeType.TASK:
               continue
 
-          task_text = ''.join([tkn.text for tkn in node.children])
-          html += f'<div class="task">{task_text}</div>'
+          state = 'done' if node.done else 'todo'
+          description = ''.join([tkn.text for tkn in node.children])
+          
+          html += f'<div class="task {state}">'
+          html += f'<div class="task-state">{state.upper()}</div>'
+          html += f'<div class="task-desc">{description}</div>'
+          html += '</div>'
+
       html += '</div>'
 
       return PageView('Tasks', html)

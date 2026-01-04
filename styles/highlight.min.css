@@ -22,7 +22,7 @@
 .hljs-title,
 .hljs-type,
 .hljs-variable {
-  color: #c82;
+  color: var(--theme-accent);
 }
 
 .hljs-comment,

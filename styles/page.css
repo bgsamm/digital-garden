@@ -175,6 +175,22 @@ code {
     transition: var(--highlight-transition);
 }
 
+#view-tasks .task.todo {
+    border-left: 2px solid var(--theme-accent);
+}
+
+#view-tasks .task.done {
+    border-left: 2px solid var(--theme-highlight);
+}
+
+#view-tasks .task.todo .task-state {
+    color: var(--theme-accent);
+}
+
+#view-tasks .task.done .task-state {
+    color: var(--theme-highlight);
+}
+
 /* UI buttons */
 
 #home-button {
