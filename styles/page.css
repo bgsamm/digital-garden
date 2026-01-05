@@ -183,6 +183,11 @@ code {
     border-left: 2px solid var(--theme-highlight);
 }
 
+#view-tasks .task-header {
+    display: flex;
+    justify-content: space-between;
+}
+
 #view-tasks .task.todo .task-state {
     color: var(--theme-accent);
 }
@@ -191,10 +196,34 @@ code {
     color: var(--theme-highlight);
 }
 
+#view-tasks .task-tags {
+    display: flex;
+    gap: 8px;
+}
+
+#view-tasks .task-tag {
+    padding: 0 5px;
+    
+    border: 1px solid var(--theme-border);
+    border-radius: 4px;
+    
+    font-family: "Monaco", monospace;
+    font-size: 0.9rem;
+}
+
+#view-tasks .task-tag.med {
+    border: 1px solid orange;
+    color: orange;
+}
+
+#view-tasks .task-tag.high {
+    border: 1px solid red;
+    color: red;
+}
+
 #view-tasks .task-section {
     color: var(--theme-text2);
 }
-
 /* UI buttons */
 
 #home-button {

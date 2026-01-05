@@ -413,16 +413,20 @@ def generate_task_view(ast):
         if node.type != NodeType.TASK:
             continue
 
-        tags = ' '.join(node.tags)
-
         state = 'done' if node.done else 'todo'
         if len(stack) == 0:
             section = '---'
         else:
             section = ' > '.join([heading.inner_text() for heading in stack])
 
-        html += f'<div class="task {state} {tags}">'
+        html += f'<div class="task {state}">'
+        html += f'<div class="task-header">'
         html += f'<div class="task-state">{state.upper()}</div>'
+        html += f'<div class="task-tags">'
+        for tag in node.tags:
+            html += f'<span class="task-tag {tag}">{tag.capitalize()}</span>'
+        html += '</div>'
+        html += '</div>'
         html += f'<div class="task-section">{section}</div>'
         html += f'<div class="task-desc">{node.inner_text()}</div>'
         html += '</div>'
