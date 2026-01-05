@@ -9,14 +9,14 @@
 #+PROPERTY: header-args    :noweb yes
 #+PROPERTY: header-args+   :eval never-export
 
-**** TODO Tag all the tasks! :easy:high:
+**** DONE Tag all the tasks!                                      :easy:high:
+**** TODO Add filtering to task view :med:high:
+**** TODO Organize this page!! :med:high:
 **** TODO Better handling of heading export level setting :med:high:
-**** TODO Incorporate Jinja templates as literate programs
-**** TODO Organize this page!!
-**** TODO Better handling of the repeated references to design philosophies (footnotes/sidenotes?)
-**** TODO Use ~code~ instead of =verbatim= where appropriate
-**** TODO Command line argument support
-**** TODO Add filtering to task view
+**** TODO Incorporate Jinja templates as literate programs :med:mid:
+**** TODO Better handling of the repeated references to design philosophies (footnotes/sidenotes?) :med:mid:
+**** TODO Use ~code~ instead of =verbatim= where appropriate :easy:low:
+**** TODO Command line argument support :med:mid:
 
 * Overview
 
@@ -28,7 +28,8 @@ The build system is implemented as a Python script, which generates a
 static site from Emacs [[https://orgmode.org/][Org]] files using [[https://boisgera.github.io/pandoc/][Pandoc]] to convert said files to
 HTML, and [[https://jinja.palletsprojects.com/en/stable/][Jinja]] for generating pages from templates.
 
-**** TODO Link to "wrap your dependencies" design principle
+**** TODO Link to "wrap your dependencies" design principle :easy:low:
+
 
 While it would be possible to use Pandoc from the CLI directly with
 its built-in support for filters and templates, that approach couples
@@ -62,7 +63,8 @@ The overall structure of the program is as follows:
 
 ** Class definitions
 
-**** TODO Extract my philosophy on OOP/classes into a better location?
+**** TODO Extract my philosophy on OOP/classes into a better location? :easy:low:
+
 
 Classes are used primarily as data containers (à la structs in C) and
 generally do not define methods beyond their constructors. I have
@@ -101,7 +103,7 @@ boilerplate.
 
 #+end_src
 
-**** TODO More robust ID generation
+**** TODO More robust ID generation :easy:med:
 
 #+begin_src python :noweb-ref Class definitions
   class PageView:
@@ -120,7 +122,8 @@ useful throughout the build script.
 ** String utilities
 
 **** DONE Split into "Regex" and "HTML" sections
-**** TODO Add reference to "wrap your dependencies"
+**** TODO Add reference to "wrap your dependencies" :easy:low:
+
 
 The functions here provide miscellaneous utilities for working with
 strings.
@@ -147,8 +150,8 @@ This primarily exists to wrap the =re= library dependency.
 
 *** HTML utilities
 
-**** TODO Add reference to "reinvent the wheel" (html library)
-**** TODO Add support for escaping quotes?
+**** TODO Add reference to "reinvent the wheel" (html library) :easy:low:
+**** TODO Add support for escaping quotes? :easy:low:
 
 This replaces a dependency on the =html= library.
 
@@ -169,7 +172,7 @@ escape sequences will also get replaced!
 
 ** File system utilities
 
-**** TODO Add link to "wrap your dependencies" mantra
+**** TODO Add link to "wrap your dependencies" mantra :easy:low:
 
 These functions primarily serve to wrap dependencies on the =os= and
 =shutil= libraries.
@@ -290,7 +293,7 @@ or renamed "zombie" page does not persist between builds).
 
 ** Initializing Jinja
 
-**** TODO Remove file prefix from link once intra-file links supported
+**** TODO Remove file prefix from link once intra-file links supported :easy:low:
 
 Jinja uses an =Environment= object as a high-level API for configuring
 and loading templates. This is created as a global variable for later
@@ -298,7 +301,7 @@ use (see [[file:build_system.org::*Populating the HTML template][Populating the 
 from a file system directory and trim whitespace from template blocks
 (see [[https://jinja.palletsprojects.com/en/stable/api/#high-level-api][documentation]]).
 
-**** TODO Determine why the library is called jinja*2*
+**** TODO Determine why the library is called jinja*2* :easy:low:
 
 #+begin_src python :noweb-ref Imports
   import jinja2
@@ -319,8 +322,8 @@ from a file system directory and trim whitespace from template blocks
 
 * Processing Org files
 
-**** TODO Add reference to "wrap your dependencies"
-**** TODO Add reference to "reinvent the wheel" (pandoc.write)
+**** TODO Add reference to "wrap your dependencies" :easy:low:
+**** TODO Add reference to "reinvent the wheel" (pandoc.write) :easy:low:
 
 Now that the build environment has been initialized, the process of
 actually generating the site's pages can begin. This makes up the bulk
@@ -340,7 +343,7 @@ Processing an Org file then consists of four steps:
    static page template.
 4. Write the final result to disk.
 
-**** TODO Add link to "Generating the home page"
+**** TODO Add link to "Generating the home page" :easy:low:
 
 The resulting pages are tracked for use when generating the
 home page.
@@ -367,8 +370,8 @@ home page.
 
 ** Parsing an Org file
 
-**** TODO Eliminate the pandoc dependency once and for all!
-**** TODO Insert link to "wrap dependencies" mantra
+**** TODO Eliminate the pandoc dependency once and for all! :hard:low:
+**** TODO Insert link to "wrap dependencies" mantra :easy:low:
 
 The procedure for parsing an Org file is wrapped in a function call to
 hide the Pandoc dependency, so on the surface it is quite simple:
@@ -379,9 +382,9 @@ hide the Pandoc dependency, so on the surface it is quite simple:
   ast = parse_org_file(fpath)
 #+end_src
 
-**** TODO Insert link to pandoc library documentation
-**** TODO Insert link to to-do handling
-**** TODO Better document my knowledge of how Pandoc exports Org files
+**** TODO Insert link to pandoc library documentation :easy:low:
+**** TODO Insert link to to-do handling :easy:low:
+**** TODO Better document my knowledge of how Pandoc exports Org files :med:low:
 
 However, the function itself is rather involved. The =pandoc= library
 uses a wide range of custom types to represent the various possible
@@ -414,10 +417,10 @@ two elements.
 
 *** Unwrapping Pandoc metadata
 
-**** TODO Link to org-mode documentation on property drawers
-**** TODO Link to pandoc Python documentation on types
-**** TODO Extract thoughts about asserting assumptions into design principles
-**** TODO Convert notes to proper footnotes/sidenotes
+**** TODO Link to org-mode documentation on property drawers :easy:low:
+**** TODO Link to pandoc Python documentation on types :easy:low:
+**** TODO Extract thoughts about asserting assumptions into design principles :easy:low:
+**** TODO Convert notes to proper footnotes/sidenotes :med:low:
 
 Every Org file in this repository starts with a property drawer that
 defines its metadata, like title, author, date, etc. This populates
@@ -540,7 +543,7 @@ Inline code blocks are represented by ~Code~ objects and consist of an
 
 #+end_src
 
-**** TODO Determine whether 'tokens' is really the appropriate term
+**** TODO Determine whether 'tokens' is really the appropriate term :easy:low:
 
 =Header= objects contain the header level (1, 2, 3, etc.), an =Attr=
 tuple of the form (id, classes, attributes), and then a list
@@ -598,14 +601,14 @@ link text), and the link's =Target= (a 2-tuple).
 
 **** DONE Verify whether the Attr tuple is unused
 **** DONE Verify that second element of Target is title (and unused)
-**** TODO Pandoc categories certain valid internal links as "spurious" and emits them as spans; add custom handling for these
+**** TODO Pandoc categories certain valid internal links as "spurious" and emits them as spans; add custom handling for these :hard:med:
 
 =Span= objects consist of an =Attr= tuple and a list of =Inline=
 tokens, much like a header. This gets emitted for =TODO= items, in
 which case the class list in the =Attr= tuple will be =['todo',
 'TODO']=.
 
-**** TODO Determine under what other circumstances Span gets emitted
+**** DONE Determine under what other circumstances Span gets emitted
 **** DONE Check how 'DONE' tasks get emitted
 
 #+begin_src python :noweb-ref Function definitions
@@ -648,7 +651,7 @@ is itself a list of blocks).
 
 #+end_src
 
-**** TODO More testing of other cases that emit RawBlock (see Pandoc source code)
+**** TODO More testing of other cases that emit RawBlock (see Pandoc source code) :easy:low:
 
 =RawBlock= objects contain their =Format= and associated =Text=. This
 gets emitted by unhandled meta lines (lines starting with "#+").
@@ -729,7 +732,7 @@ unwrapper in our map and applying it.
 
 ** Generating the page content
 
-**** TODO Auto-insert page title element
+**** TODO Auto-insert page title element :easy:med:
 **** DONE Replace pandoc.write() with custom writer for better output formatting and control
 
 Now that the Org file has been parsed into an AST, the AST can be
@@ -741,7 +744,7 @@ in the AST node list.
   page = generate_page(ast)
 #+end_src
 
-**** TODO "Prettify" the HTML output (newlines & indentation)
+**** TODO "Prettify" the HTML output (newlines & indentation) :med:low:
 
 #+begin_src python :noweb-ref Function definitions
   def generate_page(ast):
@@ -777,7 +780,7 @@ in the AST node list.
 Similarly to the way parsing was handled, each node type will need its
 own case, with support for recursively converting children.
 
-**** TODO Better method for stripping tags than hard-coded values
+**** TODO Better method for stripping tags than hard-coded values :easy:med:
 
 #+name: Process AST nodes
 #+begin_src python
@@ -820,9 +823,9 @@ render function.
   }
 #+end_src
 
-**** TODO Add figcaption for named blocks
-**** TODO Don't hard code language
-**** TODO Use Pandoc for build-time syntax highlighting
+**** TODO Add figcaption for named blocks :easy:med:
+**** TODO Don't hard code language :easy:high:
+**** TODO Use Pandoc for build-time syntax highlighting :med:med:
 
 #+begin_src python :noweb-ref Function definitions
   def render_code(node):
@@ -855,8 +858,8 @@ render function.
 
 #+end_src
 
-**** TODO Detect links to other Org files and convert appropriately
-**** TODO Open external links in new tab & allow for separate styling
+**** TODO Detect links to other Org files and convert appropriately :med:med:
+**** TODO Open external links in new tab & allow for separate styling :easy:low:
 
 #+begin_src python :noweb-ref Function definitions
   def render_link(node):
@@ -864,7 +867,7 @@ render function.
 
 #+end_src
 
-**** TODO Add support for start, style, & delim
+**** TODO Add support for start, style, & delim :med:low:
 
 #+begin_src python :noweb-ref Function definitions
   def render_list(node):
@@ -895,7 +898,7 @@ render function.
 
 #+end_src
 
-**** TODO Merge logic for parent tags
+**** DONE Merge logic for parent tags
 **** DONE Use integer constants instead of strings
 **** DONE Remove soft breaks from AST entirely
 
@@ -988,6 +991,8 @@ output.
 
 #+end_src
 
+**** TODO Eliminate 'title' keyword argument :med:low:
+
 #+name: Create page from template
 #+begin_src python
   page_html = render_page('page.html', title=page.title, page=page)
@@ -1017,9 +1022,6 @@ output.
 From the Python side, generating the home page is as simple as passing
 the list of pages generated as a template argument.
 
-**** TODO Add section detail index.html template design
-**** TODO Is the title parameter really necessary?
-
 #+name: Generate home page
 #+begin_src python
   homepage_html = render_page('index.html', title='Home', pages=pages)
@@ -1033,7 +1035,7 @@ Lastly, static files (those that should be exported directly, without
 any further processing, such as stylesheets) must be copied to the
 build directory.
 
-**** TODO Add link to "Preparing the build directtory"
+**** TODO Add link to "Preparing the build directtory" :easy:low:
 
 (Again, this amounts to a couple of utility function calls.)
 
