@@ -1,6 +1,7 @@
 import re
 import os
 import shutil
+import datetime
 import jinja2
 import pandoc
 import enum
@@ -29,9 +30,10 @@ class OrgNode:
         return ''.join([child.inner_text() for child in self.children])
 
 class Page:
-    def __init__(self, title, date, category, abstract):
+    def __init__(self, title, cdate, mdate, category, abstract):
         self.title = title
-        self.date = date
+        self.cdate = cdate
+        self.mdate = mdate
         self.category = category
         self.abstract = abstract
 
@@ -81,6 +83,12 @@ def path_join(*args):
     """
     return os.path.join(*args)
 
+def get_file_mtime(path):
+    """Get the Unix timestamp for the last modification time of a file
+    as recorded by the file system
+    """
+    return os.path.getmtime(path)
+
 def make_dir(path):
     """Create a directory (and all necessary parent directories) if it
     does not already exist.
@@ -110,6 +118,10 @@ def walk_dir(root):
         for filename in filenames:
             fname, ext = os.path.splitext(filename)
             yield dirpath, fname, ext
+
+def timestamp_to_date(timestamp):
+    datetime_obj = datetime.datetime.fromtimestamp(timestamp, datetime.UTC)
+    return datetime_obj.strftime('%Y-%m-%d')
 
 def debug_print_ast(ast):
     print(f'Metadata: {ast.metadata}')
@@ -143,6 +155,10 @@ def parse_org_file(fpath):
         assert(type(v) is pandoc.types.MetaString)
         # Unwrap 'MetaString' object
         metadata[k] = v[0]
+    
+    mtime = get_file_mtime(fpath)
+    mdate = timestamp_to_date(mtime)
+    metadata['modified'] = mdate
 
     nodes = unwrap_blocks(ast[1])
 
@@ -296,10 +312,11 @@ def unwrap_block(block):
 
 def generate_page(ast):
     title = ast.metadata['title']
-    date = ast.metadata['date']
+    cdate = ast.metadata['date']
+    mdate = ast.metadata['modified']
     category = ast.metadata['category']
     abstract = ast.metadata['abstract']
-    page = Page(title, date, category, abstract)
+    page = Page(title, cdate, mdate, category, abstract)
 
     main_view = generate_main_view(ast)
     page.views.append(main_view)
@@ -483,8 +500,8 @@ for dirpath, fname, ext in walk_dir(PAGES_DIR):
     outpath = path_join(BUILD_DIR, url)
     write_to_file(outpath, page_html)
     
-    ast.metadata['url'] = url
-    pages.append(ast.metadata)
+    page.url = url
+    pages.append(page)
 
 homepage_html = render_page('index.html', title='Home', pages=pages)
 outpath = path_join(BUILD_DIR, 'index.html')
