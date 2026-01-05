@@ -9,12 +9,14 @@
 #+PROPERTY: header-args    :noweb yes
 #+PROPERTY: header-args+   :eval never-export
 
+**** TODO Tag all the tasks! :easy:high:
 **** TODO Better handling of heading export level setting :med:high:
 **** TODO Incorporate Jinja templates as literate programs
 **** TODO Organize this page!!
 **** TODO Better handling of the repeated references to design philosophies (footnotes/sidenotes?)
 **** TODO Use ~code~ instead of =verbatim= where appropriate
 **** TODO Command line argument support
+**** TODO Add filtering to task view
 
 * Overview
 

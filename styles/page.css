@@ -211,11 +211,19 @@ code {
     font-size: 0.9rem;
 }
 
-#view-tasks .task-tag.med {
+#view-tasks .task-tag.easy,
+#view-tasks .task-tag.low {
+    border: 1px solid greenyellow;
+    color: greenyellow;
+}
+
+#view-tasks .task-tag.med,
+#view-tasks .task-tag.mid {
     border: 1px solid orange;
     color: orange;
 }
 
+#view-tasks .task-tag.hard,
 #view-tasks .task-tag.high {
     border: 1px solid red;
     color: red;
