@@ -23,10 +23,6 @@ class OrgNode:
         self.text = ''
         self.children = []
 
-        self.id_ = ''
-        self.cls = []
-        self.attrs = {}
-
     def inner_text(self):
         if len(self.text) > 0:
             return self.text
@@ -52,7 +48,7 @@ class NodeType(enum.Enum):
     LIST = enum.auto()
     META = enum.auto()
     PARA = enum.auto()
-    SPAN = enum.auto()
+    TAG  = enum.auto()
     TASK = enum.auto()
     TEXT = enum.auto()
     TOKN = enum.auto()
@@ -128,13 +124,6 @@ def debug_print_node(node, indent=0):
 
     ind += tab
 
-    if len(node.id_) > 0:
-        print(f'{ind}id: {node.id_}')
-    if len(node.cls) > 0:
-        print(f'{ind}cls: {node.cls}')
-    if len(node.attrs) > 0:
-        print(f'{ind}attrs: {node.attrs}')
-
     n_children = len(node.children)
     if n_children > 0:
         print(f'{ind}Children: {n_children}')
@@ -162,7 +151,6 @@ def unwrap_code(block):
     node = OrgNode(NodeType.CODE)
     node.text = block[1]
     node.inline = (type(block) is pdt.Code)
-    node.id_, node.cls, node.attrs = block[0]
 
     return node
 
@@ -170,7 +158,6 @@ def unwrap_head_or_para(block):
     if type(block) is pdt.Header:
         node = OrgNode(NodeType.HEAD)
         node.level = block[0]
-        node.id_, node.cls, node.attrs = block[1]
         i = 2
     else:
         node = OrgNode(NodeType.PARA)
@@ -178,26 +165,36 @@ def unwrap_head_or_para(block):
 
     node.children = unwrap_blocks(block[i])
 
-    is_todo = 'todo' in node.children[0].cls
-    is_done = 'done' in node.children[0].cls
-    if is_todo or is_done:
+    if node.children[0].type == NodeType.TAG:
+        is_todo = (node.children[0].text == 'todo')
+        is_done = (node.children[0].text == 'done')
+        assert(is_todo or is_done)
         node.type = NodeType.TASK
         node.done = is_done
         # Skip TODO keyword and first space
         node.children = node.children[2:]
 
+    first_tag_idx = -1
+    for i, child in enumerate(node.children):
+        if child.type == NodeType.TAG:
+            first_tag_idx = i
+            break
+
+    if first_tag_idx >= 0:
+        node.tags = [tag.text for tag in node.children[first_tag_idx:]
+                     if tag.type == NodeType.TAG]
+        node.children = node.children[:first_tag_idx]
+    else:
+        node.tags = []
+
     return node
 
-def unwrap_link_or_span(block):
-    if type(block) is pdt.Link:
-        node = OrgNode(NodeType.LINK)
-        node.target = block[2][0]
-        # Appears to be unused
-        node.title = block[2][1]
-    else:
-        node = OrgNode(NodeType.SPAN)
+def unwrap_link(block):
+    node = OrgNode(NodeType.LINK)
+    node.target = block[2][0]
+    # Appears to be unused
+    node.title = block[2][1]
 
-    node.id_, node.cls, node.attrs = block[0]
     node.children = unwrap_blocks(block[1])
 
     return node
@@ -234,6 +231,19 @@ def unwrap_rawblock(block):
 
     return node
 
+def unwrap_span(block):
+    node = OrgNode(NodeType.TAG)
+
+    if 'tag' in block[0][1]:
+        key, tag = block[0][2][0]
+        assert(key == 'tag-name')
+    else:
+        tag = block[0][1][0]
+        assert(tag == 'todo' or tag == 'done')
+    node.text = tag
+
+    return node
+
 def unwrap_textblock(block):
     node = OrgNode(NodeType.TEXT)
     node.children = unwrap_blocks(block[0])
@@ -258,14 +268,14 @@ pandoc_type_map = {
     pdt.CodeBlock: unwrap_code,
     pdt.Emph: unwrap_textblock,
     pdt.Header: unwrap_head_or_para,
-    pdt.Link: unwrap_link_or_span,
+    pdt.Link: unwrap_link,
     pdt.OrderedList: unwrap_list,
     pdt.Para: unwrap_head_or_para,
     pdt.Plain: unwrap_textblock,
     pdt.RawBlock: unwrap_rawblock,
     pdt.SoftBreak: unwrap_token,
     pdt.Space: unwrap_token,
-    pdt.Span: unwrap_link_or_span,
+    pdt.Span: unwrap_span,
     pdt.Str: unwrap_token,
     pdt.Strong: unwrap_textblock
 }
@@ -376,7 +386,7 @@ html_render_map = {
     NodeType.LIST: render_list,
     NodeType.META: render_ignore,
     NodeType.PARA: lambda node: render_default(node, 'p'),
-    NodeType.SPAN: render_ignore,
+    NodeType.TAG: render_ignore,
     NodeType.TASK: render_ignore,
     NodeType.TEXT: render_text,
     NodeType.TOKN: render_token,
@@ -403,13 +413,15 @@ def generate_task_view(ast):
         if node.type != NodeType.TASK:
             continue
 
+        tags = ' '.join(node.tags)
+
         state = 'done' if node.done else 'todo'
         if len(stack) == 0:
             section = '---'
         else:
             section = ' > '.join([heading.inner_text() for heading in stack])
 
-        html += f'<div class="task {state}">'
+        html += f'<div class="task {state} {tags}">'
         html += f'<div class="task-state">{state.upper()}</div>'
         html += f'<div class="task-section">{section}</div>'
         html += f'<div class="task-desc">{node.inner_text()}</div>'
