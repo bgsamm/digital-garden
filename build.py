@@ -29,8 +29,12 @@ class OrgNode:
         return ''.join([child.inner_text() for child in self.children])
 
 class Page:
-    def __init__(self, title):
+    def __init__(self, title, date, category, abstract):
         self.title = title
+        self.date = date
+        self.category = category
+        self.abstract = abstract
+
         self.views = []
         self.default_view = None
 
@@ -291,7 +295,11 @@ def unwrap_block(block):
     return node
 
 def generate_page(ast):
-    page = Page(ast.metadata['title'])
+    title = ast.metadata['title']
+    date = ast.metadata['date']
+    category = ast.metadata['category']
+    abstract = ast.metadata['abstract']
+    page = Page(title, date, category, abstract)
 
     main_view = generate_main_view(ast)
     page.views.append(main_view)

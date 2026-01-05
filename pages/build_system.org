@@ -2,6 +2,8 @@
 :Title: Build system
 :Author: pjsamm
 :Date: 2025-12-26
+:Category: Meta
+:Abstract: Details of the source code for the site's build system.
 :END:
 
 #+OPTIONS: H:5
@@ -96,8 +98,12 @@ boilerplate.
 
 #+begin_src python :noweb-ref Class definitions
   class Page:
-      def __init__(self, title):
+      def __init__(self, title, date, category, abstract):
           self.title = title
+          self.date = date
+          self.category = category
+          self.abstract = abstract
+
           self.views = []
           self.default_view = None
 
@@ -748,7 +754,11 @@ in the AST node list.
 
 #+begin_src python :noweb-ref Function definitions
   def generate_page(ast):
-      page = Page(ast.metadata['title'])
+      title = ast.metadata['title']
+      date = ast.metadata['date']
+      category = ast.metadata['category']
+      abstract = ast.metadata['abstract']
+      page = Page(title, date, category, abstract)
 
       main_view = generate_main_view(ast)
       page.views.append(main_view)

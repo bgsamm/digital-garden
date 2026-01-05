@@ -2,9 +2,11 @@
 :Title: Site overview
 :Author: pjsamm
 :Date: 2025-12-29
+:Category: Meta
+:Abstract: A high-level overview of the principles behind the site's design.
 :END:
 
-#+OPTIONS: H:3
+#+OPTIONS: H:5
 
 #+PROPERTY: header-args    :noweb yes
 #+PROPERTY: header-args+   :eval never-export
