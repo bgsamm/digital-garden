@@ -26,6 +26,7 @@ body::before {
     gap: 15px;
 
     padding: 0 100px;
+    margin-top: 15px;
 }
 
 .channel {
