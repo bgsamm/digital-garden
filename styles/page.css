@@ -71,6 +71,18 @@ a:hover {
     text-shadow: 0 0 8px var(--theme-glow);
 }
 
+/* Tables */
+
+table {
+    table-layout: fixed;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    padding: 0.6rem;
+}
+
 /* Source code */
 
 code {
