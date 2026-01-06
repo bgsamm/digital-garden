@@ -268,17 +268,18 @@ def unwrap_span(block):
     return node
 
 def unwrap_table(block):
-    def unwrap_cell(cell):
+    def unwrap_cell(cell, is_header=False):
         node = OrgNode(NodeType.TABLE_CELL)
+        node.is_header = is_header
         assert(cell[2][0] == 1)
         assert(cell[3][0] == 1)
         assert(len(cell[4]) <= 1)
         node.children = unwrap_blocks(cell[4])
         return node
 
-    def unwrap_row(row):
+    def unwrap_row(row, is_header=False):
         node = OrgNode(NodeType.TABLE_ROW)
-        node.children = [unwrap_cell(cell) for cell in row[1]]
+        node.children = [unwrap_cell(cell, is_header) for cell in row[1]]
         return node
 
     node = OrgNode(NodeType.TABLE)
@@ -286,10 +287,7 @@ def unwrap_table(block):
     table_head = block[3]
     if len(table_head[1]) != 0:
         assert(len(table_head[1]) == 1)
-        node.has_header = True
-        node.children.append(unwrap_row(table_head[1][0]))
-    else:
-        node.has_header = False
+        node.children.append(unwrap_row(table_head[1][0], is_header=True))
 
     assert(len(block[4]) == 1)
     table_body = block[4][0]
@@ -427,8 +425,9 @@ def render_list(node):
     tag = 'ol' if node.ordered else 'ul'
     return render_default(node, tag)
 
-def render_table(node):
-    return '<table></table>'
+def render_table_cell(node):
+    tag = 'th' if node.is_header else 'td'
+    return render_default(node, tag)
 
 def render_text(node):
     if node.strong:
@@ -448,7 +447,9 @@ html_render_map = {
     NodeType.LIST_ITEM: lambda node: render_default(node, 'li'),
     NodeType.META: None,
     NodeType.PARAGRAPH: lambda node: render_default(node, 'p'),
-    NodeType.TABLE: render_table,
+    NodeType.TABLE: lambda node: render_default(node, 'table'),
+    NodeType.TABLE_ROW: lambda node: render_default(node, 'tr'),
+    NodeType.TABLE_CELL: render_table_cell,
     NodeType.TAG: None,
     NodeType.TASK: None,
     NodeType.TEXT: render_text,

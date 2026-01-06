@@ -33,6 +33,7 @@
 **** TODO Something about "assert assumptions rather than cover for every case"
 **** TODO Something about "the rule of three" (e.g. max three levels of nesting)
 **** TODO "Don't solve problems you don't yet have"
+**** TODO "Assume and assert"
 
 * Design overview
 

@@ -734,17 +734,18 @@ gets emitted by unhandled meta lines (lines starting with "#+").
 
 #+begin_src python :noweb-ref Function definitions
   def unwrap_table(block):
-      def unwrap_cell(cell):
+      def unwrap_cell(cell, is_header=False):
           node = OrgNode(NodeType.TABLE_CELL)
+          node.is_header = is_header
           assert(cell[2][0] == 1)
           assert(cell[3][0] == 1)
           assert(len(cell[4]) <= 1)
           node.children = unwrap_blocks(cell[4])
           return node
 
-      def unwrap_row(row):
+      def unwrap_row(row, is_header=False):
           node = OrgNode(NodeType.TABLE_ROW)
-          node.children = [unwrap_cell(cell) for cell in row[1]]
+          node.children = [unwrap_cell(cell, is_header) for cell in row[1]]
           return node
 
       node = OrgNode(NodeType.TABLE)
@@ -752,10 +753,7 @@ gets emitted by unhandled meta lines (lines starting with "#+").
       table_head = block[3]
       if len(table_head[1]) != 0:
           assert(len(table_head[1]) == 1)
-          node.has_header = True
-          node.children.append(unwrap_row(table_head[1][0]))
-      else:
-          node.has_header = False
+          node.children.append(unwrap_row(table_head[1][0], is_header=True))
 
       assert(len(block[4]) == 1)
       table_body = block[4][0]
@@ -892,6 +890,8 @@ The strategy for rendering the page's contents is similar to that for
 generating the AST - define a map from node type to its corresponding
 render function.
 
+**** TODO Get everything to use render_default :med:low:
+
 #+name: HTML render map
 #+begin_src python
   html_render_map = {
@@ -902,7 +902,9 @@ render function.
       NodeType.LIST_ITEM: lambda node: render_default(node, 'li'),
       NodeType.META: None,
       NodeType.PARAGRAPH: lambda node: render_default(node, 'p'),
-      NodeType.TABLE: render_table,
+      NodeType.TABLE: lambda node: render_default(node, 'table'),
+      NodeType.TABLE_ROW: lambda node: render_default(node, 'tr'),
+      NodeType.TABLE_CELL: render_table_cell,
       NodeType.TAG: None,
       NodeType.TASK: None,
       NodeType.TEXT: render_text,
@@ -964,8 +966,9 @@ render function.
 #+end_src
 
 #+begin_src python :noweb-ref Function definitions
-  def render_table(node):
-      return '<table></table>'
+  def render_table_cell(node):
+      tag = 'th' if node.is_header else 'td'
+      return render_default(node, tag)
 
 #+end_src
 
