@@ -21,7 +21,7 @@
 
 **** TODO Implement to-do tracking pages (per-page + global)
 **** TODO Figure out site-wide quote integration
-**** TODO TODO priority tagging system
+**** DONE TODO priority tagging system
 **** TODO Implement stylesheets as litprog(s) (+ find a home for them)
 **** TODO Reference tracking system (scrape links from page?)
 **** TODO Keep table of contents fixed in left sidebar

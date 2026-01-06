@@ -1,0 +1,21 @@
+:PROPERTIES:
+:Title: Page ideas
+:Author: pjsamm
+:Date: 2026-01-06
+:Category: Meta
+:Abstract: A dumping ground for page ideas I'm not ready to actually make.
+:END:
+
+#+OPTIONS: H:5
+
+* Cheat sheets
+
+- Emacs
+- Git
+- Blender
+
+* 100x challenges
+
+- Chess games
+- 3D modelling
+

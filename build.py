@@ -13,12 +13,12 @@ PAGES_DIR = 'pages'
 STYLES_DIR = 'styles'
 SCRIPTS_DIR = 'scripts'
 
-class OrgTree:
+class DocTree:
     def __init__(self, metadata, nodes):
         self.metadata = metadata
         self.nodes = nodes
 
-class OrgNode:
+class DocNode:
     def __init__(self, type_):
         self.type = type_
         self.text = ''
@@ -165,13 +165,13 @@ def parse_org_file(fpath):
 
     nodes = unwrap_blocks(ast[1])
 
-    return OrgTree(metadata, nodes)
+    return DocTree(metadata, nodes)
 
 def unwrap_blocks(blocks):
     return [unwrap_block(block) for block in blocks]
 
 def unwrap_code(block):
-    node = OrgNode(NodeType.CODE)
+    node = DocNode(NodeType.CODE)
     node.text = block[1]
     node.inline = (type(block) is pdt.Code)
 
@@ -179,11 +179,11 @@ def unwrap_code(block):
 
 def unwrap_head_or_para(block):
     if type(block) is pdt.Header:
-        node = OrgNode(NodeType.HEADING)
+        node = DocNode(NodeType.HEADING)
         node.level = block[0]
         i = 2
     else:
-        node = OrgNode(NodeType.PARAGRAPH)
+        node = DocNode(NodeType.PARAGRAPH)
         i = 0
 
     node.children = unwrap_blocks(block[i])
@@ -213,7 +213,7 @@ def unwrap_head_or_para(block):
     return node
 
 def unwrap_link(block):
-    node = OrgNode(NodeType.LINK)
+    node = DocNode(NodeType.LINK)
     node.target = block[2][0]
     # Appears to be unused
     node.title = block[2][1]
@@ -223,7 +223,7 @@ def unwrap_link(block):
     return node
 
 def unwrap_list(block):
-    node = OrgNode(NodeType.LIST)
+    node = DocNode(NodeType.LIST)
 
     node.ordered = (type(block) is pdt.OrderedList)
 
@@ -236,7 +236,7 @@ def unwrap_list(block):
         i = 0
 
     for item in block[i]:
-        item_node = OrgNode(NodeType.LIST_ITEM)
+        item_node = DocNode(NodeType.LIST_ITEM)
         item_node.children = unwrap_blocks(item)
         node.children.append(item_node)
 
@@ -248,14 +248,14 @@ def unwrap_rawblock(block):
     matches = regex_match(r'#\+(\w+):\s+(.+)', block[1])
     assert(matches is not None)
 
-    node = OrgNode(NodeType.META)
+    node = DocNode(NodeType.META)
     node.key = matches[0].lower()
     node.value = matches[1]
 
     return node
 
 def unwrap_span(block):
-    node = OrgNode(NodeType.TAG)
+    node = DocNode(NodeType.TAG)
 
     if 'tag' in block[0][1]:
         key, tag = block[0][2][0]
@@ -269,7 +269,7 @@ def unwrap_span(block):
 
 def unwrap_table(block):
     def unwrap_cell(cell, is_header=False):
-        node = OrgNode(NodeType.TABLE_CELL)
+        node = DocNode(NodeType.TABLE_CELL)
         node.is_header = is_header
         assert(cell[2][0] == 1)
         assert(cell[3][0] == 1)
@@ -278,11 +278,11 @@ def unwrap_table(block):
         return node
 
     def unwrap_row(row, is_header=False):
-        node = OrgNode(NodeType.TABLE_ROW)
+        node = DocNode(NodeType.TABLE_ROW)
         node.children = [unwrap_cell(cell, is_header) for cell in row[1]]
         return node
 
-    node = OrgNode(NodeType.TABLE)
+    node = DocNode(NodeType.TABLE)
 
     table_head = block[3]
     if len(table_head[1]) != 0:
@@ -299,7 +299,7 @@ def unwrap_table(block):
     return node
 
 def unwrap_textblock(block):
-    node = OrgNode(NodeType.TEXT)
+    node = DocNode(NodeType.TEXT)
     node.children = unwrap_blocks(block[0])
 
     node.strong = (type(block) is pdt.Strong)
@@ -308,7 +308,7 @@ def unwrap_textblock(block):
     return node
 
 def unwrap_token(block):
-    node = OrgNode(NodeType.TOKEN)
+    node = DocNode(NodeType.TOKEN)
 
     if type(block) is pdt.Str:
         node.text = block[0]
@@ -318,6 +318,7 @@ def unwrap_token(block):
     return node
 
 pandoc_type_map = {
+    pdt.BulletList: unwrap_list,
     pdt.Code: unwrap_code,
     pdt.CodeBlock: unwrap_code,
     pdt.Emph: unwrap_textblock,

@@ -13,13 +13,13 @@
 #+PROPERTY: header-args+   :eval never-export
 
 **** DONE Tag all the tasks!                                      :easy:high:
-**** TODO Add filtering to task view :med:high:
-**** TODO Organize this page!! :med:high:
-**** TODO Better handling of heading export level setting :med:high:
-**** TODO Incorporate Jinja templates as literate programs :med:mid:
+**** TODO Add filtering to task view                               :med:high:
+**** TODO Organize this page!!                                     :med:high:
+**** TODO Better handling of options (e.g. heading export level)   :med:high:
+**** TODO Incorporate Jinja templates as literate programs          :med:mid:
 **** TODO Better handling of the repeated references to design philosophies (footnotes/sidenotes?) :med:mid:
-**** TODO Use ~code~ instead of =verbatim= where appropriate :easy:low:
-**** TODO Command line argument support :med:mid:
+**** TODO Use ~code~ instead of =verbatim= where appropriate       :easy:low:
+**** TODO Command line argument support                             :med:mid:
 
 * Overview
 
@@ -31,8 +31,7 @@ The build system is implemented as a Python script, which generates a
 static site from Emacs [[https://orgmode.org/][Org]] files using [[https://boisgera.github.io/pandoc/][Pandoc]] to convert said files to
 HTML, and [[https://jinja.palletsprojects.com/en/stable/][Jinja]] for generating pages from templates.
 
-**** TODO Link to "wrap your dependencies" design principle :easy:low:
-
+**** TODO Link to "wrap your dependencies" design principle        :easy:low:
 
 While it would be possible to use Pandoc from the CLI directly with
 its built-in support for filters and templates, that approach couples
@@ -75,7 +74,7 @@ improved usability compared to dictionaries is worth the additional
 boilerplate.
 
 #+begin_src python :noweb-ref Class definitions
-  class OrgTree:
+  class DocTree:
       def __init__(self, metadata, nodes):
           self.metadata = metadata
           self.nodes = nodes
@@ -83,7 +82,7 @@ boilerplate.
 #+end_src 
 
 #+begin_src python :noweb-ref Class definitions
-  class OrgNode:
+  class DocNode:
       def __init__(self, type_):
           self.type = type_
           self.text = ''
@@ -440,7 +439,7 @@ two elements.
 
       <<Unwrap blocks>>
 
-      return OrgTree(metadata, nodes)
+      return DocTree(metadata, nodes)
 
 #+end_src
 
@@ -546,6 +545,7 @@ unwrapping them is set up.
 #+name: Pandoc type unwrapping map
 #+begin_src python :noweb-ref
   pandoc_type_map = {
+      pdt.BulletList: unwrap_list,
       pdt.Code: unwrap_code,
       pdt.CodeBlock: unwrap_code,
       pdt.Emph: unwrap_textblock,
@@ -579,7 +579,7 @@ Inline code blocks are represented by ~Code~ objects and consist of an
 
 #+begin_src python :noweb-ref Function definitions
   def unwrap_code(block):
-      node = OrgNode(NodeType.CODE)
+      node = DocNode(NodeType.CODE)
       node.text = block[1]
       node.inline = (type(block) is pdt.Code)
 
@@ -606,11 +606,11 @@ headings deeper than =org-export-headline-levels= as paragraphs).
 #+begin_src python :noweb-ref Function definitions
   def unwrap_head_or_para(block):
       if type(block) is pdt.Header:
-          node = OrgNode(NodeType.HEADING)
+          node = DocNode(NodeType.HEADING)
           node.level = block[0]
           i = 2
       else:
-          node = OrgNode(NodeType.PARAGRAPH)
+          node = DocNode(NodeType.PARAGRAPH)
           i = 0
 
       node.children = unwrap_blocks(block[i])
@@ -658,7 +658,7 @@ which case the class list in the =Attr= tuple will be =['todo',
 
 #+begin_src python :noweb-ref Function definitions
   def unwrap_link(block):
-      node = OrgNode(NodeType.LINK)
+      node = DocNode(NodeType.LINK)
       node.target = block[2][0]
       # Appears to be unused
       node.title = block[2][1]
@@ -675,7 +675,7 @@ is itself a list of blocks).
 
 #+begin_src python :noweb-ref Function definitions
   def unwrap_list(block):
-      node = OrgNode(NodeType.LIST)
+      node = DocNode(NodeType.LIST)
 
       node.ordered = (type(block) is pdt.OrderedList)
 
@@ -688,7 +688,7 @@ is itself a list of blocks).
           i = 0
 
       for item in block[i]:
-          item_node = OrgNode(NodeType.LIST_ITEM)
+          item_node = DocNode(NodeType.LIST_ITEM)
           item_node.children = unwrap_blocks(item)
           node.children.append(item_node)
 
@@ -708,7 +708,7 @@ gets emitted by unhandled meta lines (lines starting with "#+").
       matches = regex_match(r'#\+(\w+):\s+(.+)', block[1])
       assert(matches is not None)
 
-      node = OrgNode(NodeType.META)
+      node = DocNode(NodeType.META)
       node.key = matches[0].lower()
       node.value = matches[1]
 
@@ -718,7 +718,7 @@ gets emitted by unhandled meta lines (lines starting with "#+").
 
 #+begin_src python :noweb-ref Function definitions
   def unwrap_span(block):
-      node = OrgNode(NodeType.TAG)
+      node = DocNode(NodeType.TAG)
 
       if 'tag' in block[0][1]:
           key, tag = block[0][2][0]
@@ -735,7 +735,7 @@ gets emitted by unhandled meta lines (lines starting with "#+").
 #+begin_src python :noweb-ref Function definitions
   def unwrap_table(block):
       def unwrap_cell(cell, is_header=False):
-          node = OrgNode(NodeType.TABLE_CELL)
+          node = DocNode(NodeType.TABLE_CELL)
           node.is_header = is_header
           assert(cell[2][0] == 1)
           assert(cell[3][0] == 1)
@@ -744,11 +744,11 @@ gets emitted by unhandled meta lines (lines starting with "#+").
           return node
 
       def unwrap_row(row, is_header=False):
-          node = OrgNode(NodeType.TABLE_ROW)
+          node = DocNode(NodeType.TABLE_ROW)
           node.children = [unwrap_cell(cell, is_header) for cell in row[1]]
           return node
 
-      node = OrgNode(NodeType.TABLE)
+      node = DocNode(NodeType.TABLE)
 
       table_head = block[3]
       if len(table_head[1]) != 0:
@@ -768,7 +768,7 @@ gets emitted by unhandled meta lines (lines starting with "#+").
 
 #+begin_src python :noweb-ref Function definitions
   def unwrap_textblock(block):
-      node = OrgNode(NodeType.TEXT)
+      node = DocNode(NodeType.TEXT)
       node.children = unwrap_blocks(block[0])
 
       node.strong = (type(block) is pdt.Strong)
@@ -780,7 +780,7 @@ gets emitted by unhandled meta lines (lines starting with "#+").
 
 #+begin_src python :noweb-ref Function definitions
   def unwrap_token(block):
-      node = OrgNode(NodeType.TOKEN)
+      node = DocNode(NodeType.TOKEN)
 
       if type(block) is pdt.Str:
           node.text = block[0]
