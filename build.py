@@ -55,6 +55,8 @@ class NodeType(enum.Enum):
     META = enum.auto()
     PARAGRAPH = enum.auto()
     TABLE = enum.auto()
+    TABLE_ROW = enum.auto()
+    TABLE_CELL = enum.auto()
     TAG = enum.auto()
     TASK = enum.auto()
     TEXT = enum.auto()
@@ -266,7 +268,36 @@ def unwrap_span(block):
     return node
 
 def unwrap_table(block):
+    def unwrap_cell(cell):
+        node = OrgNode(NodeType.TABLE_CELL)
+        assert(cell[2][0] == 1)
+        assert(cell[3][0] == 1)
+        assert(len(cell[4]) <= 1)
+        node.children = unwrap_blocks(cell[4])
+        return node
+
+    def unwrap_row(row):
+        node = OrgNode(NodeType.TABLE_ROW)
+        node.children = [unwrap_cell(cell) for cell in row[1]]
+        return node
+
     node = OrgNode(NodeType.TABLE)
+
+    table_head = block[3]
+    if len(table_head[1]) != 0:
+        assert(len(table_head[1]) == 1)
+        node.has_header = True
+        node.children.append(unwrap_row(table_head[1][0]))
+    else:
+        node.has_header = False
+
+    assert(len(block[4]) == 1)
+    table_body = block[4][0]
+    assert(table_body[1][0] == 0)
+    assert(len(table_body[2]) == 0)
+
+    node.children += [unwrap_row(row) for row in table_body[3]]
+
     return node
 
 def unwrap_textblock(block):
