@@ -1,0 +1,22 @@
+:PROPERTIES:
+:Title: 100 albums
+:Author: pjsamm
+:Date: 2026-01-06
+:Category: 100x challenge
+:Abstract: Progress tracking toward my goal of listening to 100 new albums.
+:END:
+
+#+OPTIONS: H:5
+
+**** TODO Add links to album pages on a music database :easy:low:
+**** TODO Incorporate album covers :med:low:
+
+| # | Title                 | Artist        | Year | Date Listened |
+|---+-----------------------+---------------+------+---------------|
+| 1 | Pornography           | The Cure      | 1982 |    2025-11-22 |
+| 2 | Painkiller            | Judas Priest  | 1990 |    2025-11-26 |
+| 3 | Giant Steps           | John Coltrane | 1960 |    2025-12-01 |
+| 4 | Welcome to Sky Valley | Kyuss         | 1994 |    2025-12-07 |
+| 5 | When the Pawn…        | Fiona Apple   | 1999 |    2025-12-12 |
+| 6 | Atrocity Exhibition   | Danny Brown   | 2016 |    2025-12-20 |
+| 7 | Future Days           | Can           | 1973 |               |

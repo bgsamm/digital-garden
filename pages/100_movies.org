@@ -1,0 +1,24 @@
+:PROPERTIES:
+:Title: 100 movies
+:Author: pjsamm
+:Date: 2026-01-06
+:Category: 100x challenge
+:Abstract: Progress tracking toward my goal of watching 100 new movies.
+:END:
+
+#+OPTIONS: H:5
+
+**** TODO Add links to movie pages on a movie database :easy:low:
+**** TODO Incorporate movie posters :med:low:
+
+| # | Title                                     | Director        | Year | Date Watched |
+|---+-------------------------------------------+-----------------+------+--------------|
+| 1 | À bout de souffle                         | Jean-Luc Godard | 1960 |   2025-11-22 |
+| 2 | Do the Right Thing                        | Spike Lee       | 1989 |   2025-11-24 |
+| 3 | Titanic                                   | James Cameron   | 1997 |   2025-11-28 |
+| 4 | Snow White and the Seven Dwarfs           | David Hand      | 1937 |   2025-11-30 |
+| 5 | The Searchers                             | John Ford       | 1956 |   2025-12-06 |
+| 6 | Three Billboards Outside Ebbing, Missouri | Martin McDonagh | 2017 |   2025-12-15 |
+| 7 | Lost in Translation                       | Sofia Coppola   | 2003 |   2025-12-26 |
+| 8 | Les triplettes de Belleville              | Sylvain Chomet  | 2003 |   2026-01-05 |
+
