@@ -7,6 +7,7 @@
 :END:
 
 #+OPTIONS: H:5
+#+OPTIONS: ^:{}
 
 #+PROPERTY: header-args    :noweb yes
 #+PROPERTY: header-args+   :eval never-export
@@ -518,16 +519,17 @@ types.
 #+begin_src python :noweb-ref Class definitions
   class NodeType(enum.Enum):
       CODE = enum.auto()
-      HEAD = enum.auto()
-      ITEM = enum.auto()
+      HEADING = enum.auto()
       LINK = enum.auto()
       LIST = enum.auto()
+      LIST_ITEM = enum.auto()
       META = enum.auto()
-      PARA = enum.auto()
-      TAG  = enum.auto()
+      PARAGRAPH = enum.auto()
+      TABLE = enum.auto()
+      TAG = enum.auto()
       TASK = enum.auto()
       TEXT = enum.auto()
-      TOKN = enum.auto()
+      TOKEN = enum.auto()
 
 #+end_src
 
@@ -554,7 +556,8 @@ unwrapping them is set up.
       pdt.Space: unwrap_token,
       pdt.Span: unwrap_span,
       pdt.Str: unwrap_token,
-      pdt.Strong: unwrap_textblock
+      pdt.Strong: unwrap_textblock,
+      pdt.Table: unwrap_table,
   }
 #+end_src
 
@@ -595,15 +598,16 @@ headings deeper than =org-export-headline-levels= as paragraphs).
 
 **** DONE Verify whether the class and attribute lists are unused
 **** DONE Clean up TODO detection/unwrapping logic
+**** TODO Split into unwrap_head/unwrap_para (merge para with textblock?) :med:low:
 
 #+begin_src python :noweb-ref Function definitions
   def unwrap_head_or_para(block):
       if type(block) is pdt.Header:
-          node = OrgNode(NodeType.HEAD)
+          node = OrgNode(NodeType.HEADING)
           node.level = block[0]
           i = 2
       else:
-          node = OrgNode(NodeType.PARA)
+          node = OrgNode(NodeType.PARAGRAPH)
           i = 0
 
       node.children = unwrap_blocks(block[i])
@@ -681,7 +685,7 @@ is itself a list of blocks).
           i = 0
 
       for item in block[i]:
-          item_node = OrgNode(NodeType.ITEM)
+          item_node = OrgNode(NodeType.LIST_ITEM)
           item_node.children = unwrap_blocks(item)
           node.children.append(item_node)
 
@@ -726,6 +730,13 @@ gets emitted by unhandled meta lines (lines starting with "#+").
 #+end_src
 
 #+begin_src python :noweb-ref Function definitions
+  def unwrap_table(block):
+      node = OrgNode(NodeType.TABLE)
+      return node
+
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
   def unwrap_textblock(block):
       node = OrgNode(NodeType.TEXT)
       node.children = unwrap_blocks(block[0])
@@ -739,7 +750,7 @@ gets emitted by unhandled meta lines (lines starting with "#+").
 
 #+begin_src python :noweb-ref Function definitions
   def unwrap_token(block):
-      node = OrgNode(NodeType.TOKN)
+      node = OrgNode(NodeType.TOKEN)
 
       if type(block) is pdt.Str:
           node.text = block[0]
@@ -831,7 +842,7 @@ own case, with support for recursively converting children.
   content = ''
   for node in ast.nodes:
       node_html = render_node(node)
-      if node.type == NodeType.HEAD:
+      if node.type == NodeType.HEADING:
           headings.append((node.level, node_html[4:-5]))
       content += node_html
 #+end_src
@@ -853,16 +864,17 @@ render function.
 #+begin_src python
   html_render_map = {
       NodeType.CODE: render_code,
-      NodeType.HEAD: render_heading,
-      NodeType.ITEM: lambda node: render_default(node, 'li'),
+      NodeType.HEADING: render_heading,
       NodeType.LINK: render_link,
       NodeType.LIST: render_list,
-      NodeType.META: render_ignore,
-      NodeType.PARA: lambda node: render_default(node, 'p'),
-      NodeType.TAG: render_ignore,
-      NodeType.TASK: render_ignore,
+      NodeType.LIST_ITEM: lambda node: render_default(node, 'li'),
+      NodeType.META: None,
+      NodeType.PARAGRAPH: lambda node: render_default(node, 'p'),
+      NodeType.TABLE: render_table,
+      NodeType.TAG: None,
+      NodeType.TASK: None,
       NodeType.TEXT: render_text,
-      NodeType.TOKN: render_token,
+      NodeType.TOKEN: render_token,
   }
 #+end_src
 
@@ -920,8 +932,8 @@ render function.
 #+end_src
 
 #+begin_src python :noweb-ref Function definitions
-  def render_ignore(node):
-      return ''
+  def render_table(node):
+      return '<table></table>'
 
 #+end_src
 
@@ -952,8 +964,11 @@ render function.
       if node.type not in html_render_map:
           raise TypeError(f'Unhandled node type: {node.type}')
 
-      html = html_render_map[node.type](node)
-
+      renderer = html_render_map[node.type]
+      if renderer is None:
+          return ''
+      
+      html = renderer(node)
       return html
 
 #+end_src
@@ -982,7 +997,7 @@ render function.
 
       stack = []
       for node in ast.nodes:
-          if node.type == NodeType.HEAD:
+          if node.type == NodeType.HEADING:
               while len(stack) > 0 and node.level <= stack[-1].level:
                   stack.pop()
               stack.append(node)

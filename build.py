@@ -48,16 +48,17 @@ class PageView:
 
 class NodeType(enum.Enum):
     CODE = enum.auto()
-    HEAD = enum.auto()
-    ITEM = enum.auto()
+    HEADING = enum.auto()
     LINK = enum.auto()
     LIST = enum.auto()
+    LIST_ITEM = enum.auto()
     META = enum.auto()
-    PARA = enum.auto()
-    TAG  = enum.auto()
+    PARAGRAPH = enum.auto()
+    TABLE = enum.auto()
+    TAG = enum.auto()
     TASK = enum.auto()
     TEXT = enum.auto()
-    TOKN = enum.auto()
+    TOKEN = enum.auto()
 
 
 def regex_match(pattern, string):
@@ -176,11 +177,11 @@ def unwrap_code(block):
 
 def unwrap_head_or_para(block):
     if type(block) is pdt.Header:
-        node = OrgNode(NodeType.HEAD)
+        node = OrgNode(NodeType.HEADING)
         node.level = block[0]
         i = 2
     else:
-        node = OrgNode(NodeType.PARA)
+        node = OrgNode(NodeType.PARAGRAPH)
         i = 0
 
     node.children = unwrap_blocks(block[i])
@@ -233,7 +234,7 @@ def unwrap_list(block):
         i = 0
 
     for item in block[i]:
-        item_node = OrgNode(NodeType.ITEM)
+        item_node = OrgNode(NodeType.LIST_ITEM)
         item_node.children = unwrap_blocks(item)
         node.children.append(item_node)
 
@@ -264,6 +265,10 @@ def unwrap_span(block):
 
     return node
 
+def unwrap_table(block):
+    node = OrgNode(NodeType.TABLE)
+    return node
+
 def unwrap_textblock(block):
     node = OrgNode(NodeType.TEXT)
     node.children = unwrap_blocks(block[0])
@@ -274,7 +279,7 @@ def unwrap_textblock(block):
     return node
 
 def unwrap_token(block):
-    node = OrgNode(NodeType.TOKN)
+    node = OrgNode(NodeType.TOKEN)
 
     if type(block) is pdt.Str:
         node.text = block[0]
@@ -297,7 +302,8 @@ pandoc_type_map = {
     pdt.Space: unwrap_token,
     pdt.Span: unwrap_span,
     pdt.Str: unwrap_token,
-    pdt.Strong: unwrap_textblock
+    pdt.Strong: unwrap_textblock,
+    pdt.Table: unwrap_table,
 }
 
 def unwrap_block(block):
@@ -333,7 +339,7 @@ def generate_main_view(ast):
     content = ''
     for node in ast.nodes:
         node_html = render_node(node)
-        if node.type == NodeType.HEAD:
+        if node.type == NodeType.HEADING:
             headings.append((node.level, node_html[4:-5]))
         content += node_html
 
@@ -390,8 +396,8 @@ def render_list(node):
     tag = 'ol' if node.ordered else 'ul'
     return render_default(node, tag)
 
-def render_ignore(node):
-    return ''
+def render_table(node):
+    return '<table></table>'
 
 def render_text(node):
     if node.strong:
@@ -405,24 +411,28 @@ def render_token(node):
 
 html_render_map = {
     NodeType.CODE: render_code,
-    NodeType.HEAD: render_heading,
-    NodeType.ITEM: lambda node: render_default(node, 'li'),
+    NodeType.HEADING: render_heading,
     NodeType.LINK: render_link,
     NodeType.LIST: render_list,
-    NodeType.META: render_ignore,
-    NodeType.PARA: lambda node: render_default(node, 'p'),
-    NodeType.TAG: render_ignore,
-    NodeType.TASK: render_ignore,
+    NodeType.LIST_ITEM: lambda node: render_default(node, 'li'),
+    NodeType.META: None,
+    NodeType.PARAGRAPH: lambda node: render_default(node, 'p'),
+    NodeType.TABLE: render_table,
+    NodeType.TAG: None,
+    NodeType.TASK: None,
     NodeType.TEXT: render_text,
-    NodeType.TOKN: render_token,
+    NodeType.TOKEN: render_token,
 }
 
 def render_node(node):
     if node.type not in html_render_map:
         raise TypeError(f'Unhandled node type: {node.type}')
 
-    html = html_render_map[node.type](node)
+    renderer = html_render_map[node.type]
+    if renderer is None:
+        return ''
 
+    html = renderer(node)
     return html
 
 def generate_task_view(ast):
@@ -430,7 +440,7 @@ def generate_task_view(ast):
 
     stack = []
     for node in ast.nodes:
-        if node.type == NodeType.HEAD:
+        if node.type == NodeType.HEADING:
             while len(stack) > 0 and node.level <= stack[-1].level:
                 stack.pop()
             stack.append(node)
