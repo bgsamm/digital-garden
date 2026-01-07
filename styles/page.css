@@ -137,6 +137,7 @@ code {
     display: flex;
     flex-direction: column;
     
+    height: min-content;
     max-height: calc(100vh - 2 * 20px);
     position: sticky;
     top: 20px;
