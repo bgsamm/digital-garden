@@ -544,20 +544,25 @@ link text), and the link's ~Target~ (a 2-tuple).
 **** DONE Verify that second element of Target is title (and unused)
 **** TODO Pandoc categories certain valid internal links as "spurious" and emits them as spans; add custom handling for these :hard:med:
 
-~Span~ objects consist of an ~Attr~ tuple and a list of ~Inline~
-tokens, much like a header. This gets emitted for ~TODO~ items, in
-which case the class list in the ~Attr~ tuple will be ~['todo',
-'TODO']~.
-
-**** DONE Determine under what other circumstances Span gets emitted
-**** DONE Check how 'DONE' tasks get emitted
-
 #+begin_src python :noweb-ref Pandoc type unwrapping functions
   def unwrap_link(block):
       node = DocNode(NodeType.LINK)
-      node.target = block[2][0]
-      # Appears to be unused
-      node.title = block[2][1]
+
+      node.target = target = block[2][0]
+
+      i = target.find(':')
+      if i >= 0 and i < len(target) - 1 and target[i + 1] != ':':
+          scheme = target[:i]
+          if scheme == 'http' or scheme == 'https':
+              node.external = True
+          elif scheme == 'file':
+              node.external = False
+          else:
+              raise ValueError(f'Unhandled link scheme: {scheme}')
+      else:
+          node.external = False
+
+      assert(block[2][1] == '') # Unused title field
 
       node.children = unwrap_blocks(block[1])
 
@@ -617,6 +622,14 @@ gets emitted by unhandled meta lines (lines starting with "#+").
 #+end_src
 
 *** Unwrapping spans
+
+~Span~ objects consist of an ~Attr~ tuple and a list of ~Inline~
+tokens, much like a header. This gets emitted for ~TODO~ items, in
+which case the class list in the ~Attr~ tuple will be ~['todo',
+'TODO']~.
+
+**** DONE Determine under what other circumstances Span gets emitted
+**** DONE Check how 'DONE' tasks get emitted
 
 #+begin_src python :noweb-ref Pandoc type unwrapping functions
   def unwrap_span(block):

@@ -128,9 +128,22 @@ def unwrap_head_or_para(block):
 
 def unwrap_link(block):
     node = DocNode(NodeType.LINK)
-    node.target = block[2][0]
-    # Appears to be unused
-    node.title = block[2][1]
+
+    node.target = target = block[2][0]
+
+    i = target.find(':')
+    if i >= 0 and i < len(target) - 1 and target[i + 1] != ':':
+        scheme = target[:i]
+        if scheme == 'http' or scheme == 'https':
+            node.external = True
+        elif scheme == 'file':
+            node.external = False
+        else:
+            raise ValueError(f'Unhandled link scheme: {scheme}')
+    else:
+        node.external = False
+
+    assert(block[2][1] == '') # Unused title field
 
     node.children = unwrap_blocks(block[1])
 
