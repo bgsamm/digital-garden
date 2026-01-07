@@ -296,9 +296,9 @@ elements.
   def parse_org_file(contents):
       ast = pandoc.read(source=contents, format='org')
 
-      <<Unwrap metadata>>
+      <<Unwrap Pandoc metadata>>
 
-      <<Unwrap blocks>>
+      <<Unwrap Pandoc blocks>>
 
       return DocTree(metadata, nodes)
 
@@ -331,7 +331,7 @@ be ~MetaValue~, which can be one of many possible child types; I am
 presently assuming that in the case of Org files, it always uses
 ~MetaString~.)
 
-#+name: Unwrap metadata
+#+name: Unwrap Pandoc metadata
 #+begin_src python
   # Unwrap 'Meta' object
   metadata = ast[0][0]
@@ -352,27 +352,27 @@ presently assuming that in the case of Org files, it always uses
 
 ** Unwrapping Pandoc blocks
 
+Unwrapping the list of ~Block~ objects contained as the second element
+of the root ~Pandoc~ object is performed by iterating through them,
+unwrapping each block individually, and appending it to a list of
+nodes.
+
+#+name: Unwrap Pandoc blocks
+#+begin_src python
+  nodes = []
+  for block in ast[1]:
+      node = unwrap_block(block)
+      nodes.append(node)
+#+end_src
+
 **** TODO Split children into children/inlines, more consistent handling of each :med:mid:
 
-The second element of the root ~Pandoc~ object is a list of ~Block~
-objects, which represent each of the individual structural elements in
-the Org file as one of several different subtypes (e.g. ~Header~,
-~Para~, ~CodeBlock~, etc.). Filters for each block type are added and
-expanded on an as-needed basis.
+The ~Block~ objects represent each of the individual structural
+elements in the Org file as one of several different subtypes
+(e.g. ~Header~, ~Para~, ~CodeBlock~, etc.).
 
-#+name: Unwrap blocks
-#+begin_src python
-  nodes = unwrap_blocks(ast[1])
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def unwrap_blocks(blocks):
-      return [unwrap_block(block) for block in blocks]
-
-#+end_src
-
-To start, an ~Enum~ is created to represent the various output node
-types.
+To start then, an ~Enum~ is created to represent the various output
+node types.
 
 #+begin_src python :noweb-ref Imports
   import enum
@@ -442,6 +442,15 @@ unwrapper in our map and applying it.
       node = pandoc_type_map[pandoc_type](block)
 
       return node
+
+#+end_src
+
+An additional helper function is also defined for unwrapping a list of
+blocks.
+
+#+begin_src python :noweb-ref Function definitions
+  def unwrap_blocks(blocks):
+      return [unwrap_block(block) for block in blocks]
 
 #+end_src
 

@@ -77,12 +77,12 @@ def parse_org_file(contents):
     mdate = timestamp_to_date(mtime)
     metadata['modified'] = mdate
 
-    nodes = unwrap_blocks(ast[1])
+    nodes = []
+    for block in ast[1]:
+        node = unwrap_block(block)
+        nodes.append(node)
 
     return DocTree(metadata, nodes)
-
-def unwrap_blocks(blocks):
-    return [unwrap_block(block) for block in blocks]
 
 def unwrap_code(block):
     node = DocNode(NodeType.CODE)
@@ -259,6 +259,9 @@ def unwrap_block(block):
     node = pandoc_type_map[pandoc_type](block)
 
     return node
+
+def unwrap_blocks(blocks):
+    return [unwrap_block(block) for block in blocks]
 
 def generate_page(ast):
     title = ast.metadata['title']
