@@ -1,7 +1,7 @@
 :PROPERTIES:
-:Title: Build system
-:Author: pjsamm
-:Date: 2025-12-26
+:Title:    Build system
+:Author:   pjsamm
+:Date:     2025-12-26
 :Category: Meta
 :Abstract: Details of the source code for the site's build system.
 :END:
@@ -28,16 +28,16 @@ generate this site. For a more general overview of this site's
 design, see [[file:site_overview.org][Site Overview]].
 
 The build system is implemented as a Python script, which generates a
-static site from Emacs [[https://orgmode.org/][Org]] files using [[https://boisgera.github.io/pandoc/][Pandoc]] to convert said files to
-HTML, and [[https://jinja.palletsprojects.com/en/stable/][Jinja]] for generating pages from templates.
+static site from Emacs [[https://orgmode.org/][Org]] files using [[https://boisgera.github.io/pandoc/][Pandoc]] to parse said files, and
+[[https://jinja.palletsprojects.com/en/stable/][Jinja]] for generating pages from templates.
 
 **** TODO Link to "wrap your dependencies" design principle        :easy:low:
 
-While it would be possible to use Pandoc from the CLI directly with
+While it would be possible to use Pandoc as the entire pipeline with
 its built-in support for filters and templates, that approach couples
 me even more tightly to Pandoc, which I consider undesirable.
 
-** Program outline
+* Program outline
 
 The overall structure of the program is as follows:
 
@@ -54,7 +54,7 @@ The overall structure of the program is as follows:
 
   <<Initialize Jinja>>
 
-  <<Process org files>>
+  <<Process Org files>>
 
   <<Generate home page>>
 
@@ -63,251 +63,17 @@ The overall structure of the program is as follows:
 
 **** DONE Add section for pre-build setup
 
-** Class definitions
-
-**** TODO Extract my philosophy on OOP/classes into a better location? :easy:low:
-
-Classes are used primarily as data containers (à la structs in C) and
-generally do not define methods beyond their constructors. I have
-determined that the improved readability compared to tuples and
-improved usability compared to dictionaries is worth the additional
-boilerplate.
-
-#+begin_src python :noweb-ref Class definitions
-  class DocTree:
-      def __init__(self, metadata, nodes):
-          self.metadata = metadata
-          self.nodes = nodes
-
-#+end_src 
-
-#+begin_src python :noweb-ref Class definitions
-  class DocNode:
-      def __init__(self, type_):
-          self.type = type_
-          self.text = ''
-          self.children = []
-
-      def inner_text(self):
-          if len(self.text) > 0:
-              return self.text
-          return ''.join([child.inner_text() for child in self.children])
-
-#+end_src
-
-#+begin_src python :noweb-ref Class definitions
-  class Page:
-      def __init__(self, title, cdate, mdate, category, abstract):
-          self.title = title
-          self.cdate = cdate
-          self.mdate = mdate
-          self.category = category
-          self.abstract = abstract
-
-          self.views = []
-          self.default_view = None
-
-#+end_src
-
-**** TODO More robust ID generation :easy:med:
-
-#+begin_src python :noweb-ref Class definitions
-  class PageView:
-      def __init__(self, name, content):
-          self.id = name.lower().replace(' ', '-')
-          self.name = name
-          self.content = content
-
-#+end_src
-
-* Utility functions
-
-The following are a collection of utility functions that will be
-useful throughout the build script.
-
-** String utilities
-
-**** DONE Split into "Regex" and "HTML" sections
-**** TODO Add reference to "wrap your dependencies" :easy:low:
-
-
-The functions here provide miscellaneous utilities for working with
-strings.
-
-*** Regex utilities
-
-This primarily exists to wrap the ~re~ library dependency.
-
-#+begin_src python :noweb-ref Imports
-  import re
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def regex_match(pattern, string):
-      """Return the list of match groups for a given regex pattern
-      and input string, or None if the string was not a match
-      """
-      match_obj = re.match(pattern, string)
-      if match_obj is not None:
-          return match_obj.groups()
-      return None
-
-#+end_src
-
-*** HTML utilities
-
-**** TODO Add reference to "reinvent the wheel" (html library) :easy:low:
-**** TODO Add support for escaping quotes? :easy:low:
-
-This replaces a dependency on the ~html~ library.
-
-Note that when escaping strings for use in HTML content, ampersands
-should be replaced first, else the ampersands in the angle bracket
-escape sequences will also get replaced!
-
-#+begin_src python :noweb-ref Function definitions
-  def html_escape(string):
-      """Replace the '&', '<', and '>' characters in a string with their
-      corresponding HTML escape sequences.
-      """
-      return string.replace('&', '&amp;') \
-                   .replace('<', '&lt;') \
-                   .replace('>', '&gt;')
-
-#+end_src
-
-** File system utilities
-
-**** TODO Add link to "wrap your dependencies" mantra :easy:low:
-
-These functions primarily serve to wrap dependencies on the ~os~ and
-~shutil~ libraries.
-
-#+begin_src python :noweb-ref Imports
-  import os
-#+end_src
-
-#+begin_src python :noweb-ref Imports
-  import shutil
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def path_join(*args):
-      """Join several path elements together with the OS-appropriate
-      path separator.
-      """
-      return os.path.join(*args)
-
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def get_file_mtime(path):
-      """Get the Unix timestamp for the last modification time of a file
-      as recorded by the file system
-      """
-      return os.path.getmtime(path)
-
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def make_dir(path):
-      """Create a directory (and all necessary parent directories) if it
-      does not already exist.
-      """
-      os.makedirs(path, exist_ok=True)
-
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def empty_dir(root):
-      """Delete the contents of a directory.
-      """
-      for itemname in os.listdir(root):
-          itempath = os.path.join(root, itemname)
-          if os.path.isdir(itempath):
-              shutil.rmtree(itempath)
-          else:
-              os.remove(itempath)
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def copy_dir(indir, outdir):
-      """Copy the contents of one directory to another.
-      """
-      shutil.copytree(indir, outdir, dirs_exist_ok=True)
-
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def walk_dir(root):
-      """Walk recursively through the files in a directory tree,
-      yielding for each file its containing directory, name, and
-      extension.
-      """
-      for dirpath, dirnames, filenames in os.walk(root):
-          for filename in filenames:
-              fname, ext = os.path.splitext(filename)
-              yield dirpath, fname, ext
-
-#+end_src
-
-** Date/time utilities
-
-#+begin_src python :noweb-ref Imports
-  import datetime
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def timestamp_to_date(timestamp):
-      datetime_obj = datetime.datetime.fromtimestamp(timestamp, datetime.UTC)
-      return datetime_obj.strftime('%Y-%m-%d')
-
-#+end_src
-
-** Debug utilities
-
-#+begin_src python :noweb-ref Function definitions
-  def debug_print_ast(ast):
-      print(f'Metadata: {ast.metadata}')
-      print('Nodes:')
-      for node in ast.nodes:
-          debug_print_node(node, indent=1)
-
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def debug_print_node(node, indent=0):
-      tab = ' ' * 2
-      ind = tab * indent
-
-      print(f'{ind}Type: {node.type}', end=' ')
-      if len(node.text) > 0:
-          print(f'("{node.text}")', end='')
-      print()
-
-      ind += tab
-
-      n_children = len(node.children)
-      if n_children > 0:
-          print(f'{ind}Children: {n_children}')
-          for child in node.children:
-              debug_print_node(child, indent=indent + 2)
-
-#+end_src
-
-* Preparing the build environment
+** Preparing the build environment
 
 Before the actual build process can begin, some initial setup must be
 performed. First, the build directory must be prepared, and second, a
 Jinja environment must be created.
 
-** Preparing the build directory
+*** Preparing the build directory
 
 If the build directory does not exist, it must be created; if it
 does exist, its contents must be deleted (to ensure a deleted, moved,
 or renamed "zombie" page does not persist between builds).
-
-(This step is trivialized by the utility functions defined above.)
 
 #+begin_src python :noweb-ref Global constants
   BUILD_DIR = 'build'
@@ -319,7 +85,7 @@ or renamed "zombie" page does not persist between builds).
   empty_dir(BUILD_DIR)
 #+end_src
 
-** Initializing Jinja
+*** Initializing Jinja
 
 **** TODO Remove file prefix from link once intra-file links supported :easy:low:
 
@@ -348,92 +114,173 @@ from a file system directory and trim whitespace from template blocks
   )
 #+end_src
 
-* Processing Org files
+** Processing Org files
 
-**** TODO Add reference to "wrap your dependencies" :easy:low:
-**** TODO Add reference to "reinvent the wheel" (pandoc.write) :easy:low:
+*** Iterating the input files
 
-Now that the build environment has been initialized, the process of
-actually generating the site's pages can begin. This makes up the bulk
-of the build system's complexity, since it includes both a second
-parsing pass on the AST generated by Pandoc and a custom HTML
-generator in place of ~pandoc.write()~.
-
-To start, the directory tree containing the Org files is walked,
-filtering for non-hidden files with the '.org' extension (Emacs
-automatically creates several different temp/back-up files when
-editing that should be ignored).
-
-Processing an Org file then consists of four steps:
-1. Parse the file contents into an abstract syntax tree (AST).
-2. Generate the page content (as HTML) from the AST.
-3. Use that HTML (and any other relevant metadata) to populate a
-   static page template.
-4. Write the final result to disk.
-
-**** TODO Add link to "Generating the home page" :easy:low:
-
-The resulting pages are tracked for use when generating the
-home page.
+The primary input to the build system is a directory of Org files from
+which to generate the site's pages. So, to start, this directory is
+specified as a global constant.
 
 #+begin_src python :noweb-ref Global constants
   PAGES_DIR = 'pages'
 #+end_src
 
-#+name: Process org files
+The directory tree containing the Org files is then walked, filtering
+for non-hidden files with the '.org' extension; these filters skip
+over the various temp/back-up files created automatically by Emacs
+when editing.
+
+**** TODO Add link to "Generating the home page"                   :easy:low:
+**** TODO Better integration of page tracking in explanation?       :med:low:
+
+The resulting pages are also tracked for use when generating the home
+page.
+
+#+name: Process Org files
 #+begin_src python
   pages = []
   for dirpath, fname, ext in walk_dir(PAGES_DIR):
       if fname[0] == '.' or ext != '.org':
           continue
 
-      <<Parse Org file into AST>>
+      <<Process individual Org file>>
 
-      <<Generate page from AST>>
-
-      <<Create page from template>>
-
-      <<Write page to file>>
+      pages.append(page)
 #+end_src
 
-** Parsing an Org file
+*** The Org file processing pipeline
 
-**** TODO Eliminate the pandoc dependency once and for all! :hard:low:
-**** TODO Insert link to "wrap dependencies" mantra :easy:low:
+Processing an Org file then consists of the following steps:
 
-The procedure for parsing an Org file is wrapped in a function call to
-hide the Pandoc dependency, so on the surface it is quite simple:
+#+name: Process individual Org file
+#+begin_src python
+  <<Read contents of Org file from disk>>
 
-#+name: Parse Org file into AST
+  <<Parse Org file contents into AST>>
+
+  <<Generate page from AST>>
+
+  <<Render page as HTML>>
+
+  <<Write page to file>>
+#+end_src
+
+**** TODO Link to principle about separating I/O                   :easy:low:
+**** TODO Insert links to subsections once supported               :easy:low:
+
+Reading the contents of the Org file is straightforward.
+
+#+name: Read contents of Org file from disk
 #+begin_src python
   fpath = path_join(dirpath, fname + ext)
-  ast = parse_org_file(fpath)
+  contents = read_file(fpath)
 #+end_src
 
-**** TODO Insert link to pandoc library documentation :easy:low:
-**** TODO Insert link to to-do handling :easy:low:
-**** TODO Better document my knowledge of how Pandoc exports Org files :med:low:
+Once the contents have been read, they can be parsed into an AST. For
+details, see "Parsing an Org file".
 
-However, the function itself is rather involved. The ~pandoc~ library
-uses a wide range of custom types to represent the various possible
-elements in a document, so to truly hide the dependency from the rest
-of the script, these types must all be "unwrapped" and converted to a
-library-agnostic format. (The effort is not altogether a waste,
-either, as it allows for additional processing to better handle
-certain Org-specific elements along the way, such as to-do items.)
+#+name: Parse Org file contents into AST
+#+begin_src python
+  ast = parse_org_file(contents)
+#+end_src
 
-At the high level, ~pandoc.read()~ returns a root ~Pandoc~ object,
-which itself contains a ~Meta~ object and a list of ~Block~
-objects as children. The task, then, breaks down into unwrapping these
-two elements.
+The AST is then used to generate an abstract representation of the
+corresponding site page. For details, see "Generating page content".
+
+#+name: Generate page from AST
+#+begin_src python
+  page = generate_page(ast)
+#+end_src
+
+Next, the page is rendered to its final HTML representation. For
+details, see "Rendering a site page".
+
+**** TODO Eliminate 'title' keyword argument :med:low:
+
+#+name: Render page as HTML
+#+begin_src python
+  page_html = render_page('page.html', title=page.title, page=page)
+#+end_src
+
+Lastly, this HTML must be written to file. Much like reading, this is
+straightforward.
+
+**** TODO Better handling of page url :med:mid:
+
+#+name: Write page to file
+#+begin_src python
+  page.url = fname + '.html'
+  outpath = path_join(BUILD_DIR, page.url)
+  write_file(outpath, page_html)
+#+end_src
+
+** Generating the home page
+
+From the Python side, generating the home page is as simple as passing
+the list of pages generated as a template argument.
+
+#+name: Generate home page
+#+begin_src python
+  homepage_html = render_page('index.html', title='Home', pages=pages)
+  outpath = path_join(BUILD_DIR, 'index.html')
+  write_file(outpath, homepage_html)
+#+end_src
+
+** Exporting static files
+
+Lastly, static files (those that should be exported directly, without
+any further processing, such as stylesheets) must be copied to the
+build directory.
+
+#+begin_src python :noweb-ref Global constants
+  STYLES_DIR = 'styles'
+  SCRIPTS_DIR = 'scripts'
+#+end_src
+
+#+name: Export static files
+#+begin_src python
+  outdir = path_join(BUILD_DIR, STYLES_DIR)
+  copy_dir(STYLES_DIR, outdir)
+
+  outdir = path_join(BUILD_DIR, SCRIPTS_DIR)
+  copy_dir(SCRIPTS_DIR, outdir)
+#+end_src
+* Parsing an Org file
+
+**** TODO Eliminate the pandoc dependency once and for all!        :hard:low:
+**** TODO Insert link to "wrap dependencies" mantra                :easy:low:
+
+**** DONE Insert link to pandoc library documentation              :easy:low:
+**** TODO Better document how Pandoc exports Org files              :med:low:
+**** TODO Add appropriate link to 'later'                          :easy:low:
+
+The heavy-lifting of parsing an Org file is performed by Pandoc, which
+is interfaced with via the
+[[https://boisgera.github.io/pandoc/][pandoc]] Python library.  This
+handles running the Pandoc subprocess and converting the JSON it
+produces into more user-friendly Python classes.
+
+**** TODO Insert link to to-do handling                            :easy:low:
+
+To truly hide the dependency from the rest of the script, these
+classes must all be "unwrapped" and converted to a library-agnostic
+format. This also allows for additional processing along the way to
+better handle certain Org-specific elements, such as to-do items.
 
 #+begin_src python :noweb-ref Imports
   import pandoc
 #+end_src
 
+The API provided by the ~pandoc~ library for parsing is
+~pandoc.read()~. This returns a root ~Pandoc~ object, which itself
+contains a ~Meta~ object and a list of ~Block~ objects as
+children. The task, then, breaks down into unwrapping these two
+elements.
+
 #+begin_src python :noweb-ref Function definitions
-  def parse_org_file(fpath):
-      ast = pandoc.read(file=fpath)
+  def parse_org_file(contents):
+      ast = pandoc.read(source=contents, format='org')
 
       <<Unwrap metadata>>
 
@@ -443,7 +290,7 @@ two elements.
 
 #+end_src
 
-*** Unwrapping Pandoc metadata
+** Unwrapping Pandoc metadata
 
 **** TODO Link to org-mode documentation on property drawers :easy:low:
 **** TODO Link to pandoc Python documentation on types :easy:low:
@@ -488,7 +335,7 @@ presently assuming that in the case of Org files, it always uses
   metadata['modified'] = mdate
 #+end_src
 
-*** Unwrapping Pandoc blocks
+** Unwrapping Pandoc blocks
 
 **** TODO Split children into children/inlines, more consistent handling of each :med:mid:
 
@@ -809,7 +656,7 @@ unwrapper in our map and applying it.
 
 #+end_src
 
-** Generating the page content
+* Generating page content
 
 **** TODO Auto-insert page title element :easy:med:
 **** DONE Replace pandoc.write() with custom writer for better output formatting and control
@@ -817,11 +664,6 @@ unwrapper in our map and applying it.
 Now that the Org file has been parsed into an AST, the AST can be
 converted to HTML representing the page content by visiting each node
 in the AST node list.
-
-#+name: Generate page from AST
-#+begin_src python
-  page = generate_page(ast)
-#+end_src
 
 **** TODO "Prettify" the HTML output (newlines & indentation) :med:low:
 
@@ -1070,7 +912,7 @@ render function.
 
 #+end_src
 
-** Populating the HTML template
+* Rendering a site page
 
 When it comes time to actually render a page, we use the Jinja
 ~Environment~ created earlier to load the template (AFAIK Jinja
@@ -1084,66 +926,261 @@ output.
 
 #+end_src
 
-**** TODO Eliminate 'title' keyword argument :med:low:
 
-#+name: Create page from template
-#+begin_src python
-  page_html = render_page('page.html', title=page.title, page=page)
+* Class definitions
+
+**** TODO Extract my philosophy on OOP/classes into a better location? :easy:low:
+
+Classes are used primarily as data containers (à la structs in C) and
+generally do not define methods beyond their constructors. I have
+determined that the improved readability compared to tuples and
+improved usability compared to dictionaries is worth the additional
+boilerplate.
+
+#+begin_src python :noweb-ref Class definitions
+  class DocTree:
+      def __init__(self, metadata, nodes):
+          self.metadata = metadata
+          self.nodes = nodes
+
+#+end_src 
+
+#+begin_src python :noweb-ref Class definitions
+  class DocNode:
+      def __init__(self, type_):
+          self.type = type_
+          self.text = ''
+          self.children = []
+
+      def inner_text(self):
+          if len(self.text) > 0:
+              return self.text
+          return ''.join([child.inner_text() for child in self.children])
+
 #+end_src
 
-** Writing the page to file
+#+begin_src python :noweb-ref Class definitions
+  class Page:
+      def __init__(self, title, cdate, mdate, category, abstract):
+          self.title = title
+          self.cdate = cdate
+          self.mdate = mdate
+          self.category = category
+          self.abstract = abstract
+
+          self.views = []
+          self.default_view = None
+
+#+end_src
+
+**** TODO More robust ID generation :easy:mid:
+
+#+begin_src python :noweb-ref Class definitions
+  class PageView:
+      def __init__(self, name, content):
+          self.id = name.lower().replace(' ', '-')
+          self.name = name
+          self.content = content
+
+#+end_src
+
+* Utility functions
+
+The following are a collection of utility functions that will be
+useful throughout the build script.
+
+** String utilities
+
+**** DONE Split into "Regex" and "HTML" sections
+**** TODO Add reference to "wrap your dependencies" :easy:low:
+
+
+The functions here provide miscellaneous utilities for working with
+strings.
+
+*** Regex utilities
+
+This primarily exists to wrap the ~re~ library dependency.
+
+#+begin_src python :noweb-ref Imports
+  import re
+#+end_src
 
 #+begin_src python :noweb-ref Function definitions
-  def write_to_file(fpath, string):
+  def regex_match(pattern, string):
+      """Return the list of match groups for a given regex pattern
+      and input string, or None if the string was not a match
+      """
+      match_obj = re.match(pattern, string)
+      if match_obj is not None:
+          return match_obj.groups()
+      return None
+
+#+end_src
+
+*** HTML utilities
+
+**** TODO Add reference to "reinvent the wheel" (html library) :easy:low:
+**** TODO Add support for escaping quotes? :easy:low:
+
+This replaces a dependency on the ~html~ library.
+
+Note that when escaping strings for use in HTML content, ampersands
+should be replaced first, else the ampersands in the angle bracket
+escape sequences will also get replaced!
+
+#+begin_src python :noweb-ref Function definitions
+  def html_escape(string):
+      """Replace the '&', '<', and '>' characters in a string with their
+      corresponding HTML escape sequences.
+      """
+      return string.replace('&', '&amp;') \
+                   .replace('<', '&lt;') \
+                   .replace('>', '&gt;')
+
+#+end_src
+
+** File system utilities
+
+**** TODO Add link to "wrap your dependencies" mantra :easy:low:
+
+These functions primarily serve to wrap dependencies on the ~os~ and
+~shutil~ libraries.
+
+#+begin_src python :noweb-ref Imports
+  import os
+#+end_src
+
+#+begin_src python :noweb-ref Imports
+  import shutil
+#+end_src
+
+*** Paths
+
+#+begin_src python :noweb-ref Function definitions
+  def path_join(*args):
+      """Join several path elements together with the OS-appropriate
+      path separator.
+      """
+      return os.path.join(*args)
+
+#+end_src
+
+*** Files
+
+#+begin_src python :noweb-ref Function definitions
+  def read_file(path):
+      """Return the contents of a UTF-8 file as a string.
+      """
+      with open(fpath, 'r', encoding='utf-8') as f:
+          contents = f.read()
+      return contents
+
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def write_file(fpath, string):
+      """Write a string to a file with UTF-8 encoding.
+      """
       with open(fpath, 'w+', encoding='utf-8') as f:
           f.write(string)
 
 #+end_src
 
-**** TODO Better handling of page url :med:mid:
+#+begin_src python :noweb-ref Function definitions
+  def get_file_mtime(path):
+      """Get the Unix timestamp for the last modification time of a file
+      as recorded by the file system
+      """
+      return os.path.getmtime(path)
 
-#+name: Write page to file
-#+begin_src python
-  url = fname + '.html'
-  outpath = path_join(BUILD_DIR, url)
-  write_to_file(outpath, page_html)
-
-  page.url = url
-  pages.append(page)
 #+end_src
 
-* Generating the home page
+*** Directories
 
-From the Python side, generating the home page is as simple as passing
-the list of pages generated as a template argument.
+#+begin_src python :noweb-ref Function definitions
+  def make_dir(path):
+      """Create a directory (and all necessary parent directories) if it
+      does not already exist.
+      """
+      os.makedirs(path, exist_ok=True)
 
-#+name: Generate home page
-#+begin_src python
-  homepage_html = render_page('index.html', title='Home', pages=pages)
-  outpath = path_join(BUILD_DIR, 'index.html')
-  write_to_file(outpath, homepage_html)
 #+end_src
 
-* Exporting static files
-
-Lastly, static files (those that should be exported directly, without
-any further processing, such as stylesheets) must be copied to the
-build directory.
-
-**** TODO Add link to "Preparing the build directtory" :easy:low:
-
-(Again, this amounts to a couple of utility function calls.)
-
-#+begin_src python :noweb-ref Global constants
-  STYLES_DIR = 'styles'
-  SCRIPTS_DIR = 'scripts'
+#+begin_src python :noweb-ref Function definitions
+  def empty_dir(root):
+      """Delete the contents of a directory.
+      """
+      for itemname in os.listdir(root):
+          itempath = os.path.join(root, itemname)
+          if os.path.isdir(itempath):
+              shutil.rmtree(itempath)
+          else:
+              os.remove(itempath)
 #+end_src
 
-#+name: Export static files
-#+begin_src python
-  outdir = path_join(BUILD_DIR, STYLES_DIR)
-  copy_dir(STYLES_DIR, outdir)
+#+begin_src python :noweb-ref Function definitions
+  def copy_dir(indir, outdir):
+      """Copy the contents of one directory to another.
+      """
+      shutil.copytree(indir, outdir, dirs_exist_ok=True)
 
-  outdir = path_join(BUILD_DIR, SCRIPTS_DIR)
-  copy_dir(SCRIPTS_DIR, outdir)
 #+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def walk_dir(root):
+      """Walk recursively through the files in a directory tree,
+      yielding for each file its containing directory, name, and
+      extension.
+      """
+      for dirpath, dirnames, filenames in os.walk(root):
+          for filename in filenames:
+              fname, ext = os.path.splitext(filename)
+              yield dirpath, fname, ext
+
+#+end_src
+
+** Date/time utilities
+
+#+begin_src python :noweb-ref Imports
+  import datetime
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def timestamp_to_date(timestamp):
+      datetime_obj = datetime.datetime.fromtimestamp(timestamp, datetime.UTC)
+      return datetime_obj.strftime('%Y-%m-%d')
+
+#+end_src
+
+** Debug utilities
+
+#+begin_src python :noweb-ref Function definitions
+  def debug_print_ast(ast):
+      print(f'Metadata: {ast.metadata}')
+      print('Nodes:')
+      for node in ast.nodes:
+          debug_print_node(node, indent=1)
+
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def debug_print_node(node, indent=0):
+      tab = ' ' * 2
+      ind = tab * indent
+
+      print(f'{ind}Type: {node.type}', end=' ')
+      if len(node.text) > 0:
+          print(f'("{node.text}")', end='')
+      print()
+
+      ind += tab
+
+      n_children = len(node.children)
+      if n_children > 0:
+          print(f'{ind}Children: {n_children}')
+          for child in node.children:
+              debug_print_node(child, indent=indent + 2)
+
+#+end_src
+

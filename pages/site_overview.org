@@ -36,6 +36,9 @@
 **** TODO "Don't solve problems you don't yet have"
 **** TODO "Assume and assert"
 **** TODO Custom "100 X Challenge" view?                           :hard:med:
+**** TODO Adaptive site layout                                    :hard:high:
+**** TODO Glossary/footnote system for acronyms                    :hard:med:
+**** TODO Principle regarding separating I/O from rest of code     :easy:low:
 
 * Design overview
 

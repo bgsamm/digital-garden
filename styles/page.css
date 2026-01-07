@@ -58,8 +58,14 @@ h1 {
     letter-spacing: 1px;
 }
 
-h1, h2, h3, p {
+h1,
+h2,
+h3 {
     margin-bottom: 0.5rem;
+}
+
+p {
+    margin-bottom: 1rem;
 }
 
 a {
@@ -97,13 +103,17 @@ code {
 }
 
 .code-block {
+    padding: 15px 20px;
+    margin: 20px 0;
+    
     background-color: var(--theme-panel);
     box-shadow: 0 0 15px var(--theme-shadow);
+    
     border: 2px solid var(--theme-border);
     border-radius: 15px;
-    padding: 15px 20px;
-    margin: 10px 0;
+    
     line-height: 1.5;
+    
     transition: var(--highlight-transition);
 }
 
@@ -118,7 +128,7 @@ code {
 #view-main .container {
     display: grid;
     grid-template-columns: 25% 1fr 25%;
-    grid-gap: 30px;
+    grid-gap: 20px;
     
     padding: 20px 20px;
 }
@@ -154,7 +164,7 @@ code {
 }
 
 #view-main .content {
-    padding: 20px;
+    padding: 20px 30px;
     
     background-color: var(--theme-panel);
     border-radius: 10px;

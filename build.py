@@ -1,17 +1,33 @@
-import re
-import os
-import shutil
-import datetime
 import jinja2
 import pandoc
 import enum
 import pandoc.types as pdt
+import re
+import os
+import shutil
+import datetime
 
 BUILD_DIR = 'build'
 TEMPLATES_DIR = 'templates'
 PAGES_DIR = 'pages'
 STYLES_DIR = 'styles'
 SCRIPTS_DIR = 'scripts'
+
+class NodeType(enum.Enum):
+    CODE = enum.auto()
+    HEADING = enum.auto()
+    LINK = enum.auto()
+    LIST = enum.auto()
+    LIST_ITEM = enum.auto()
+    META = enum.auto()
+    PARAGRAPH = enum.auto()
+    TABLE = enum.auto()
+    TABLE_ROW = enum.auto()
+    TABLE_CELL = enum.auto()
+    TAG = enum.auto()
+    TASK = enum.auto()
+    TEXT = enum.auto()
+    TOKEN = enum.auto()
 
 class DocTree:
     def __init__(self, metadata, nodes):
@@ -46,111 +62,9 @@ class PageView:
         self.name = name
         self.content = content
 
-class NodeType(enum.Enum):
-    CODE = enum.auto()
-    HEADING = enum.auto()
-    LINK = enum.auto()
-    LIST = enum.auto()
-    LIST_ITEM = enum.auto()
-    META = enum.auto()
-    PARAGRAPH = enum.auto()
-    TABLE = enum.auto()
-    TABLE_ROW = enum.auto()
-    TABLE_CELL = enum.auto()
-    TAG = enum.auto()
-    TASK = enum.auto()
-    TEXT = enum.auto()
-    TOKEN = enum.auto()
 
-
-def regex_match(pattern, string):
-    """Return the list of match groups for a given regex pattern
-    and input string, or None if the string was not a match
-    """
-    match_obj = re.match(pattern, string)
-    if match_obj is not None:
-        return match_obj.groups()
-    return None
-
-def html_escape(string):
-    """Replace the '&', '<', and '>' characters in a string with their
-    corresponding HTML escape sequences.
-    """
-    return string.replace('&', '&amp;') \
-                 .replace('<', '&lt;') \
-                 .replace('>', '&gt;')
-
-def path_join(*args):
-    """Join several path elements together with the OS-appropriate
-    path separator.
-    """
-    return os.path.join(*args)
-
-def get_file_mtime(path):
-    """Get the Unix timestamp for the last modification time of a file
-    as recorded by the file system
-    """
-    return os.path.getmtime(path)
-
-def make_dir(path):
-    """Create a directory (and all necessary parent directories) if it
-    does not already exist.
-    """
-    os.makedirs(path, exist_ok=True)
-
-def empty_dir(root):
-    """Delete the contents of a directory.
-    """
-    for itemname in os.listdir(root):
-        itempath = os.path.join(root, itemname)
-        if os.path.isdir(itempath):
-            shutil.rmtree(itempath)
-        else:
-            os.remove(itempath)
-def copy_dir(indir, outdir):
-    """Copy the contents of one directory to another.
-    """
-    shutil.copytree(indir, outdir, dirs_exist_ok=True)
-
-def walk_dir(root):
-    """Walk recursively through the files in a directory tree,
-    yielding for each file its containing directory, name, and
-    extension.
-    """
-    for dirpath, dirnames, filenames in os.walk(root):
-        for filename in filenames:
-            fname, ext = os.path.splitext(filename)
-            yield dirpath, fname, ext
-
-def timestamp_to_date(timestamp):
-    datetime_obj = datetime.datetime.fromtimestamp(timestamp, datetime.UTC)
-    return datetime_obj.strftime('%Y-%m-%d')
-
-def debug_print_ast(ast):
-    print(f'Metadata: {ast.metadata}')
-    print('Nodes:')
-    for node in ast.nodes:
-        debug_print_node(node, indent=1)
-
-def debug_print_node(node, indent=0):
-    tab = ' ' * 2
-    ind = tab * indent
-
-    print(f'{ind}Type: {node.type}', end=' ')
-    if len(node.text) > 0:
-        print(f'("{node.text}")', end='')
-    print()
-
-    ind += tab
-
-    n_children = len(node.children)
-    if n_children > 0:
-        print(f'{ind}Children: {n_children}')
-        for child in node.children:
-            debug_print_node(child, indent=indent + 2)
-
-def parse_org_file(fpath):
-    ast = pandoc.read(file=fpath)
+def parse_org_file(contents):
+    ast = pandoc.read(source=contents, format='org')
 
     # Unwrap 'Meta' object
     metadata = ast[0][0]
@@ -513,9 +427,104 @@ def render_page(template, *args, **kwargs):
     jinja_template = jinja_env.get_template(template)
     return jinja_template.render(*args, **kwargs)
 
-def write_to_file(fpath, string):
+def regex_match(pattern, string):
+    """Return the list of match groups for a given regex pattern
+    and input string, or None if the string was not a match
+    """
+    match_obj = re.match(pattern, string)
+    if match_obj is not None:
+        return match_obj.groups()
+    return None
+
+def html_escape(string):
+    """Replace the '&', '<', and '>' characters in a string with their
+    corresponding HTML escape sequences.
+    """
+    return string.replace('&', '&amp;') \
+                 .replace('<', '&lt;') \
+                 .replace('>', '&gt;')
+
+def path_join(*args):
+    """Join several path elements together with the OS-appropriate
+    path separator.
+    """
+    return os.path.join(*args)
+
+def read_file(path):
+    """Return the contents of a UTF-8 file as a string.
+    """
+    with open(fpath, 'r', encoding='utf-8') as f:
+        contents = f.read()
+    return contents
+
+def write_file(fpath, string):
+    """Write a string to a file with UTF-8 encoding.
+    """
     with open(fpath, 'w+', encoding='utf-8') as f:
         f.write(string)
+
+def get_file_mtime(path):
+    """Get the Unix timestamp for the last modification time of a file
+    as recorded by the file system
+    """
+    return os.path.getmtime(path)
+
+def make_dir(path):
+    """Create a directory (and all necessary parent directories) if it
+    does not already exist.
+    """
+    os.makedirs(path, exist_ok=True)
+
+def empty_dir(root):
+    """Delete the contents of a directory.
+    """
+    for itemname in os.listdir(root):
+        itempath = os.path.join(root, itemname)
+        if os.path.isdir(itempath):
+            shutil.rmtree(itempath)
+        else:
+            os.remove(itempath)
+def copy_dir(indir, outdir):
+    """Copy the contents of one directory to another.
+    """
+    shutil.copytree(indir, outdir, dirs_exist_ok=True)
+
+def walk_dir(root):
+    """Walk recursively through the files in a directory tree,
+    yielding for each file its containing directory, name, and
+    extension.
+    """
+    for dirpath, dirnames, filenames in os.walk(root):
+        for filename in filenames:
+            fname, ext = os.path.splitext(filename)
+            yield dirpath, fname, ext
+
+def timestamp_to_date(timestamp):
+    datetime_obj = datetime.datetime.fromtimestamp(timestamp, datetime.UTC)
+    return datetime_obj.strftime('%Y-%m-%d')
+
+def debug_print_ast(ast):
+    print(f'Metadata: {ast.metadata}')
+    print('Nodes:')
+    for node in ast.nodes:
+        debug_print_node(node, indent=1)
+
+def debug_print_node(node, indent=0):
+    tab = ' ' * 2
+    ind = tab * indent
+
+    print(f'{ind}Type: {node.type}', end=' ')
+    if len(node.text) > 0:
+        print(f'("{node.text}")', end='')
+    print()
+
+    ind += tab
+
+    n_children = len(node.children)
+    if n_children > 0:
+        print(f'{ind}Children: {n_children}')
+        for child in node.children:
+            debug_print_node(child, indent=indent + 2)
 
 
 make_dir(BUILD_DIR)
@@ -533,22 +542,23 @@ for dirpath, fname, ext in walk_dir(PAGES_DIR):
         continue
 
     fpath = path_join(dirpath, fname + ext)
-    ast = parse_org_file(fpath)
-
-    page = generate_page(ast)
-
-    page_html = render_page('page.html', title=page.title, page=page)
-
-    url = fname + '.html'
-    outpath = path_join(BUILD_DIR, url)
-    write_to_file(outpath, page_html)
+    contents = read_file(fpath)
     
-    page.url = url
+    ast = parse_org_file(contents)
+    
+    page = generate_page(ast)
+    
+    page_html = render_page('page.html', title=page.title, page=page)
+    
+    page.url = fname + '.html'
+    outpath = path_join(BUILD_DIR, page.url)
+    write_file(outpath, page_html)
+
     pages.append(page)
 
 homepage_html = render_page('index.html', title='Home', pages=pages)
 outpath = path_join(BUILD_DIR, 'index.html')
-write_to_file(outpath, homepage_html)
+write_file(outpath, homepage_html)
 
 outdir = path_join(BUILD_DIR, STYLES_DIR)
 copy_dir(STYLES_DIR, outdir)
