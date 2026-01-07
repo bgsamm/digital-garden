@@ -42,6 +42,21 @@ me even more tightly to Pandoc, which I consider undesirable.
 The overall structure of the program is as follows:
 
 #+begin_src python :tangle ../build.py
+  <<Definitions>>
+
+  <<Prepare build environment>>
+
+  <<Process Org files>>
+
+  <<Generate home page>>
+
+  <<Export static files>>
+#+end_src
+
+"Definitions" include imports, global constants, classes, and functions.
+
+#+name: Definitions
+#+begin_src python
   <<Imports>>
 
   <<Global constants>>
@@ -49,16 +64,6 @@ The overall structure of the program is as follows:
   <<Class definitions>>
 
   <<Function definitions>>
-
-  <<Prepare build directory>>
-
-  <<Initialize Jinja>>
-
-  <<Process Org files>>
-
-  <<Generate home page>>
-
-  <<Export static files>>
 #+end_src
 
 **** DONE Add section for pre-build setup
@@ -68,6 +73,13 @@ The overall structure of the program is as follows:
 Before the actual build process can begin, some initial setup must be
 performed. First, the build directory must be prepared, and second, a
 Jinja environment must be created.
+
+#+name: Prepare build environment
+#+begin_src python
+  <<Prepare build directory>>
+
+  <<Initialize Jinja>>
+#+end_src
 
 *** Preparing the build directory
 
@@ -151,7 +163,7 @@ page.
 
 *** The Org file processing pipeline
 
-Processing an Org file then consists of the following steps:
+Processing an Org file consists of the following steps:
 
 #+name: Process individual Org file
 #+begin_src python
@@ -298,9 +310,9 @@ elements.
 **** TODO Convert notes to proper footnotes/sidenotes :med:low:
 
 Every Org file in this repository starts with a property drawer that
-defines its metadata, like title, author, date, etc. This populates
-the aforementioned ~Meta~ object, which contains a dictionary of
-(~str~, ~MetaString~) pairs.
+defines its metadata (e.g. title, author, creation date, etc.). This
+populates the aforementioned ~Meta~ object, which contains a
+dictionary of (~str~, ~MetaString~) pairs.
 
 (Note 1: The types used by the ~pandoc~ library are generally
 "list-like," meaning rather than as member variables, attributes are
