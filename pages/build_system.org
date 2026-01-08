@@ -933,7 +933,9 @@ render function.
           if node.level < prev_level:
               toc += '</li></ul>' * (prev_level - node.level)
           toc += '</li><li>'
-      toc += node.inner_text()
+      text = node.inner_text()
+      id_ = html_slugify(text)
+      toc += f'<a href="#{id_}">{text}</a>'
       prev_level = node.level
   toc += '</li></ul>' * prev_level
 #+end_src
