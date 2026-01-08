@@ -358,15 +358,16 @@ def render_link(node):
         i = target.find('::')
         if i >= 0:
             fname = target[:i]
-            anchor = target[i + 2:]
+            frag = target[i + 2:]
         elif target[0] == '*' or target[0] == '#':
             fname = ''
-            anchor = target
+            frag = target
         else:
             fname = target
-            anchor = ''
+            frag = ''
         fname = fname.replace('.org', '.html')
-        target = fname + anchor
+        frag = '#' + html_slugify(frag[1:])
+        target = fname + frag
     return render_default(node, 'a', href=target)
 
 def render_list(node):
