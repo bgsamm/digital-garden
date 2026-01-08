@@ -350,7 +350,21 @@ def render_heading(node):
     return render_default(node, tag)
 
 def render_link(node):
-    return render_default(node, 'a', href=node.target)
+    target = node.target
+    if not node.external:
+        i = target.find('::')
+        if i >= 0:
+            fname = target[:i]
+            anchor = target[i + 2:]
+        elif target[0] == '*' or target[0] == '#':
+            fname = ''
+            anchor = target
+        else:
+            fname = target
+            anchor = ''
+        fname = fname.replace('.org', '.html')
+        target = fname + anchor
+    return render_default(node, 'a', href=target)
 
 def render_list(node):
     tag = 'ol' if node.ordered else 'ul'

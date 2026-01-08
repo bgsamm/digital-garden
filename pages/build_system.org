@@ -845,12 +845,27 @@ render function.
 
 #+end_src
 
-**** TODO Detect links to other Org files and convert appropriately :med:med:
+**** DONE Detect links to other Org files and convert appropriately :med:mid:
+**** TODO More robust link conversion                               :med:mid:
 **** TODO Open external links in new tab & allow for separate styling :easy:low:
 
 #+begin_src python :noweb-ref Function definitions
   def render_link(node):
-      return render_default(node, 'a', href=node.target)
+      target = node.target
+      if not node.external:
+          i = target.find('::')
+          if i >= 0:
+              fname = target[:i]
+              anchor = target[i + 2:]
+          elif target[0] == '*' or target[0] == '#':
+              fname = ''
+              anchor = target
+          else:
+              fname = target
+              anchor = ''
+          fname = fname.replace('.org', '.html')
+          target = fname + anchor
+      return render_default(node, 'a', href=target)
 
 #+end_src
 
