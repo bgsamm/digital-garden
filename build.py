@@ -300,20 +300,20 @@ def generate_main_view(ast):
     for node in ast.nodes:
         node_html = render_node(node)
         if node.type == NodeType.HEADING:
-            headings.append((node.level, node_html[4:-5]))
+            headings.append(node)
         content += node_html
 
     toc = '<h1>Table of Contents</h1>'
     prev_level = 0
-    for level, text in headings:
-        if level > prev_level:
-            toc += '<ul><li>' * (level - prev_level)
+    for node in headings:
+        if node.level > prev_level:
+            toc += '<ul><li>' * (node.level - prev_level)
         else:
-            if level < prev_level:
-                toc += '</li></ul>' * (prev_level - level)
+            if node.level < prev_level:
+                toc += '</li></ul>' * (prev_level - node.level)
             toc += '</li><li>'
-        toc += text
-        prev_level = level
+        toc += node.inner_text()
+        prev_level = node.level
     toc += '</li></ul>' * prev_level
 
     html = '<div class="table-of-contents">' + toc + '</div>' + \
@@ -346,8 +346,9 @@ def render_default(node, tag, **kwargs):
     return f'<{tag}{attrs}>{body}</{tag}>'
 
 def render_heading(node):
+    id_ = html_slugify(node.inner_text())
     tag = f'h{node.level}'
-    return render_default(node, tag)
+    return render_default(node, tag, id=id_)
 
 def render_link(node):
     target = node.target
@@ -473,6 +474,24 @@ def html_escape(string):
     return string.replace('&', '&amp;') \
                  .replace('<', '&lt;') \
                  .replace('>', '&gt;')
+
+def html_slugify(string):
+    """Convert an arbitrary string to a valid CSS identifier
+    by replacing non-alphanumeric characters with hyphens.
+    """
+    slug = ''
+    for c in string:
+        slug += c.lower() if c.isalnum() else '-'
+    return slug
+
+def html_strip_tag(string):
+    """Remove the outermost HTML tag from a string.
+    """
+    start = min(0, string.find('>'))
+    end = string.rfind('<')
+    if end < 0:
+        end = len(string)
+    return string[start:end]
 
 def path_join(*args):
     """Join several path elements together with the OS-appropriate

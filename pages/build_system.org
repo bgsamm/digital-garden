@@ -762,7 +762,7 @@ in the AST node list.
 Similarly to the way parsing was handled, each node type will need its
 own case, with support for recursively converting children.
 
-**** TODO Better method for stripping tags than hard-coded values :easy:med:
+**** DONE Better method for stripping tags than hard-coded values  :easy:mid:
 
 #+name: Process AST nodes
 #+begin_src python
@@ -771,7 +771,7 @@ own case, with support for recursively converting children.
   for node in ast.nodes:
       node_html = render_node(node)
       if node.type == NodeType.HEADING:
-          headings.append((node.level, node_html[4:-5]))
+          headings.append(node)
       content += node_html
 #+end_src
 
@@ -840,8 +840,9 @@ render function.
 
 #+begin_src python :noweb-ref Function definitions
   def render_heading(node):
+      id_ = html_slugify(node.inner_text())
       tag = f'h{node.level}'
-      return render_default(node, tag)
+      return render_default(node, tag, id=id_)
 
 #+end_src
 
@@ -925,15 +926,15 @@ render function.
 #+begin_src python
   toc = '<h1>Table of Contents</h1>'
   prev_level = 0
-  for level, text in headings:
-      if level > prev_level:
-          toc += '<ul><li>' * (level - prev_level)
+  for node in headings:
+      if node.level > prev_level:
+          toc += '<ul><li>' * (node.level - prev_level)
       else:
-          if level < prev_level:
-              toc += '</li></ul>' * (prev_level - level)
+          if node.level < prev_level:
+              toc += '</li></ul>' * (prev_level - node.level)
           toc += '</li><li>'
-      toc += text
-      prev_level = level
+      toc += node.inner_text()
+      prev_level = node.level
   toc += '</li></ul>' * prev_level
 #+end_src
 
@@ -996,7 +997,6 @@ output.
       return jinja_template.render(*args, **kwargs)
 
 #+end_src
-
 
 * Class definitions
 
@@ -1108,6 +1108,30 @@ escape sequences will also get replaced!
       return string.replace('&', '&amp;') \
                    .replace('<', '&lt;') \
                    .replace('>', '&gt;')
+
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def html_slugify(string):
+      """Convert an arbitrary string to a valid CSS identifier
+      by replacing non-alphanumeric characters with hyphens.
+      """
+      slug = ''
+      for c in string:
+          slug += c.lower() if c.isalnum() else '-'
+      return slug
+
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def html_strip_tag(string):
+      """Remove the outermost HTML tag from a string.
+      """
+      start = min(0, string.find('>'))
+      end = string.rfind('<')
+      if end < 0:
+          end = len(string)
+      return string[start:end]
 
 #+end_src
 
