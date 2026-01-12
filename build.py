@@ -600,7 +600,7 @@ for dirpath, fname, ext in walk_dir(PAGES_DIR):
     
     page = generate_page(ast)
     
-    page_html = render_page('page.html', title=page.title, page=page)
+    page_html = render_page('page.html', title=page.title, page=page, view=page.default_view)
     
     page.url = fname + '.html'
     outpath = path_join(BUILD_DIR, page.url)

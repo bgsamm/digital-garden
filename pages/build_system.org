@@ -53,7 +53,7 @@ The overall structure of the program is as follows:
   <<Export static files>>
 #+end_src
 
-"Definitions" include imports, global constants, classes, and functions.
+"Definitions" include imports, global constants, classes, and functions:
 
 #+name: Definitions
 #+begin_src python
@@ -212,7 +212,7 @@ details, see "Rendering a site page".
 
 #+name: Render page as HTML
 #+begin_src python
-  page_html = render_page('page.html', title=page.title, page=page)
+  page_html = render_page('page.html', title=page.title, page=page, view=page.default_view)
 #+end_src
 
 Lastly, this HTML must be written to file. Much like reading, this is

@@ -3,7 +3,6 @@
 {% block head %}
     {{ super() }}
     <link rel="stylesheet" href="styles/page.css" />
-    <script src="scripts/page.js"></script>
 
     <link rel="stylesheet" href="styles/highlight.min.css">
     <script src="scripts/highlight.min.js"></script>
@@ -15,18 +14,14 @@
         <div class="nav-item title">{{ title }}</div>
         <div class="nav-item tabs">
         {% for view in page.views %}
-            <button id="tab-{{ view.id }}" class="tab" onclick="setView('{{ view.id }}')">{{ view.name }}</button>
+            <a id="tab-{{ view.id }}" class="tab" href="">{{ view.name }}</a>
         {% endfor %}
         </div>
     </nav>
 
-    {% for view in page.views %}
-    <div id="view-{{ view.id }}" class="view {{ 'default' if page.default_view == view }}" data-view-id="{{ view.id }}">
-        <div class="container">
-            {{ view.content }}
-        </div>
+    <div class="view">
+        {{ view.content }}
     </div>
-    {% endfor %}
 
     <div id="home-button" class="ui-button">
         🏠
