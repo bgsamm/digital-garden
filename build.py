@@ -512,6 +512,8 @@ def read_file(path):
 def write_file(fpath, string):
     """Write a string to a file with UTF-8 encoding.
     """
+    dirpath = os.path.split(fpath)[0]
+    os.makedirs(dirpath, exist_ok=True)
     with open(fpath, 'w+', encoding='utf-8') as f:
         f.write(string)
 
@@ -602,8 +604,8 @@ for dirpath, fname, ext in walk_dir(PAGES_DIR):
     
     page_html = render_page('page.html', title=page.title, page=page, view=page.default_view)
     
-    page.url = fname + '.html'
-    outpath = path_join(BUILD_DIR, page.url)
+    page.url = path_join(PAGES_DIR, fname)
+    outpath = path_join(BUILD_DIR, page.url, 'index.html')
     write_file(outpath, page_html)
 
     pages.append(page)

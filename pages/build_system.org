@@ -222,8 +222,8 @@ straightforward.
 
 #+name: Write page to file
 #+begin_src python
-  page.url = fname + '.html'
-  outpath = path_join(BUILD_DIR, page.url)
+  page.url = path_join(PAGES_DIR, fname)
+  outpath = path_join(BUILD_DIR, page.url, 'index.html')
   write_file(outpath, page_html)
 #+end_src
 
@@ -1180,6 +1180,8 @@ These functions primarily serve to wrap dependencies on the ~os~ and
   def write_file(fpath, string):
       """Write a string to a file with UTF-8 encoding.
       """
+      dirpath = os.path.split(fpath)[0]
+      os.makedirs(dirpath, exist_ok=True)
       with open(fpath, 'w+', encoding='utf-8') as f:
           f.write(string)
 
