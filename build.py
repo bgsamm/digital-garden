@@ -1,17 +1,33 @@
-import re
-import os
-import shutil
-import datetime
 import jinja2
 import pandoc
 import enum
 import pandoc.types as pdt
+import re
+import os
+import shutil
+import datetime
 
 BUILD_DIR = 'build'
 TEMPLATES_DIR = 'templates'
 PAGES_DIR = 'pages'
 STYLES_DIR = 'styles'
 SCRIPTS_DIR = 'scripts'
+
+class NodeType(enum.Enum):
+    CODE = enum.auto()
+    HEADING = enum.auto()
+    LINK = enum.auto()
+    LIST = enum.auto()
+    LIST_ITEM = enum.auto()
+    META = enum.auto()
+    PARAGRAPH = enum.auto()
+    TABLE = enum.auto()
+    TABLE_ROW = enum.auto()
+    TABLE_CELL = enum.auto()
+    TAG = enum.auto()
+    TASK = enum.auto()
+    TEXT = enum.auto()
+    TOKEN = enum.auto()
 
 class DocTree:
     def __init__(self, metadata, nodes):
@@ -41,116 +57,13 @@ class Page:
         self.default_view = None
 
 class PageView:
-    def __init__(self, name, content):
-        self.id = name.lower().replace(' ', '-')
+    def __init__(self, name):
+        self.id = html_slugify(name)
         self.name = name
-        self.content = content
-
-class NodeType(enum.Enum):
-    CODE = enum.auto()
-    HEADING = enum.auto()
-    LINK = enum.auto()
-    LIST = enum.auto()
-    LIST_ITEM = enum.auto()
-    META = enum.auto()
-    PARAGRAPH = enum.auto()
-    TABLE = enum.auto()
-    TABLE_ROW = enum.auto()
-    TABLE_CELL = enum.auto()
-    TAG = enum.auto()
-    TASK = enum.auto()
-    TEXT = enum.auto()
-    TOKEN = enum.auto()
 
 
-def regex_match(pattern, string):
-    """Return the list of match groups for a given regex pattern
-    and input string, or None if the string was not a match
-    """
-    match_obj = re.match(pattern, string)
-    if match_obj is not None:
-        return match_obj.groups()
-    return None
-
-def html_escape(string):
-    """Replace the '&', '<', and '>' characters in a string with their
-    corresponding HTML escape sequences.
-    """
-    return string.replace('&', '&amp;') \
-                 .replace('<', '&lt;') \
-                 .replace('>', '&gt;')
-
-def path_join(*args):
-    """Join several path elements together with the OS-appropriate
-    path separator.
-    """
-    return os.path.join(*args)
-
-def get_file_mtime(path):
-    """Get the Unix timestamp for the last modification time of a file
-    as recorded by the file system
-    """
-    return os.path.getmtime(path)
-
-def make_dir(path):
-    """Create a directory (and all necessary parent directories) if it
-    does not already exist.
-    """
-    os.makedirs(path, exist_ok=True)
-
-def empty_dir(root):
-    """Delete the contents of a directory.
-    """
-    for itemname in os.listdir(root):
-        itempath = os.path.join(root, itemname)
-        if os.path.isdir(itempath):
-            shutil.rmtree(itempath)
-        else:
-            os.remove(itempath)
-def copy_dir(indir, outdir):
-    """Copy the contents of one directory to another.
-    """
-    shutil.copytree(indir, outdir, dirs_exist_ok=True)
-
-def walk_dir(root):
-    """Walk recursively through the files in a directory tree,
-    yielding for each file its containing directory, name, and
-    extension.
-    """
-    for dirpath, dirnames, filenames in os.walk(root):
-        for filename in filenames:
-            fname, ext = os.path.splitext(filename)
-            yield dirpath, fname, ext
-
-def timestamp_to_date(timestamp):
-    datetime_obj = datetime.datetime.fromtimestamp(timestamp, datetime.UTC)
-    return datetime_obj.strftime('%Y-%m-%d')
-
-def debug_print_ast(ast):
-    print(f'Metadata: {ast.metadata}')
-    print('Nodes:')
-    for node in ast.nodes:
-        debug_print_node(node, indent=1)
-
-def debug_print_node(node, indent=0):
-    tab = ' ' * 2
-    ind = tab * indent
-
-    print(f'{ind}Type: {node.type}', end=' ')
-    if len(node.text) > 0:
-        print(f'("{node.text}")', end='')
-    print()
-
-    ind += tab
-
-    n_children = len(node.children)
-    if n_children > 0:
-        print(f'{ind}Children: {n_children}')
-        for child in node.children:
-            debug_print_node(child, indent=indent + 2)
-
-def parse_org_file(fpath):
-    ast = pandoc.read(file=fpath)
+def parse_org_file(contents):
+    ast = pandoc.read(source=contents, format='org')
 
     # Unwrap 'Meta' object
     metadata = ast[0][0]
@@ -163,12 +76,12 @@ def parse_org_file(fpath):
     mdate = timestamp_to_date(mtime)
     metadata['modified'] = mdate
 
-    nodes = unwrap_blocks(ast[1])
+    nodes = []
+    for block in ast[1]:
+        node = unwrap_block(block)
+        nodes.append(node)
 
     return DocTree(metadata, nodes)
-
-def unwrap_blocks(blocks):
-    return [unwrap_block(block) for block in blocks]
 
 def unwrap_code(block):
     node = DocNode(NodeType.CODE)
@@ -214,9 +127,22 @@ def unwrap_head_or_para(block):
 
 def unwrap_link(block):
     node = DocNode(NodeType.LINK)
-    node.target = block[2][0]
-    # Appears to be unused
-    node.title = block[2][1]
+
+    node.target = target = block[2][0]
+
+    i = target.find(':')
+    if i >= 0 and i < len(target) - 1 and target[i + 1] != ':':
+        scheme = target[:i]
+        if scheme == 'http' or scheme == 'https':
+            node.external = True
+        elif scheme == 'file':
+            node.external = False
+        else:
+            raise ValueError(f'Unhandled link scheme: {scheme}')
+    else:
+        node.external = False
+
+    assert(block[2][1] == '') # Unused title field
 
     node.children = unwrap_blocks(block[1])
 
@@ -255,15 +181,28 @@ def unwrap_rawblock(block):
     return node
 
 def unwrap_span(block):
-    node = DocNode(NodeType.TAG)
+    if 'spurious-link' in block[0][1]:
+        node = DocNode(NodeType.LINK)
 
-    if 'tag' in block[0][1]:
-        key, tag = block[0][2][0]
-        assert(key == 'tag-name')
+        key, target = block[0][2][0]
+        assert(key == 'target')
+
+        node.target = target
+        node.external = False
+
+        assert(type(block[1][0]) is pdt.Emph)
+        node.children = unwrap_blocks(block[1][0][0])
     else:
-        tag = block[0][1][0]
-        assert(tag == 'todo' or tag == 'done')
-    node.text = tag
+        node = DocNode(NodeType.TAG)
+
+        if 'tag' in block[0][1]:
+            key, tag = block[0][2][0]
+            assert(key == 'tag-name')
+        else:
+            tag = block[0][1][0]
+            assert(tag == 'todo' or tag == 'done')
+
+        node.text = tag
 
     return node
 
@@ -346,7 +285,10 @@ def unwrap_block(block):
 
     return node
 
-def generate_page(ast):
+def unwrap_blocks(blocks):
+    return [unwrap_block(block) for block in blocks]
+
+def generate_page(ast, page_url):
     title = ast.metadata['title']
     cdate = ast.metadata['date']
     mdate = ast.metadata['modified']
@@ -354,42 +296,45 @@ def generate_page(ast):
     abstract = ast.metadata['abstract']
     page = Page(title, cdate, mdate, category, abstract)
 
-    main_view = generate_main_view(ast)
+    main_view = generate_doc_view(ast)
+    main_view.url = path_join(page_url, 'doc')
     page.views.append(main_view)
 
     task_view = generate_task_view(ast)
+    task_view.url = path_join(page_url, 'tasks')
     page.views.append(task_view)
 
     page.default_view = main_view
 
     return page
 
-def generate_main_view(ast):
+def generate_doc_view(ast):
+    view = PageView('Doc')
+
     headings = []
-    content = ''
+    view.content = ''
     for node in ast.nodes:
         node_html = render_node(node)
         if node.type == NodeType.HEADING:
-            headings.append((node.level, node_html[4:-5]))
-        content += node_html
+            headings.append(node)
+        view.content += node_html
 
-    toc = '<h1>Table of Contents</h1>'
+    view.toc = '<h1>Table of Contents</h1>'
     prev_level = 0
-    for level, text in headings:
-        if level > prev_level:
-            toc += '<ul><li>' * (level - prev_level)
+    for node in headings:
+        if node.level > prev_level:
+            view.toc += '<ul><li>' * (node.level - prev_level)
         else:
-            if level < prev_level:
-                toc += '</li></ul>' * (prev_level - level)
-            toc += '</li><li>'
-        toc += text
-        prev_level = level
-    toc += '</li></ul>' * prev_level
+            if node.level < prev_level:
+                view.toc += '</li></ul>' * (prev_level - node.level)
+            view.toc += '</li><li>'
+        text = node.inner_text()
+        id_ = html_slugify(text)
+        view.toc += f'<a href="#{id_}">{text}</a>'
+        prev_level = node.level
+    view.toc += '</li></ul>' * prev_level
 
-    html = '<div class="table-of-contents">' + toc + '</div>' + \
-           '<div class="content">' + content + '</div>'
-
-    return PageView('Main', html)
+    return view
 
 def render_nodes(nodes):
     html = ''
@@ -416,11 +361,27 @@ def render_default(node, tag, **kwargs):
     return f'<{tag}{attrs}>{body}</{tag}>'
 
 def render_heading(node):
+    id_ = html_slugify(node.inner_text())
     tag = f'h{node.level}'
-    return render_default(node, tag)
+    return render_default(node, tag, id=id_)
 
 def render_link(node):
-    return render_default(node, 'a', href=node.target)
+    target = node.target
+    if not node.external:
+        i = target.find('::')
+        if i >= 0:
+            fname = target[:i]
+            frag = target[i + 2:]
+        elif target[0] == '*' or target[0] == '#':
+            fname = ''
+            frag = target
+        else:
+            fname = target
+            frag = ''
+        fname = fname.replace('.org', '.html')
+        frag = '#' + html_slugify(frag[1:])
+        target = fname + frag
+    return render_default(node, 'a', href=target)
 
 def render_list(node):
     tag = 'ol' if node.ordered else 'ul'
@@ -469,7 +430,8 @@ def render_node(node):
     return html
 
 def generate_task_view(ast):
-    html = '<div class="task-list">'
+    view = PageView('Tasks')
+    view.tasks = []
 
     stack = []
     for node in ast.nodes:
@@ -481,16 +443,15 @@ def generate_task_view(ast):
         if node.type != NodeType.TASK:
             continue
 
-        state = 'done' if node.done else 'todo'
-        if len(stack) == 0:
-            section = '—'
-        else:
-            section = ' > '.join([heading.inner_text() for heading in stack])
+        task = DocNode(NodeType.TASK)
+        task.state = 'done' if node.done else 'todo'
 
-        html += f'<div class="task {state}">'
-        html += f'<div class="task-header">'
-        html += f'<div class="task-state">{state.upper()}</div>'
-        html += f'<div class="task-tags">'
+        if len(stack) == 0:
+            task.section = '—'
+        else:
+            task.section = ' > '.join([heading.inner_text() for heading in stack])
+
+        task.tags = []
         for tag in node.tags:
             if tag in ['easy', 'med', 'hard']:
                 label = 'Diff'
@@ -498,24 +459,140 @@ def generate_task_view(ast):
                 label = 'Prio'
             else:
                 continue
-            html += f'<span class="task-tag {tag}">{label}: {tag.capitalize()}</span>'
-        html += '</div>'
-        html += '</div>'
-        html += f'<div class="task-section">{section}</div>'
-        html += f'<div class="task-desc">{node.inner_text()}</div>'
-        html += '</div>'
+            task.tags.append((label, tag))
 
-    html += '</div>'
+        task.description = node.inner_text().strip()
 
-    return PageView('Tasks', html)
+        view.tasks.append(task)
+
+    return view
 
 def render_page(template, *args, **kwargs):
     jinja_template = jinja_env.get_template(template)
     return jinja_template.render(*args, **kwargs)
 
-def write_to_file(fpath, string):
+def render_page_view(page, view):
+    jinja_template = jinja_env.get_template(f'view_{view.id}.html')
+    return jinja_template.render(page=page, view=view)
+
+def regex_match(pattern, string):
+    """Return the list of match groups for a given regex pattern
+    and input string, or None if the string was not a match
+    """
+    match_obj = re.match(pattern, string)
+    if match_obj is not None:
+        return match_obj.groups()
+    return None
+
+def html_escape(string):
+    """Replace the '&', '<', and '>' characters in a string with their
+    corresponding HTML escape sequences.
+    """
+    return string.replace('&', '&amp;') \
+                 .replace('<', '&lt;') \
+                 .replace('>', '&gt;')
+
+def html_slugify(string):
+    """Convert an arbitrary string to a valid CSS identifier
+    by replacing non-alphanumeric characters with hyphens.
+    """
+    slug = ''
+    for c in string:
+        slug += c.lower() if c.isalnum() else '-'
+    return slug
+
+def html_strip_tag(string):
+    """Remove the outermost HTML tag from a string.
+    """
+    start = min(0, string.find('>'))
+    end = string.rfind('<')
+    if end < 0:
+        end = len(string)
+    return string[start:end]
+
+def path_join(*args):
+    """Join several path elements together with the OS-appropriate
+    path separator.
+    """
+    return os.path.join(*args)
+
+def read_file(path):
+    """Return the contents of a UTF-8 file as a string.
+    """
+    with open(fpath, 'r', encoding='utf-8') as f:
+        contents = f.read()
+    return contents
+
+def write_file(fpath, string):
+    """Write a string to a file with UTF-8 encoding.
+    """
+    dirpath = os.path.split(fpath)[0]
+    os.makedirs(dirpath, exist_ok=True)
     with open(fpath, 'w+', encoding='utf-8') as f:
         f.write(string)
+
+def get_file_mtime(path):
+    """Get the Unix timestamp for the last modification time of a file
+    as recorded by the file system
+    """
+    return os.path.getmtime(path)
+
+def make_dir(path):
+    """Create a directory (and all necessary parent directories) if it
+    does not already exist.
+    """
+    os.makedirs(path, exist_ok=True)
+
+def empty_dir(root):
+    """Delete the contents of a directory.
+    """
+    for itemname in os.listdir(root):
+        itempath = os.path.join(root, itemname)
+        if os.path.isdir(itempath):
+            shutil.rmtree(itempath)
+        else:
+            os.remove(itempath)
+def copy_dir(indir, outdir):
+    """Copy the contents of one directory to another.
+    """
+    shutil.copytree(indir, outdir, dirs_exist_ok=True)
+
+def walk_dir(root):
+    """Walk recursively through the files in a directory tree,
+    yielding for each file its containing directory, name, and
+    extension.
+    """
+    for dirpath, dirnames, filenames in os.walk(root):
+        for filename in filenames:
+            fname, ext = os.path.splitext(filename)
+            yield dirpath, fname, ext
+
+def timestamp_to_date(timestamp):
+    datetime_obj = datetime.datetime.fromtimestamp(timestamp, datetime.UTC)
+    return datetime_obj.strftime('%Y-%m-%d')
+
+def debug_print_ast(ast):
+    print(f'Metadata: {ast.metadata}')
+    print('Nodes:')
+    for node in ast.nodes:
+        debug_print_node(node, indent=1)
+
+def debug_print_node(node, indent=0):
+    tab = ' ' * 2
+    ind = tab * indent
+
+    print(f'{ind}Type: {node.type}', end=' ')
+    if len(node.text) > 0:
+        print(f'("{node.text}")', end='')
+    print()
+
+    ind += tab
+
+    n_children = len(node.children)
+    if n_children > 0:
+        print(f'{ind}Children: {n_children}')
+        for child in node.children:
+            debug_print_node(child, indent=indent + 2)
 
 
 make_dir(BUILD_DIR)
@@ -533,22 +610,23 @@ for dirpath, fname, ext in walk_dir(PAGES_DIR):
         continue
 
     fpath = path_join(dirpath, fname + ext)
-    ast = parse_org_file(fpath)
-
-    page = generate_page(ast)
-
-    page_html = render_page('page.html', title=page.title, page=page)
-
-    url = fname + '.html'
-    outpath = path_join(BUILD_DIR, url)
-    write_to_file(outpath, page_html)
+    contents = read_file(fpath)
     
-    page.url = url
+    ast = parse_org_file(contents)
+    
+    page_url = path_join(PAGES_DIR, fname)
+    page = generate_page(ast, page_url)
+    
+    for view in page.views:
+        view_html = render_page_view(page, view)
+        outpath = path_join(BUILD_DIR, view.url, 'index.html')
+        write_file(outpath, view_html)
+
     pages.append(page)
 
 homepage_html = render_page('index.html', title='Home', pages=pages)
 outpath = path_join(BUILD_DIR, 'index.html')
-write_to_file(outpath, homepage_html)
+write_file(outpath, homepage_html)
 
 outdir = path_join(BUILD_DIR, STYLES_DIR)
 copy_dir(STYLES_DIR, outdir)

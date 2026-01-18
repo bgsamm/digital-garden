@@ -1,0 +1,20 @@
+{% extends "page.html" %}
+
+{% block view %}
+    <div id="task-view">
+    {% for task in view.tasks %}
+        <div class="task {{ task.state }}">
+            <div class="task-header">
+                <div class="task-state">{{ task.state|upper }}</div>
+                <div class="task-tags">
+                {% for label, tag in task.tags %}
+                    <span class="task-tag {{ tag }}">{{ label }}: {{ tag|capitalize }}</span>
+                {% endfor %}
+                </div>
+            </div>
+            <div class="task-section">{{ task.section }}</div>
+            <div class="task-desc">{{ task.description }}</div>
+        </div>
+    {% endfor %}
+    </div>
+{% endblock %}

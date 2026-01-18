@@ -1,7 +1,7 @@
 :PROPERTIES:
-:Title: Build system
-:Author: pjsamm
-:Date: 2025-12-26
+:Title:    Build system
+:Author:   pjsamm
+:Date:     2025-12-26
 :Category: Meta
 :Abstract: Details of the source code for the site's build system.
 :END:
@@ -28,20 +28,35 @@ generate this site. For a more general overview of this site's
 design, see [[file:site_overview.org][Site Overview]].
 
 The build system is implemented as a Python script, which generates a
-static site from Emacs [[https://orgmode.org/][Org]] files using [[https://boisgera.github.io/pandoc/][Pandoc]] to convert said files to
-HTML, and [[https://jinja.palletsprojects.com/en/stable/][Jinja]] for generating pages from templates.
+static site from Emacs [[https://orgmode.org/][Org]] files using [[https://boisgera.github.io/pandoc/][Pandoc]] to parse said files, and
+[[https://jinja.palletsprojects.com/en/stable/][Jinja]] for generating pages from templates.
 
 **** TODO Link to "wrap your dependencies" design principle        :easy:low:
 
-While it would be possible to use Pandoc from the CLI directly with
+While it would be possible to use Pandoc as the entire pipeline with
 its built-in support for filters and templates, that approach couples
 me even more tightly to Pandoc, which I consider undesirable.
 
-** Program outline
+* Program outline
 
 The overall structure of the program is as follows:
 
 #+begin_src python :tangle ../build.py
+  <<Definitions>>
+
+  <<Prepare build environment>>
+
+  <<Process Org files>>
+
+  <<Generate home page>>
+
+  <<Export static files>>
+#+end_src
+
+"Definitions" include imports, global constants, classes, and functions:
+
+#+name: Definitions
+#+begin_src python
   <<Imports>>
 
   <<Global constants>>
@@ -49,21 +64,956 @@ The overall structure of the program is as follows:
   <<Class definitions>>
 
   <<Function definitions>>
-
-  <<Prepare build directory>>
-
-  <<Initialize Jinja>>
-
-  <<Process org files>>
-
-  <<Generate home page>>
-
-  <<Export static files>>
 #+end_src
 
 **** DONE Add section for pre-build setup
 
-** Class definitions
+** Preparing the build environment
+
+Before the actual build process can begin, some initial setup must be
+performed. First, the build directory must be prepared, and second, a
+Jinja environment must be created.
+
+#+name: Prepare build environment
+#+begin_src python
+  <<Prepare build directory>>
+
+  <<Initialize Jinja>>
+#+end_src
+
+*** Preparing the build directory
+
+If the build directory does not exist, it must be created; if it
+does exist, its contents must be deleted (to ensure a deleted, moved,
+or renamed "zombie" page does not persist between builds).
+
+#+begin_src python :noweb-ref Global constants
+  BUILD_DIR = 'build'
+#+end_src
+
+#+name: Prepare build directory
+#+begin_src python
+  make_dir(BUILD_DIR)
+  empty_dir(BUILD_DIR)
+#+end_src
+
+*** Initializing Jinja
+
+**** DONE Remove file prefix from link once header links supported :easy:low:
+
+Jinja uses an ~Environment~ object as a high-level API for configuring
+and loading templates. This is created as a global variable for later
+use (see [[*Rendering a site page][Rendering a site page]]) and is set to load templates from a
+file system directory and trim whitespace from template blocks (see
+the Jinja [[https://jinja.palletsprojects.com/en/stable/api/#high-level-api][documentation]]).
+
+**** TODO Determine why the library is called jinja*2*             :easy:low:
+
+#+begin_src python :noweb-ref Imports
+  import jinja2
+#+end_src
+
+#+begin_src python :noweb-ref Global constants
+  TEMPLATES_DIR = 'templates'
+#+end_src
+
+#+name: Initialize Jinja
+#+begin_src python
+  jinja_env = jinja2.Environment(
+      loader=jinja2.FileSystemLoader(TEMPLATES_DIR),
+      trim_blocks=True,
+      lstrip_blocks=True
+  )
+#+end_src
+
+** Processing Org files
+
+*** Iterating the input files
+
+The primary input to the build system is a directory of Org files from
+which to generate the site's pages. So, to start, this directory is
+specified as a global constant.
+
+#+begin_src python :noweb-ref Global constants
+  PAGES_DIR = 'pages'
+#+end_src
+
+The directory tree containing the Org files is then walked, filtering
+for non-hidden files with the '.org' extension; these filters skip
+over the various temp/back-up files created automatically by Emacs
+when editing.
+
+**** DONE Add link to "Generating the home page"                   :easy:low:
+**** TODO Better integration of page tracking in explanation?       :med:low:
+
+The resulting pages are also tracked for use when [[*Generating the home page][generating the home
+page]].
+
+#+name: Process Org files
+#+begin_src python
+  pages = []
+  for dirpath, fname, ext in walk_dir(PAGES_DIR):
+      if fname[0] == '.' or ext != '.org':
+          continue
+
+      <<Process individual Org file>>
+
+      pages.append(page)
+#+end_src
+
+*** The Org file processing pipeline
+
+Processing an Org file consists of the following steps:
+
+#+name: Process individual Org file
+#+begin_src python
+  <<Read contents of Org file from disk>>
+
+  <<Parse Org file contents into AST>>
+
+  <<Generate page from AST>>
+
+  <<Render page views to HTML>>
+#+end_src
+
+**** TODO Link to principle about separating I/O                   :easy:low:
+**** DONE Insert links to subsections once supported               :easy:low:
+
+Reading the contents of the Org file is straightforward.
+
+#+name: Read contents of Org file from disk
+#+begin_src python
+  fpath = path_join(dirpath, fname + ext)
+  contents = read_file(fpath)
+#+end_src
+
+Once the contents have been read, they can be parsed into an AST. For
+details, see [[*Parsing an Org file][Parsing an Org file]].
+
+#+name: Parse Org file contents into AST
+#+begin_src python
+  ast = parse_org_file(contents)
+#+end_src
+
+The AST is then used to generate an abstract representation of the
+corresponding site page. For details, see [[*Generating page content][Generating page content]].
+
+**** TODO Better handling of page url                               :med:mid:
+
+#+name: Generate page from AST
+#+begin_src python
+  page_url = path_join(PAGES_DIR, fname)
+  page = generate_page(ast, page_url)
+#+end_src
+
+Next, the page views are rendered to their final HTML
+representation. For details, see [[*Rendering a site page][Rendering a site page]].
+
+Lastly, this HTML must be written to file. Much like reading, this is
+straightforward.
+
+#+name: Render page views to HTML
+#+begin_src python
+  for view in page.views:
+      view_html = render_page_view(page, view)
+      outpath = path_join(BUILD_DIR, view.url, 'index.html')
+      write_file(outpath, view_html)
+#+end_src
+
+** Generating the home page
+
+From the Python side, generating the home page is as simple as passing
+the list of pages generated as a template argument.
+
+#+name: Generate home page
+#+begin_src python
+  homepage_html = render_page('index.html', title='Home', pages=pages)
+  outpath = path_join(BUILD_DIR, 'index.html')
+  write_file(outpath, homepage_html)
+#+end_src
+
+** Exporting static files
+
+Lastly, static files (those that should be exported directly, without
+any further processing, such as stylesheets) must be copied to the
+build directory.
+
+#+begin_src python :noweb-ref Global constants
+  STYLES_DIR = 'styles'
+  SCRIPTS_DIR = 'scripts'
+#+end_src
+
+#+name: Export static files
+#+begin_src python
+  outdir = path_join(BUILD_DIR, STYLES_DIR)
+  copy_dir(STYLES_DIR, outdir)
+
+  outdir = path_join(BUILD_DIR, SCRIPTS_DIR)
+  copy_dir(SCRIPTS_DIR, outdir)
+#+end_src
+* Parsing an Org file
+
+**** TODO Eliminate the pandoc dependency once and for all!        :hard:low:
+**** TODO Insert link to "wrap dependencies" mantra                :easy:low:
+
+**** DONE Insert link to pandoc library documentation              :easy:low:
+**** TODO Better document how Pandoc exports Org files              :med:low:
+
+The heavy-lifting of parsing an Org file is performed by Pandoc, which
+is interfaced with via the [[https://boisgera.github.io/pandoc/][pandoc]] Python library.
+
+#+begin_src python :noweb-ref Imports
+  import pandoc
+#+end_src
+
+This library handles running the Pandoc subprocess and converting the
+JSON it produces into more user-friendly Python classes.
+
+**** DONE Insert link to to-do handling                            :easy:low:
+
+However, to truly hide the dependency from the rest of the script,
+these classes must all be "unwrapped" and converted to a
+library-agnostic format. This will also present an opportunity for
+additional processing along the way to better handle certain
+Org-specific elements, such as [[*Unwrapping headers and paragraphs][to-do items]].
+
+The API provided by the ~pandoc~ library for parsing is
+~pandoc.read()~. This returns a root ~Pandoc~ object, which itself
+contains a ~Meta~ object and a list of ~Block~ objects as
+children. The task, then, breaks down into unwrapping these two
+elements.
+
+#+begin_src python :noweb-ref Function definitions
+  def parse_org_file(contents):
+      ast = pandoc.read(source=contents, format='org')
+
+      <<Unwrap Pandoc metadata>>
+
+      <<Unwrap Pandoc blocks>>
+
+      return DocTree(metadata, nodes)
+
+#+end_src
+
+** Unwrapping Pandoc metadata
+
+**** DONE Link to org-mode documentation on property drawers       :easy:low:
+**** TODO Link to pandoc Python documentation on types             :easy:low:
+**** TODO Extract thoughts about asserting assumptions into design principles :easy:low:
+**** TODO Convert notes to proper footnotes/sidenotes               :med:low:
+
+Every Org file in this repository starts with a
+[[https://orgmode.org/manual/Property-Syntax.html][property drawer]]
+that defines its metadata (e.g. title, author, creation date,
+etc.). This populates the aforementioned ~Meta~ object, which contains
+a dictionary of (~str~, ~MetaString~) pairs.
+
+(Note 1: The types used by the ~pandoc~ library are generally
+"list-like," meaning rather than as member variables, attributes are
+accessed via indices and slices.)
+
+(Note 2: ~assert~ statements are used throughout this section of the
+script to document my assumptions about how Pandoc parses Org files,
+so that it is immediately clear if these assumptions ever turn out to
+be incorrect.)
+
+(Note 3: Technically, the type of the dictionary values is defined to
+be ~MetaValue~, which can be one of many possible child types; I am
+presently assuming that in the case of Org files, it always uses
+~MetaString~.)
+
+#+name: Unwrap Pandoc metadata
+#+begin_src python
+  # Unwrap 'Meta' object
+  metadata = ast[0][0]
+  for k, v in metadata.items():
+      assert(type(v) is pandoc.types.MetaString)
+      # Unwrap 'MetaString' object
+      metadata[k] = v[0]
+
+  <<Add file modification date to metadata>>
+#+end_src
+
+#+name: Add file modification date to metadata
+#+begin_src python
+  mtime = get_file_mtime(fpath)
+  mdate = timestamp_to_date(mtime)
+  metadata['modified'] = mdate
+#+end_src
+
+** Unwrapping Pandoc blocks
+
+Unwrapping the list of ~Block~ objects contained as the second element
+of the root ~Pandoc~ object is performed by iterating through them,
+unwrapping each block individually, and appending it to a list of
+nodes.
+
+#+name: Unwrap Pandoc blocks
+#+begin_src python
+  nodes = []
+  for block in ast[1]:
+      node = unwrap_block(block)
+      nodes.append(node)
+#+end_src
+
+**** TODO Split children into children/inlines, more consistent handling of each :med:mid:
+
+The ~Block~ objects represent each of the individual structural
+elements in the Org file as one of several different subtypes
+(e.g. ~Header~, ~Para~, ~CodeBlock~, etc.).
+
+To start then, an ~Enum~ is created to represent the various output
+node types.
+
+#+begin_src python :noweb-ref Imports
+  import enum
+#+end_src
+
+#+begin_src python :noweb-ref Class definitions
+  class NodeType(enum.Enum):
+      CODE = enum.auto()
+      HEADING = enum.auto()
+      LINK = enum.auto()
+      LIST = enum.auto()
+      LIST_ITEM = enum.auto()
+      META = enum.auto()
+      PARAGRAPH = enum.auto()
+      TABLE = enum.auto()
+      TABLE_ROW = enum.auto()
+      TABLE_CELL = enum.auto()
+      TAG = enum.auto()
+      TASK = enum.auto()
+      TEXT = enum.auto()
+      TOKEN = enum.auto()
+
+#+end_src
+
+Then, a map from Pandoc types to the functions responsible for
+unwrapping them is set up.
+
+#+begin_src python :noweb-ref Imports
+  import pandoc.types as pdt
+#+end_src
+
+#+name: Pandoc type unwrapping map
+#+begin_src python :noweb-ref
+  pandoc_type_map = {
+      pdt.BulletList: unwrap_list,
+      pdt.Code: unwrap_code,
+      pdt.CodeBlock: unwrap_code,
+      pdt.Emph: unwrap_textblock,
+      pdt.Header: unwrap_head_or_para,
+      pdt.Link: unwrap_link,
+      pdt.OrderedList: unwrap_list,
+      pdt.Para: unwrap_head_or_para,
+      pdt.Plain: unwrap_textblock,
+      pdt.RawBlock: unwrap_rawblock,
+      pdt.SoftBreak: unwrap_token,
+      pdt.Space: unwrap_token,
+      pdt.Span: unwrap_span,
+      pdt.Str: unwrap_token,
+      pdt.Strong: unwrap_textblock,
+      pdt.Table: unwrap_table,
+  }
+#+end_src
+
+Finally, unwrapping a block consists of looking up the block type's
+unwrapper in our map and applying it.
+
+#+begin_src python :noweb-ref Function definitions
+  <<Pandoc type unwrapping functions>>
+  <<Pandoc type unwrapping map>>
+
+  def unwrap_block(block):
+      pandoc_type = type(block)
+
+      if pandoc_type not in pandoc_type_map:
+          raise TypeError(f'Unhandled block type: {pandoc_type}')
+
+      node = pandoc_type_map[pandoc_type](block)
+
+      return node
+
+#+end_src
+
+An additional helper function is also defined for unwrapping a list of
+blocks.
+
+#+begin_src python :noweb-ref Function definitions
+  def unwrap_blocks(blocks):
+      return [unwrap_block(block) for block in blocks]
+
+#+end_src
+
+*** Unwrapping code
+
+Code blocks are represented by ~CodeBlock~ objects, which consist of
+an ~Attr~ tuple and the contained code (text). The language is
+specified in the class list of the ~Attr~ tuple.
+
+**** DONE Determine whether attributes list contains anything useful
+**** DONE Verify whether language is only element of class list
+
+Inline code blocks are represented by ~Code~ objects and consist of an
+~Attr~ tuple and the contained code (text).
+
+**** DONE Determine significance of 'verbatim' class
+**** DONE Verify whether rest of ~Attr~ tuple goes unused
+
+#+begin_src python :noweb-ref Pandoc type unwrapping functions
+  def unwrap_code(block):
+      node = DocNode(NodeType.CODE)
+      node.text = block[1]
+      node.inline = (type(block) is pdt.Code)
+
+      return node
+
+#+end_src
+
+*** Unwrapping headers and paragraphs
+
+**** TODO Determine whether 'tokens' is really the appropriate term :easy:low:
+
+~Header~ objects contain the header level (1, 2, 3, etc.), an ~Attr~
+tuple of the form (id, classes, attributes), and then a list
+representing the parsed header tokens (type ~Inline~). These must be
+unwrapped recursively.
+
+Because ~TODO~ items are represented in an Org mode using the same
+syntax as headings, they end up getting parsed as a ~Span~ in either a
+~Header~ or a ~Para~ object's ~Inline~ tokens (since Pandoc exports
+headings deeper than ~org-export-headline-levels~ as paragraphs).
+
+**** DONE Verify whether the class and attribute lists are unused
+**** DONE Clean up TODO detection/unwrapping logic
+**** TODO Split into unwrap_head/unwrap_para (merge para with textblock?) :med:low:
+
+#+begin_src python :noweb-ref Pandoc type unwrapping functions
+  def unwrap_head_or_para(block):
+      if type(block) is pdt.Header:
+          node = DocNode(NodeType.HEADING)
+          node.level = block[0]
+          i = 2
+      else:
+          node = DocNode(NodeType.PARAGRAPH)
+          i = 0
+
+      node.children = unwrap_blocks(block[i])
+
+      if node.children[0].type == NodeType.TAG:
+          is_todo = (node.children[0].text == 'todo')
+          is_done = (node.children[0].text == 'done')
+          assert(is_todo or is_done)
+          node.type = NodeType.TASK
+          node.done = is_done
+          # Skip TODO keyword and first space
+          node.children = node.children[2:]
+
+      first_tag_idx = -1
+      for i, child in enumerate(node.children):
+          if child.type == NodeType.TAG:
+              first_tag_idx = i
+              break
+
+      if first_tag_idx >= 0:
+          node.tags = [tag.text for tag in node.children[first_tag_idx:]
+                       if tag.type == NodeType.TAG]
+          node.children = node.children[:first_tag_idx]
+      else:
+          node.tags = []
+
+      return node
+
+#+end_src
+
+*** Unwrapping links
+
+~Link~ objects contain an ~Attr~ tuple, a list of ~Inline~ tokens (the
+link text), and the link's ~Target~ (a 2-tuple).
+
+**** DONE Verify whether the Attr tuple is unused
+**** DONE Verify that second element of Target is title (and unused)
+
+#+begin_src python :noweb-ref Pandoc type unwrapping functions
+  def unwrap_link(block):
+      node = DocNode(NodeType.LINK)
+
+      node.target = target = block[2][0]
+
+      i = target.find(':')
+      if i >= 0 and i < len(target) - 1 and target[i + 1] != ':':
+          scheme = target[:i]
+          if scheme == 'http' or scheme == 'https':
+              node.external = True
+          elif scheme == 'file':
+              node.external = False
+          else:
+              raise ValueError(f'Unhandled link scheme: {scheme}')
+      else:
+          node.external = False
+
+      assert(block[2][1] == '') # Unused title field
+
+      node.children = unwrap_blocks(block[1])
+
+      return node
+
+#+end_src
+
+*** Unwrapping lists
+
+An ~OrderedList~ contains a tuple of list attributes of the form
+(start, style, delim), then a list of the list's items (each of which
+is itself a list of blocks).
+
+#+begin_src python :noweb-ref Pandoc type unwrapping functions
+  def unwrap_list(block):
+      node = DocNode(NodeType.LIST)
+
+      node.ordered = (type(block) is pdt.OrderedList)
+
+      if node.ordered:
+          node.start = block[0][0]
+          node.style = str(block[0][1])[:-2] # Strip trailing parens
+          node.delim = str(block[0][2])[:-2] # ""
+          i = 1
+      else:
+          i = 0
+
+      for item in block[i]:
+          item_node = DocNode(NodeType.LIST_ITEM)
+          item_node.children = unwrap_blocks(item)
+          node.children.append(item_node)
+
+      return node
+
+#+end_src
+
+*** Unwrapping raw blocks
+
+**** TODO More testing of other cases that emit RawBlock (see Pandoc source code) :easy:low:
+
+~RawBlock~ objects contain their ~Format~ and associated ~Text~. This
+gets emitted by unhandled meta lines (lines starting with "#+").
+
+#+begin_src python :noweb-ref Pandoc type unwrapping functions
+  def unwrap_rawblock(block):
+      assert(block[0][0] == 'org')
+
+      matches = regex_match(r'#\+(\w+):\s+(.+)', block[1])
+      assert(matches is not None)
+
+      node = DocNode(NodeType.META)
+      node.key = matches[0].lower()
+      node.value = matches[1]
+
+      return node
+
+#+end_src
+
+*** Unwrapping spans
+
+~Span~ objects consist of an ~Attr~ tuple and a list of ~Inline~
+tokens, much like a header. This gets emitted for ~TODO~ items, in
+which case the class list in the ~Attr~ tuple will be ~['todo',
+'TODO']~.
+
+**** DONE Determine under what other circumstances Span gets emitted
+**** DONE Check how 'DONE' tasks get emitted
+**** DONE Pandoc categories certain valid internal links as "spurious" and emits them as spans; add custom handling for these :med:mid:
+**** TODO Auto-detect invalid internal links                        :med:mid:
+
+#+begin_src python :noweb-ref Pandoc type unwrapping functions
+  def unwrap_span(block):
+      if 'spurious-link' in block[0][1]:
+          node = DocNode(NodeType.LINK)
+
+          key, target = block[0][2][0]
+          assert(key == 'target')
+
+          node.target = target
+          node.external = False
+
+          assert(type(block[1][0]) is pdt.Emph)
+          node.children = unwrap_blocks(block[1][0][0])
+      else:
+          node = DocNode(NodeType.TAG)
+
+          if 'tag' in block[0][1]:
+              key, tag = block[0][2][0]
+              assert(key == 'tag-name')
+          else:
+              tag = block[0][1][0]
+              assert(tag == 'todo' or tag == 'done')
+
+          node.text = tag
+
+      return node
+
+#+end_src
+
+*** Unwrapping tables
+
+#+begin_src python :noweb-ref Pandoc type unwrapping functions
+  def unwrap_table(block):
+      def unwrap_cell(cell, is_header=False):
+          node = DocNode(NodeType.TABLE_CELL)
+          node.is_header = is_header
+          assert(cell[2][0] == 1)
+          assert(cell[3][0] == 1)
+          assert(len(cell[4]) <= 1)
+          node.children = unwrap_blocks(cell[4])
+          return node
+
+      def unwrap_row(row, is_header=False):
+          node = DocNode(NodeType.TABLE_ROW)
+          node.children = [unwrap_cell(cell, is_header) for cell in row[1]]
+          return node
+
+      node = DocNode(NodeType.TABLE)
+
+      table_head = block[3]
+      if len(table_head[1]) != 0:
+          assert(len(table_head[1]) == 1)
+          node.children.append(unwrap_row(table_head[1][0], is_header=True))
+
+      assert(len(block[4]) == 1)
+      table_body = block[4][0]
+      assert(table_body[1][0] == 0)
+      assert(len(table_body[2]) == 0)
+
+      node.children += [unwrap_row(row) for row in table_body[3]]
+
+      return node
+
+#+end_src
+
+*** Unwrapping styled text
+
+#+begin_src python :noweb-ref Pandoc type unwrapping functions
+  def unwrap_textblock(block):
+      node = DocNode(NodeType.TEXT)
+      node.children = unwrap_blocks(block[0])
+
+      node.strong = (type(block) is pdt.Strong)
+      node.emph = (type(block) is pdt.Emph)
+
+      return node
+
+#+end_src
+
+*** Unwrapping text tokens
+
+#+begin_src python :noweb-ref Pandoc type unwrapping functions
+  def unwrap_token(block):
+      node = DocNode(NodeType.TOKEN)
+
+      if type(block) is pdt.Str:
+          node.text = block[0]
+      else:
+          node.text = ' '
+
+      return node
+
+#+end_src
+
+* Generating page content
+
+**** TODO Auto-insert page title element                           :easy:mid:
+**** DONE Replace pandoc.write() with custom writer for better output formatting and control
+
+Now that the Org file has been parsed into an AST, the AST can be
+converted to HTML representing the page content by visiting each node
+in the AST node list.
+
+**** TODO "Prettify" the HTML output (newlines & indentation)       :med:low:
+
+#+begin_src python :noweb-ref Function definitions
+  def generate_page(ast, page_url):
+      title = ast.metadata['title']
+      cdate = ast.metadata['date']
+      mdate = ast.metadata['modified']
+      category = ast.metadata['category']
+      abstract = ast.metadata['abstract']
+      page = Page(title, cdate, mdate, category, abstract)
+
+      main_view = generate_doc_view(ast)
+      main_view.url = path_join(page_url, 'doc')
+      page.views.append(main_view)
+
+      task_view = generate_task_view(ast)
+      task_view.url = path_join(page_url, 'tasks')
+      page.views.append(task_view)
+
+      page.default_view = main_view
+
+      return page
+
+#+end_src
+
+*** Generating the documentation page view
+
+#+begin_src python :noweb-ref Function definitions
+  def generate_doc_view(ast):
+      view = PageView('Doc')
+      
+      <<Generate doc view contents>>
+
+      <<Generate doc view table of contents>>
+
+      return view
+
+#+end_src
+
+Similarly to the way parsing was handled, each node type will need its
+own case, with support for recursively converting children.
+
+**** DONE Better method for stripping tags than hard-coded values  :easy:mid:
+
+#+name: Generate doc view contents
+#+begin_src python
+  headings = []
+  view.content = ''
+  for node in ast.nodes:
+      node_html = render_node(node)
+      if node.type == NodeType.HEADING:
+          headings.append(node)
+      view.content += node_html
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def render_nodes(nodes):
+      html = ''
+      for node in nodes:
+          html += render_node(node)
+      return html
+
+#+end_src
+
+The strategy for rendering the page's contents is similar to that for
+generating the AST - define a map from node type to its corresponding
+render function.
+
+**** TODO Get everything to use render_default                      :med:low:
+
+#+name: HTML render map
+#+begin_src python
+  html_render_map = {
+      NodeType.CODE: render_code,
+      NodeType.HEADING: render_heading,
+      NodeType.LINK: render_link,
+      NodeType.LIST: render_list,
+      NodeType.LIST_ITEM: lambda node: render_default(node, 'li'),
+      NodeType.META: None,
+      NodeType.PARAGRAPH: lambda node: render_default(node, 'p'),
+      NodeType.TABLE: lambda node: render_default(node, 'table'),
+      NodeType.TABLE_ROW: lambda node: render_default(node, 'tr'),
+      NodeType.TABLE_CELL: render_table_cell,
+      NodeType.TAG: None,
+      NodeType.TASK: None,
+      NodeType.TEXT: render_text,
+      NodeType.TOKEN: render_token,
+  }
+#+end_src
+
+**** TODO Add figcaption for named blocks                          :easy:mid:
+**** TODO Don't hard code language                                :easy:high:
+**** TODO Use Pandoc for build-time syntax highlighting             :med:mid:
+
+#+begin_src python :noweb-ref Function definitions
+  def render_code(node):
+      text = html_escape(node.text).strip()
+
+      if node.inline:
+          html = f'<code class="code-inline">{text}</code>'
+      else:
+          html = '<figure class="code-block">'
+          html += '<pre><code class="language-python">'
+          html += text
+          html += '</code></pre></figure>'
+
+      return html
+
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def render_default(node, tag, **kwargs):
+      body = render_nodes(node.children)
+      attrs = ''.join([f' {k}="{v}"' for k,v in kwargs.items()])
+      return f'<{tag}{attrs}>{body}</{tag}>'
+
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def render_heading(node):
+      id_ = html_slugify(node.inner_text())
+      tag = f'h{node.level}'
+      return render_default(node, tag, id=id_)
+
+#+end_src
+
+**** DONE Detect links to other Org files and convert appropriately :med:mid:
+**** TODO More robust link conversion                               :med:mid:
+**** TODO Open external links in new tab & allow for separate styling :easy:low:
+
+#+begin_src python :noweb-ref Function definitions
+  def render_link(node):
+      target = node.target
+      if not node.external:
+          i = target.find('::')
+          if i >= 0:
+              fname = target[:i]
+              frag = target[i + 2:]
+          elif target[0] == '*' or target[0] == '#':
+              fname = ''
+              frag = target
+          else:
+              fname = target
+              frag = ''
+          fname = fname.replace('.org', '.html')
+          frag = '#' + html_slugify(frag[1:])
+          target = fname + frag
+      return render_default(node, 'a', href=target)
+
+#+end_src
+
+**** TODO Add support for start, style, & delim                     :med:low:
+
+#+begin_src python :noweb-ref Function definitions
+  def render_list(node):
+      tag = 'ol' if node.ordered else 'ul'
+      return render_default(node, tag)
+
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def render_table_cell(node):
+      tag = 'th' if node.is_header else 'td'
+      return render_default(node, tag)
+
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def render_text(node):
+      if node.strong:
+          return render_default(node, 'strong')
+      if node.emph:
+          return render_default(node, 'em')
+      return render_nodes(node.children)
+
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def render_token(node):
+      return html_escape(node.text)
+
+#+end_src
+
+**** DONE Merge logic for parent tags
+**** DONE Use integer constants instead of strings
+**** DONE Remove soft breaks from AST entirely
+
+#+begin_src python :noweb-ref Function definitions
+  <<HTML render map>>
+
+  def render_node(node):
+      if node.type not in html_render_map:
+          raise TypeError(f'Unhandled node type: {node.type}')
+
+      renderer = html_render_map[node.type]
+      if renderer is None:
+          return ''
+      
+      html = renderer(node)
+      return html
+
+#+end_src
+
+#+name: Generate doc view table of contents
+#+begin_src python
+  view.toc = '<h1>Table of Contents</h1>'
+  prev_level = 0
+  for node in headings:
+      if node.level > prev_level:
+          view.toc += '<ul><li>' * (node.level - prev_level)
+      else:
+          if node.level < prev_level:
+              view.toc += '</li></ul>' * (prev_level - node.level)
+          view.toc += '</li><li>'
+      text = node.inner_text()
+      id_ = html_slugify(text)
+      view.toc += f'<a href="#{id_}">{text}</a>'
+      prev_level = node.level
+  view.toc += '</li></ul>' * prev_level
+#+end_src
+
+*** Generating the task page view
+
+**** TODO Auto-detect two tags from same category                  :easy:mid:
+
+#+begin_src python :noweb-ref Function definitions
+  def generate_task_view(ast):
+      view = PageView('Tasks')
+      view.tasks = []
+
+      stack = []
+      for node in ast.nodes:
+          if node.type == NodeType.HEADING:
+              while len(stack) > 0 and node.level <= stack[-1].level:
+                  stack.pop()
+              stack.append(node)
+
+          if node.type != NodeType.TASK:
+              continue
+
+          task = DocNode(NodeType.TASK)
+          task.state = 'done' if node.done else 'todo'
+
+          if len(stack) == 0:
+              task.section = '—'
+          else:
+              task.section = ' > '.join([heading.inner_text() for heading in stack])
+
+          task.tags = []
+          for tag in node.tags:
+              if tag in ['easy', 'med', 'hard']:
+                  label = 'Diff'
+              elif tag in ['low', 'mid', 'high']:
+                  label = 'Prio'
+              else:
+                  continue
+              task.tags.append((label, tag))
+
+          task.description = node.inner_text().strip()
+
+          view.tasks.append(task)
+
+      return view
+
+#+end_src
+
+* Rendering a site page
+
+When it comes time to actually render a page, we use the Jinja
+~Environment~ created earlier to load the template (AFAIK Jinja
+handles caching for us), then use the template to render the final
+output.
+
+#+begin_src python :noweb-ref Function definitions
+  def render_page(template, *args, **kwargs):
+      jinja_template = jinja_env.get_template(template)
+      return jinja_template.render(*args, **kwargs)
+
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def render_page_view(page, view):
+      jinja_template = jinja_env.get_template(f'view_{view.id}.html')
+      return jinja_template.render(page=page, view=view)
+
+#+end_src
+
+* Class definitions
 
 **** TODO Extract my philosophy on OOP/classes into a better location? :easy:low:
 
@@ -109,14 +1059,13 @@ boilerplate.
 
 #+end_src
 
-**** TODO More robust ID generation :easy:med:
+**** DONE More robust ID generation                                :easy:mid:
 
 #+begin_src python :noweb-ref Class definitions
   class PageView:
-      def __init__(self, name, content):
-          self.id = name.lower().replace(' ', '-')
+      def __init__(self, name):
+          self.id = html_slugify(name)
           self.name = name
-          self.content = content
 
 #+end_src
 
@@ -128,7 +1077,7 @@ useful throughout the build script.
 ** String utilities
 
 **** DONE Split into "Regex" and "HTML" sections
-**** TODO Add reference to "wrap your dependencies" :easy:low:
+**** TODO Add reference to "wrap your dependencies"                :easy:low:
 
 
 The functions here provide miscellaneous utilities for working with
@@ -156,8 +1105,8 @@ This primarily exists to wrap the ~re~ library dependency.
 
 *** HTML utilities
 
-**** TODO Add reference to "reinvent the wheel" (html library) :easy:low:
-**** TODO Add support for escaping quotes? :easy:low:
+**** TODO Add reference to "reinvent the wheel" (html library)     :easy:low:
+**** TODO Add support for escaping quotes?                         :easy:low:
 
 This replaces a dependency on the ~html~ library.
 
@@ -176,9 +1125,33 @@ escape sequences will also get replaced!
 
 #+end_src
 
+#+begin_src python :noweb-ref Function definitions
+  def html_slugify(string):
+      """Convert an arbitrary string to a valid CSS identifier
+      by replacing non-alphanumeric characters with hyphens.
+      """
+      slug = ''
+      for c in string:
+          slug += c.lower() if c.isalnum() else '-'
+      return slug
+
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def html_strip_tag(string):
+      """Remove the outermost HTML tag from a string.
+      """
+      start = min(0, string.find('>'))
+      end = string.rfind('<')
+      if end < 0:
+          end = len(string)
+      return string[start:end]
+
+#+end_src
+
 ** File system utilities
 
-**** TODO Add link to "wrap your dependencies" mantra :easy:low:
+**** TODO Add link to "wrap your dependencies" mantra              :easy:low:
 
 These functions primarily serve to wrap dependencies on the ~os~ and
 ~shutil~ libraries.
@@ -191,12 +1164,37 @@ These functions primarily serve to wrap dependencies on the ~os~ and
   import shutil
 #+end_src
 
+*** Paths
+
 #+begin_src python :noweb-ref Function definitions
   def path_join(*args):
       """Join several path elements together with the OS-appropriate
       path separator.
       """
       return os.path.join(*args)
+
+#+end_src
+
+*** Files
+
+#+begin_src python :noweb-ref Function definitions
+  def read_file(path):
+      """Return the contents of a UTF-8 file as a string.
+      """
+      with open(fpath, 'r', encoding='utf-8') as f:
+          contents = f.read()
+      return contents
+
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def write_file(fpath, string):
+      """Write a string to a file with UTF-8 encoding.
+      """
+      dirpath = os.path.split(fpath)[0]
+      os.makedirs(dirpath, exist_ok=True)
+      with open(fpath, 'w+', encoding='utf-8') as f:
+          f.write(string)
 
 #+end_src
 
@@ -208,6 +1206,8 @@ These functions primarily serve to wrap dependencies on the ~os~ and
       return os.path.getmtime(path)
 
 #+end_src
+
+*** Directories
 
 #+begin_src python :noweb-ref Function definitions
   def make_dir(path):
@@ -295,855 +1295,3 @@ These functions primarily serve to wrap dependencies on the ~os~ and
 
 #+end_src
 
-* Preparing the build environment
-
-Before the actual build process can begin, some initial setup must be
-performed. First, the build directory must be prepared, and second, a
-Jinja environment must be created.
-
-** Preparing the build directory
-
-If the build directory does not exist, it must be created; if it
-does exist, its contents must be deleted (to ensure a deleted, moved,
-or renamed "zombie" page does not persist between builds).
-
-(This step is trivialized by the utility functions defined above.)
-
-#+begin_src python :noweb-ref Global constants
-  BUILD_DIR = 'build'
-#+end_src
-
-#+name: Prepare build directory
-#+begin_src python
-  make_dir(BUILD_DIR)
-  empty_dir(BUILD_DIR)
-#+end_src
-
-** Initializing Jinja
-
-**** TODO Remove file prefix from link once intra-file links supported :easy:low:
-
-Jinja uses an ~Environment~ object as a high-level API for configuring
-and loading templates. This is created as a global variable for later
-use (see [[file:build_system.org::*Populating the HTML template][Populating the HTML template]]) and is set to load templates
-from a file system directory and trim whitespace from template blocks
-(see [[https://jinja.palletsprojects.com/en/stable/api/#high-level-api][documentation]]).
-
-**** TODO Determine why the library is called jinja*2* :easy:low:
-
-#+begin_src python :noweb-ref Imports
-  import jinja2
-#+end_src
-
-#+begin_src python :noweb-ref Global constants
-  TEMPLATES_DIR = 'templates'
-#+end_src
-
-#+name: Initialize Jinja
-#+begin_src python
-  jinja_env = jinja2.Environment(
-      loader=jinja2.FileSystemLoader(TEMPLATES_DIR),
-      trim_blocks=True,
-      lstrip_blocks=True
-  )
-#+end_src
-
-* Processing Org files
-
-**** TODO Add reference to "wrap your dependencies" :easy:low:
-**** TODO Add reference to "reinvent the wheel" (pandoc.write) :easy:low:
-
-Now that the build environment has been initialized, the process of
-actually generating the site's pages can begin. This makes up the bulk
-of the build system's complexity, since it includes both a second
-parsing pass on the AST generated by Pandoc and a custom HTML
-generator in place of ~pandoc.write()~.
-
-To start, the directory tree containing the Org files is walked,
-filtering for non-hidden files with the '.org' extension (Emacs
-automatically creates several different temp/back-up files when
-editing that should be ignored).
-
-Processing an Org file then consists of four steps:
-1. Parse the file contents into an abstract syntax tree (AST).
-2. Generate the page content (as HTML) from the AST.
-3. Use that HTML (and any other relevant metadata) to populate a
-   static page template.
-4. Write the final result to disk.
-
-**** TODO Add link to "Generating the home page" :easy:low:
-
-The resulting pages are tracked for use when generating the
-home page.
-
-#+begin_src python :noweb-ref Global constants
-  PAGES_DIR = 'pages'
-#+end_src
-
-#+name: Process org files
-#+begin_src python
-  pages = []
-  for dirpath, fname, ext in walk_dir(PAGES_DIR):
-      if fname[0] == '.' or ext != '.org':
-          continue
-
-      <<Parse Org file into AST>>
-
-      <<Generate page from AST>>
-
-      <<Create page from template>>
-
-      <<Write page to file>>
-#+end_src
-
-** Parsing an Org file
-
-**** TODO Eliminate the pandoc dependency once and for all! :hard:low:
-**** TODO Insert link to "wrap dependencies" mantra :easy:low:
-
-The procedure for parsing an Org file is wrapped in a function call to
-hide the Pandoc dependency, so on the surface it is quite simple:
-
-#+name: Parse Org file into AST
-#+begin_src python
-  fpath = path_join(dirpath, fname + ext)
-  ast = parse_org_file(fpath)
-#+end_src
-
-**** TODO Insert link to pandoc library documentation :easy:low:
-**** TODO Insert link to to-do handling :easy:low:
-**** TODO Better document my knowledge of how Pandoc exports Org files :med:low:
-
-However, the function itself is rather involved. The ~pandoc~ library
-uses a wide range of custom types to represent the various possible
-elements in a document, so to truly hide the dependency from the rest
-of the script, these types must all be "unwrapped" and converted to a
-library-agnostic format. (The effort is not altogether a waste,
-either, as it allows for additional processing to better handle
-certain Org-specific elements along the way, such as to-do items.)
-
-At the high level, ~pandoc.read()~ returns a root ~Pandoc~ object,
-which itself contains a ~Meta~ object and a list of ~Block~
-objects as children. The task, then, breaks down into unwrapping these
-two elements.
-
-#+begin_src python :noweb-ref Imports
-  import pandoc
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def parse_org_file(fpath):
-      ast = pandoc.read(file=fpath)
-
-      <<Unwrap metadata>>
-
-      <<Unwrap blocks>>
-
-      return DocTree(metadata, nodes)
-
-#+end_src
-
-*** Unwrapping Pandoc metadata
-
-**** TODO Link to org-mode documentation on property drawers :easy:low:
-**** TODO Link to pandoc Python documentation on types :easy:low:
-**** TODO Extract thoughts about asserting assumptions into design principles :easy:low:
-**** TODO Convert notes to proper footnotes/sidenotes :med:low:
-
-Every Org file in this repository starts with a property drawer that
-defines its metadata, like title, author, date, etc. This populates
-the aforementioned ~Meta~ object, which contains a dictionary of
-(~str~, ~MetaString~) pairs.
-
-(Note 1: The types used by the ~pandoc~ library are generally
-"list-like," meaning rather than as member variables, attributes are
-accessed via indices and slices.)
-
-(Note 2: ~assert~ statements are used throughout this section of the
-script to document my assumptions about how Pandoc parses Org files,
-so that it is immediately clear if these assumptions ever turn out to
-be incorrect.)
-
-(Note 3: Technically, the type of the dictionary values is defined to
-be ~MetaValue~, which can be one of many possible child types; I am
-presently assuming that in the case of Org files, it always uses
-~MetaString~.)
-
-#+name: Unwrap metadata
-#+begin_src python
-  # Unwrap 'Meta' object
-  metadata = ast[0][0]
-  for k, v in metadata.items():
-      assert(type(v) is pandoc.types.MetaString)
-      # Unwrap 'MetaString' object
-      metadata[k] = v[0]
-
-  <<Add file modification date to metadata>>
-#+end_src
-
-#+name: Add file modification date to metadata
-#+begin_src python
-  mtime = get_file_mtime(fpath)
-  mdate = timestamp_to_date(mtime)
-  metadata['modified'] = mdate
-#+end_src
-
-*** Unwrapping Pandoc blocks
-
-**** TODO Split children into children/inlines, more consistent handling of each :med:mid:
-
-The second element of the root ~Pandoc~ object is a list of ~Block~
-objects, which represent each of the individual blocks in the Org file
-as one of several different subtypes (e.g. ~Header~, ~Para~,
-~CodeBlock~, etc.). Filters for each block type are added and expanded
-on an as-needed basis.
-
-#+name: Unwrap blocks
-#+begin_src python
-  nodes = unwrap_blocks(ast[1])
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def unwrap_blocks(blocks):
-      return [unwrap_block(block) for block in blocks]
-
-#+end_src
-
-To start, an ~Enum~ is created to represent the various output node
-types.
-
-#+begin_src python :noweb-ref Imports
-  import enum
-#+end_src
-
-#+begin_src python :noweb-ref Class definitions
-  class NodeType(enum.Enum):
-      CODE = enum.auto()
-      HEADING = enum.auto()
-      LINK = enum.auto()
-      LIST = enum.auto()
-      LIST_ITEM = enum.auto()
-      META = enum.auto()
-      PARAGRAPH = enum.auto()
-      TABLE = enum.auto()
-      TABLE_ROW = enum.auto()
-      TABLE_CELL = enum.auto()
-      TAG = enum.auto()
-      TASK = enum.auto()
-      TEXT = enum.auto()
-      TOKEN = enum.auto()
-
-#+end_src
-
-Then, a map from Pandoc types to the functions responsible for
-unwrapping them is set up.
-
-#+begin_src python :noweb-ref Imports
-  import pandoc.types as pdt
-#+end_src
-
-#+name: Pandoc type unwrapping map
-#+begin_src python :noweb-ref
-  pandoc_type_map = {
-      pdt.BulletList: unwrap_list,
-      pdt.Code: unwrap_code,
-      pdt.CodeBlock: unwrap_code,
-      pdt.Emph: unwrap_textblock,
-      pdt.Header: unwrap_head_or_para,
-      pdt.Link: unwrap_link,
-      pdt.OrderedList: unwrap_list,
-      pdt.Para: unwrap_head_or_para,
-      pdt.Plain: unwrap_textblock,
-      pdt.RawBlock: unwrap_rawblock,
-      pdt.SoftBreak: unwrap_token,
-      pdt.Space: unwrap_token,
-      pdt.Span: unwrap_span,
-      pdt.Str: unwrap_token,
-      pdt.Strong: unwrap_textblock,
-      pdt.Table: unwrap_table,
-  }
-#+end_src
-
-Code blocks are represented by ~CodeBlock~ objects, which consist of
-an ~Attr~ tuple and the contained code (text). The language is
-specified in the class list of the ~Attr~ tuple.
-
-**** DONE Determine whether attributes list contains anything useful
-**** DONE Verify whether language is only element of class list
-
-Inline code blocks are represented by ~Code~ objects and consist of an
-~Attr~ tuple and the contained code (text).
-
-**** DONE Determine significance of 'verbatim' class
-**** DONE Verify whether rest of ~Attr~ tuple goes unused
-
-#+begin_src python :noweb-ref Function definitions
-  def unwrap_code(block):
-      node = DocNode(NodeType.CODE)
-      node.text = block[1]
-      node.inline = (type(block) is pdt.Code)
-
-      return node
-
-#+end_src
-
-**** TODO Determine whether 'tokens' is really the appropriate term :easy:low:
-
-~Header~ objects contain the header level (1, 2, 3, etc.), an ~Attr~
-tuple of the form (id, classes, attributes), and then a list
-representing the parsed header tokens (type ~Inline~). These must be
-unwrapped recursively.
-
-Because ~TODO~ items are represented in an Org mode using the same
-syntax as headings, they end up getting parsed as a ~Span~ in either a
-~Header~ or a ~Para~ object's ~Inline~ tokens (since Pandoc exports
-headings deeper than ~org-export-headline-levels~ as paragraphs).
-
-**** DONE Verify whether the class and attribute lists are unused
-**** DONE Clean up TODO detection/unwrapping logic
-**** TODO Split into unwrap_head/unwrap_para (merge para with textblock?) :med:low:
-
-#+begin_src python :noweb-ref Function definitions
-  def unwrap_head_or_para(block):
-      if type(block) is pdt.Header:
-          node = DocNode(NodeType.HEADING)
-          node.level = block[0]
-          i = 2
-      else:
-          node = DocNode(NodeType.PARAGRAPH)
-          i = 0
-
-      node.children = unwrap_blocks(block[i])
-
-      if node.children[0].type == NodeType.TAG:
-          is_todo = (node.children[0].text == 'todo')
-          is_done = (node.children[0].text == 'done')
-          assert(is_todo or is_done)
-          node.type = NodeType.TASK
-          node.done = is_done
-          # Skip TODO keyword and first space
-          node.children = node.children[2:]
-
-      first_tag_idx = -1
-      for i, child in enumerate(node.children):
-          if child.type == NodeType.TAG:
-              first_tag_idx = i
-              break
-
-      if first_tag_idx >= 0:
-          node.tags = [tag.text for tag in node.children[first_tag_idx:]
-                       if tag.type == NodeType.TAG]
-          node.children = node.children[:first_tag_idx]
-      else:
-          node.tags = []
-
-      return node
-
-#+end_src
-
-~Link~ objects contain an ~Attr~ tuple, a list of ~Inline~ tokens (the
-link text), and the link's ~Target~ (a 2-tuple).
-
-**** DONE Verify whether the Attr tuple is unused
-**** DONE Verify that second element of Target is title (and unused)
-**** TODO Pandoc categories certain valid internal links as "spurious" and emits them as spans; add custom handling for these :hard:med:
-
-~Span~ objects consist of an ~Attr~ tuple and a list of ~Inline~
-tokens, much like a header. This gets emitted for ~TODO~ items, in
-which case the class list in the ~Attr~ tuple will be ~['todo',
-'TODO']~.
-
-**** DONE Determine under what other circumstances Span gets emitted
-**** DONE Check how 'DONE' tasks get emitted
-
-#+begin_src python :noweb-ref Function definitions
-  def unwrap_link(block):
-      node = DocNode(NodeType.LINK)
-      node.target = block[2][0]
-      # Appears to be unused
-      node.title = block[2][1]
-
-      node.children = unwrap_blocks(block[1])
-
-      return node
-
-#+end_src
-
-An ~OrderedList~ contains a tuple of list attributes of the form
-(start, style, delim), then a list of the list's items (each of which
-is itself a list of blocks).
-
-#+begin_src python :noweb-ref Function definitions
-  def unwrap_list(block):
-      node = DocNode(NodeType.LIST)
-
-      node.ordered = (type(block) is pdt.OrderedList)
-
-      if node.ordered:
-          node.start = block[0][0]
-          node.style = str(block[0][1])[:-2] # Strip trailing parens
-          node.delim = str(block[0][2])[:-2] # ""
-          i = 1
-      else:
-          i = 0
-
-      for item in block[i]:
-          item_node = DocNode(NodeType.LIST_ITEM)
-          item_node.children = unwrap_blocks(item)
-          node.children.append(item_node)
-
-      return node
-
-#+end_src
-
-**** TODO More testing of other cases that emit RawBlock (see Pandoc source code) :easy:low:
-
-~RawBlock~ objects contain their ~Format~ and associated ~Text~. This
-gets emitted by unhandled meta lines (lines starting with "#+").
-
-#+begin_src python :noweb-ref Function definitions
-  def unwrap_rawblock(block):
-      assert(block[0][0] == 'org')
-
-      matches = regex_match(r'#\+(\w+):\s+(.+)', block[1])
-      assert(matches is not None)
-
-      node = DocNode(NodeType.META)
-      node.key = matches[0].lower()
-      node.value = matches[1]
-
-      return node
-
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def unwrap_span(block):
-      node = DocNode(NodeType.TAG)
-
-      if 'tag' in block[0][1]:
-          key, tag = block[0][2][0]
-          assert(key == 'tag-name')
-      else:
-          tag = block[0][1][0]
-          assert(tag == 'todo' or tag == 'done')
-      node.text = tag
-
-      return node
-
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def unwrap_table(block):
-      def unwrap_cell(cell, is_header=False):
-          node = DocNode(NodeType.TABLE_CELL)
-          node.is_header = is_header
-          assert(cell[2][0] == 1)
-          assert(cell[3][0] == 1)
-          assert(len(cell[4]) <= 1)
-          node.children = unwrap_blocks(cell[4])
-          return node
-
-      def unwrap_row(row, is_header=False):
-          node = DocNode(NodeType.TABLE_ROW)
-          node.children = [unwrap_cell(cell, is_header) for cell in row[1]]
-          return node
-
-      node = DocNode(NodeType.TABLE)
-
-      table_head = block[3]
-      if len(table_head[1]) != 0:
-          assert(len(table_head[1]) == 1)
-          node.children.append(unwrap_row(table_head[1][0], is_header=True))
-
-      assert(len(block[4]) == 1)
-      table_body = block[4][0]
-      assert(table_body[1][0] == 0)
-      assert(len(table_body[2]) == 0)
-
-      node.children += [unwrap_row(row) for row in table_body[3]]
-
-      return node
-
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def unwrap_textblock(block):
-      node = DocNode(NodeType.TEXT)
-      node.children = unwrap_blocks(block[0])
-
-      node.strong = (type(block) is pdt.Strong)
-      node.emph = (type(block) is pdt.Emph)
-
-      return node
-
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def unwrap_token(block):
-      node = DocNode(NodeType.TOKEN)
-
-      if type(block) is pdt.Str:
-          node.text = block[0]
-      else:
-          node.text = ' '
-
-      return node
-
-#+end_src
-
-Finally, unwrapping a block consists of looking up the block type's
-unwrapper in our map and applying it.
-
-#+begin_src python :noweb-ref Function definitions
-  <<Pandoc type unwrapping map>>
-
-  def unwrap_block(block):
-      pandoc_type = type(block)
-
-      if pandoc_type not in pandoc_type_map:
-          raise TypeError(f'Unhandled block type: {pandoc_type}')
-
-      node = pandoc_type_map[pandoc_type](block)
-
-      return node
-
-#+end_src
-
-** Generating the page content
-
-**** TODO Auto-insert page title element :easy:med:
-**** DONE Replace pandoc.write() with custom writer for better output formatting and control
-
-Now that the Org file has been parsed into an AST, the AST can be
-converted to HTML representing the page content by visiting each node
-in the AST node list.
-
-#+name: Generate page from AST
-#+begin_src python
-  page = generate_page(ast)
-#+end_src
-
-**** TODO "Prettify" the HTML output (newlines & indentation) :med:low:
-
-#+begin_src python :noweb-ref Function definitions
-  def generate_page(ast):
-      title = ast.metadata['title']
-      cdate = ast.metadata['date']
-      mdate = ast.metadata['modified']
-      category = ast.metadata['category']
-      abstract = ast.metadata['abstract']
-      page = Page(title, cdate, mdate, category, abstract)
-
-      main_view = generate_main_view(ast)
-      page.views.append(main_view)
-
-      task_view = generate_task_view(ast)
-      page.views.append(task_view)
-
-      page.default_view = main_view
-
-      return page
-
-#+end_src
-
-*** Generating the main page view
-
-#+begin_src python :noweb-ref Function definitions
-  def generate_main_view(ast):
-      <<Process AST nodes>>
-
-      <<Generate table of contents>>
-
-      html = '<div class="table-of-contents">' + toc + '</div>' + \
-             '<div class="content">' + content + '</div>'
-
-      return PageView('Main', html)
-
-#+end_src
-
-Similarly to the way parsing was handled, each node type will need its
-own case, with support for recursively converting children.
-
-**** TODO Better method for stripping tags than hard-coded values :easy:med:
-
-#+name: Process AST nodes
-#+begin_src python
-  headings = []
-  content = ''
-  for node in ast.nodes:
-      node_html = render_node(node)
-      if node.type == NodeType.HEADING:
-          headings.append((node.level, node_html[4:-5]))
-      content += node_html
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def render_nodes(nodes):
-      html = ''
-      for node in nodes:
-          html += render_node(node)
-      return html
-
-#+end_src
-
-The strategy for rendering the page's contents is similar to that for
-generating the AST - define a map from node type to its corresponding
-render function.
-
-**** TODO Get everything to use render_default :med:low:
-
-#+name: HTML render map
-#+begin_src python
-  html_render_map = {
-      NodeType.CODE: render_code,
-      NodeType.HEADING: render_heading,
-      NodeType.LINK: render_link,
-      NodeType.LIST: render_list,
-      NodeType.LIST_ITEM: lambda node: render_default(node, 'li'),
-      NodeType.META: None,
-      NodeType.PARAGRAPH: lambda node: render_default(node, 'p'),
-      NodeType.TABLE: lambda node: render_default(node, 'table'),
-      NodeType.TABLE_ROW: lambda node: render_default(node, 'tr'),
-      NodeType.TABLE_CELL: render_table_cell,
-      NodeType.TAG: None,
-      NodeType.TASK: None,
-      NodeType.TEXT: render_text,
-      NodeType.TOKEN: render_token,
-  }
-#+end_src
-
-**** TODO Add figcaption for named blocks :easy:med:
-**** TODO Don't hard code language :easy:high:
-**** TODO Use Pandoc for build-time syntax highlighting :med:med:
-
-#+begin_src python :noweb-ref Function definitions
-  def render_code(node):
-      text = html_escape(node.text).strip()
-
-      if node.inline:
-          html = f'<code class="code-inline">{text}</code>'
-      else:
-          html = '<figure class="code-block">'
-          html += '<pre><code class="language-python">'
-          html += text
-          html += '</code></pre></figure>'
-
-      return html
-
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def render_default(node, tag, **kwargs):
-      body = render_nodes(node.children)
-      attrs = ''.join([f' {k}="{v}"' for k,v in kwargs.items()])
-      return f'<{tag}{attrs}>{body}</{tag}>'
-
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def render_heading(node):
-      tag = f'h{node.level}'
-      return render_default(node, tag)
-
-#+end_src
-
-**** TODO Detect links to other Org files and convert appropriately :med:med:
-**** TODO Open external links in new tab & allow for separate styling :easy:low:
-
-#+begin_src python :noweb-ref Function definitions
-  def render_link(node):
-      return render_default(node, 'a', href=node.target)
-
-#+end_src
-
-**** TODO Add support for start, style, & delim :med:low:
-
-#+begin_src python :noweb-ref Function definitions
-  def render_list(node):
-      tag = 'ol' if node.ordered else 'ul'
-      return render_default(node, tag)
-
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def render_table_cell(node):
-      tag = 'th' if node.is_header else 'td'
-      return render_default(node, tag)
-
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def render_text(node):
-      if node.strong:
-          return render_default(node, 'strong')
-      if node.emph:
-          return render_default(node, 'em')
-      return render_nodes(node.children)
-
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def render_token(node):
-      return html_escape(node.text)
-
-#+end_src
-
-**** DONE Merge logic for parent tags
-**** DONE Use integer constants instead of strings
-**** DONE Remove soft breaks from AST entirely
-
-#+begin_src python :noweb-ref Function definitions
-  <<HTML render map>>
-
-  def render_node(node):
-      if node.type not in html_render_map:
-          raise TypeError(f'Unhandled node type: {node.type}')
-
-      renderer = html_render_map[node.type]
-      if renderer is None:
-          return ''
-      
-      html = renderer(node)
-      return html
-
-#+end_src
-
-#+name: Generate table of contents
-#+begin_src python
-  toc = '<h1>Table of Contents</h1>'
-  prev_level = 0
-  for level, text in headings:
-      if level > prev_level:
-          toc += '<ul><li>' * (level - prev_level)
-      else:
-          if level < prev_level:
-              toc += '</li></ul>' * (prev_level - level)
-          toc += '</li><li>'
-      toc += text
-      prev_level = level
-  toc += '</li></ul>' * prev_level
-#+end_src
-
-*** Generating the task page view
-
-#+begin_src python :noweb-ref Function definitions
-  def generate_task_view(ast):
-      html = '<div class="task-list">'
-
-      stack = []
-      for node in ast.nodes:
-          if node.type == NodeType.HEADING:
-              while len(stack) > 0 and node.level <= stack[-1].level:
-                  stack.pop()
-              stack.append(node)
-
-          if node.type != NodeType.TASK:
-              continue
-
-          state = 'done' if node.done else 'todo'
-          if len(stack) == 0:
-              section = '—'
-          else:
-              section = ' > '.join([heading.inner_text() for heading in stack])
-
-          html += f'<div class="task {state}">'
-          html += f'<div class="task-header">'
-          html += f'<div class="task-state">{state.upper()}</div>'
-          html += f'<div class="task-tags">'
-          for tag in node.tags:
-              if tag in ['easy', 'med', 'hard']:
-                  label = 'Diff'
-              elif tag in ['low', 'mid', 'high']:
-                  label = 'Prio'
-              else:
-                  continue
-              html += f'<span class="task-tag {tag}">{label}: {tag.capitalize()}</span>'
-          html += '</div>'
-          html += '</div>'
-          html += f'<div class="task-section">{section}</div>'
-          html += f'<div class="task-desc">{node.inner_text()}</div>'
-          html += '</div>'
-
-      html += '</div>'
-
-      return PageView('Tasks', html)
-
-#+end_src
-
-** Populating the HTML template
-
-When it comes time to actually render a page, we use the Jinja
-~Environment~ created earlier to load the template (AFAIK Jinja
-handles caching for us), then use the template to render the final
-output.
-
-#+begin_src python :noweb-ref Function definitions
-  def render_page(template, *args, **kwargs):
-      jinja_template = jinja_env.get_template(template)
-      return jinja_template.render(*args, **kwargs)
-
-#+end_src
-
-**** TODO Eliminate 'title' keyword argument :med:low:
-
-#+name: Create page from template
-#+begin_src python
-  page_html = render_page('page.html', title=page.title, page=page)
-#+end_src
-
-** Writing the page to file
-
-#+begin_src python :noweb-ref Function definitions
-  def write_to_file(fpath, string):
-      with open(fpath, 'w+', encoding='utf-8') as f:
-          f.write(string)
-
-#+end_src
-
-**** TODO Better handling of page url :med:mid:
-
-#+name: Write page to file
-#+begin_src python
-  url = fname + '.html'
-  outpath = path_join(BUILD_DIR, url)
-  write_to_file(outpath, page_html)
-
-  page.url = url
-  pages.append(page)
-#+end_src
-
-* Generating the home page
-
-From the Python side, generating the home page is as simple as passing
-the list of pages generated as a template argument.
-
-#+name: Generate home page
-#+begin_src python
-  homepage_html = render_page('index.html', title='Home', pages=pages)
-  outpath = path_join(BUILD_DIR, 'index.html')
-  write_to_file(outpath, homepage_html)
-#+end_src
-
-* Exporting static files
-
-Lastly, static files (those that should be exported directly, without
-any further processing, such as stylesheets) must be copied to the
-build directory.
-
-**** TODO Add link to "Preparing the build directtory" :easy:low:
-
-(Again, this amounts to a couple of utility function calls.)
-
-#+begin_src python :noweb-ref Global constants
-  STYLES_DIR = 'styles'
-  SCRIPTS_DIR = 'scripts'
-#+end_src
-
-#+name: Export static files
-#+begin_src python
-  outdir = path_join(BUILD_DIR, STYLES_DIR)
-  copy_dir(STYLES_DIR, outdir)
-
-  outdir = path_join(BUILD_DIR, SCRIPTS_DIR)
-  copy_dir(SCRIPTS_DIR, outdir)
-#+end_src

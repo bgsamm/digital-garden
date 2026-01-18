@@ -2,7 +2,7 @@
 
 {% block head %}
     {{ super() }}
-    <link rel="stylesheet" href="styles/index.css" />
+    <link rel="stylesheet" href="/styles/index.css" />
 {% endblock %}
 
 {% block content %}
@@ -13,7 +13,7 @@
             <div class="channel-title">{{ page.title }}</div>
             <div class="channel-date">{{ page.cdate }} | {{ page.mdate }}</div>
             <div class="channel-abstract">{{ page.abstract }}</div>
-            <a class="channel-link" href="{{ page.url }}"></a>
+            <a class="channel-link" href="/{{ page.default_view.url }}"></a>
         </div>
     {% endfor %}
     {% for i in range(12 - pages|count) %}
