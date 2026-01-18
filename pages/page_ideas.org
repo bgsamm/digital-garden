@@ -19,3 +19,6 @@
 - Chess games
 - 3D modelling
 
+* Misc.
+
+- Game Boy emulator
