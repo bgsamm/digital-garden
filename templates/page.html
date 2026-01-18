@@ -11,7 +11,7 @@
 
 {% block content %}
     <nav class="top-nav">
-        <div class="nav-item title">{{ title }}</div>
+        <div class="nav-item title">{{ page.title }}</div>
         <div class="nav-item tabs">
         {% for v in page.views %}
             <a id="tab-{{ v.id }}" class="tab {{ 'active' if v == view }}" href="/{{ v.url }}">{{ v.name }}</a>
