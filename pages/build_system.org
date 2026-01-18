@@ -143,11 +143,11 @@ for non-hidden files with the '.org' extension; these filters skip
 over the various temp/back-up files created automatically by Emacs
 when editing.
 
-**** TODO Add link to "Generating the home page"                   :easy:low:
+**** DONE Add link to "Generating the home page"                   :easy:low:
 **** TODO Better integration of page tracking in explanation?       :med:low:
 
-The resulting pages are also tracked for use when generating the home
-page.
+The resulting pages are also tracked for use when [[*Generating the home page][generating the home
+page]].
 
 #+name: Process Org files
 #+begin_src python
@@ -177,7 +177,7 @@ Processing an Org file consists of the following steps:
 #+end_src
 
 **** TODO Link to principle about separating I/O                   :easy:low:
-**** TODO Insert links to subsections once supported               :easy:low:
+**** DONE Insert links to subsections once supported               :easy:low:
 
 Reading the contents of the Org file is straightforward.
 
@@ -188,7 +188,7 @@ Reading the contents of the Org file is straightforward.
 #+end_src
 
 Once the contents have been read, they can be parsed into an AST. For
-details, see "Parsing an Org file".
+details, see [[*Parsing an Org file][Parsing an Org file]].
 
 #+name: Parse Org file contents into AST
 #+begin_src python
@@ -196,7 +196,9 @@ details, see "Parsing an Org file".
 #+end_src
 
 The AST is then used to generate an abstract representation of the
-corresponding site page. For details, see "Generating page content".
+corresponding site page. For details, see [[*Generating page content][Generating page content]].
+
+**** TODO Better handling of page url                               :med:mid:
 
 #+name: Generate page from AST
 #+begin_src python
@@ -205,12 +207,10 @@ corresponding site page. For details, see "Generating page content".
 #+end_src
 
 Next, the page views are rendered to their final HTML
-representation. For details, see "Rendering a site page".
+representation. For details, see [[*Rendering a site page][Rendering a site page]].
 
 Lastly, this HTML must be written to file. Much like reading, this is
 straightforward.
-
-**** TODO Better handling of page url                               :med:mid:
 
 #+name: Render page views to HTML
 #+begin_src python
@@ -258,11 +258,9 @@ build directory.
 
 **** DONE Insert link to pandoc library documentation              :easy:low:
 **** TODO Better document how Pandoc exports Org files              :med:low:
-**** TODO Add appropriate link to 'later'                          :easy:low:
 
 The heavy-lifting of parsing an Org file is performed by Pandoc, which
-is interfaced with via the
-[[https://boisgera.github.io/pandoc/][pandoc]] Python library.
+is interfaced with via the [[https://boisgera.github.io/pandoc/][pandoc]] Python library.
 
 #+begin_src python :noweb-ref Imports
   import pandoc
@@ -271,13 +269,13 @@ is interfaced with via the
 This library handles running the Pandoc subprocess and converting the
 JSON it produces into more user-friendly Python classes.
 
-**** TODO Insert link to to-do handling                            :easy:low:
+**** DONE Insert link to to-do handling                            :easy:low:
 
 However, to truly hide the dependency from the rest of the script,
 these classes must all be "unwrapped" and converted to a
 library-agnostic format. This will also present an opportunity for
 additional processing along the way to better handle certain
-Org-specific elements, such as to-do items.
+Org-specific elements, such as [[*Unwrapping headers and paragraphs][to-do items]].
 
 The API provided by the ~pandoc~ library for parsing is
 ~pandoc.read()~. This returns a root ~Pandoc~ object, which itself
@@ -622,7 +620,7 @@ which case the class list in the ~Attr~ tuple will be ~['todo',
 
 **** DONE Determine under what other circumstances Span gets emitted
 **** DONE Check how 'DONE' tasks get emitted
-**** DONE Pandoc categories certain valid internal links as "spurious" and emits them as spans; add custom handling for these :hard:mid:
+**** DONE Pandoc categories certain valid internal links as "spurious" and emits them as spans; add custom handling for these :med:mid:
 **** TODO Auto-detect invalid internal links                        :med:mid:
 
 #+begin_src python :noweb-ref Pandoc type unwrapping functions
