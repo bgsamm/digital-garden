@@ -418,6 +418,7 @@ def render_node(node):
 
 def generate_task_view(ast):
     view = PageView('Tasks')
+    view.tasks = []
 
     stack = []
     for node in ast.nodes:
@@ -429,12 +430,15 @@ def generate_task_view(ast):
         if node.type != NodeType.TASK:
             continue
 
-        state = 'done' if node.done else 'todo'
-        if len(stack) == 0:
-            section = '—'
-        else:
-            section = ' > '.join([heading.inner_text() for heading in stack])
+        task = DocNode(NodeType.TASK)
+        task.state = 'done' if node.done else 'todo'
 
+        if len(stack) == 0:
+            task.section = '—'
+        else:
+            task.section = ' > '.join([heading.inner_text() for heading in stack])
+
+        task.tags = []
         for tag in node.tags:
             if tag in ['easy', 'med', 'hard']:
                 label = 'Diff'
@@ -442,6 +446,11 @@ def generate_task_view(ast):
                 label = 'Prio'
             else:
                 continue
+            task.tags.append((label, tag))
+
+        task.description = node.inner_text().strip()
+
+        view.tasks.append(task)
 
     return view
 

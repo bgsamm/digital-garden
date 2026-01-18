@@ -122,7 +122,7 @@ code {
 
 /* Article view */
 
-.view {
+#doc-view {
     display: grid;
     grid-template-columns: 25% 1fr 25%;
     grid-gap: 20px;
@@ -130,7 +130,7 @@ code {
     padding: 20px 20px;
 }
 
-.table-of-contents {
+#doc-view .table-of-contents {
     display: flex;
     flex-direction: column;
     
@@ -151,14 +151,14 @@ code {
     transition: var(--highlight-transition);
 }
 
-.table-of-contents:hover {
+#doc-view .table-of-contents:hover {
     border: 2px solid var(--theme-highlight);
     box-shadow: 0 0 15px var(--theme-glow);
     
     transition: var(--highlight-transition);
 }
 
-.table-of-contents ul {
+#doc-view .table-of-contents ul {
     padding-left: 20px;
     
     list-style: none;
@@ -168,7 +168,7 @@ code {
     overflow-y: auto;
 }
 
-.content {
+#doc-view .content {
     padding: 20px 30px;
     
     background-color: var(--theme-panel);
@@ -177,12 +177,12 @@ code {
 
 /* Task view */
 
-#view-tasks .task-list {
+#task-view {
     width: 50%;
     margin: 0 auto;
 }
 
-#view-tasks .task {
+#task-view .task {
     padding: 10px;
     margin: 15px 0;
     
@@ -195,40 +195,40 @@ code {
     transition: var(--highlight-transition);
 }
 
-#view-tasks .task:hover {
+#task-view .task:hover {
     box-shadow: 0 0 10px var(--theme-glow);
     border: 2px solid var(--theme-highlight);
     
     transition: var(--highlight-transition);
 }
 
-#view-tasks .task.todo {
+#task-view .task.todo {
     border-left: 2px solid var(--theme-accent);
 }
 
-#view-tasks .task.done {
+#task-view .task.done {
     border-left: 2px solid var(--theme-highlight);
 }
 
-#view-tasks .task-header {
+#task-view .task-header {
     display: flex;
     justify-content: space-between;
 }
 
-#view-tasks .task.todo .task-state {
+#task-view .task.todo .task-state {
     color: var(--theme-accent);
 }
 
-#view-tasks .task.done .task-state {
+#task-view .task.done .task-state {
     color: var(--theme-highlight);
 }
 
-#view-tasks .task-tags {
+#task-view .task-tags {
     display: flex;
     gap: 8px;
 }
 
-#view-tasks .task-tag {
+#task-view .task-tag {
     padding: 0 5px;
     
     border: 1px solid var(--theme-border);
@@ -238,25 +238,25 @@ code {
     font-size: 0.9rem;
 }
 
-#view-tasks .task-tag.easy,
-#view-tasks .task-tag.low {
+#task-view .task-tag.easy,
+#task-view .task-tag.low {
     border: 1px solid greenyellow;
     color: greenyellow;
 }
 
-#view-tasks .task-tag.med,
-#view-tasks .task-tag.mid {
+#task-view .task-tag.med,
+#task-view .task-tag.mid {
     border: 1px solid orange;
     color: orange;
 }
 
-#view-tasks .task-tag.hard,
-#view-tasks .task-tag.high {
+#task-view .task-tag.hard,
+#task-view .task-tag.high {
     border: 1px solid red;
     color: red;
 }
 
-#view-tasks .task-section {
+#task-view .task-section {
     color: var(--theme-text2);
 }
 /* UI buttons */
