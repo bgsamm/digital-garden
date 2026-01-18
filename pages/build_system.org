@@ -173,9 +173,7 @@ Processing an Org file consists of the following steps:
 
   <<Generate page from AST>>
 
-  <<Render page as HTML>>
-
-  <<Write page to file>>
+  <<Render page views to HTML>>
 #+end_src
 
 **** TODO Link to principle about separating I/O                   :easy:low:
@@ -202,29 +200,24 @@ corresponding site page. For details, see "Generating page content".
 
 #+name: Generate page from AST
 #+begin_src python
-  page = generate_page(ast)
+  page_url = path_join(PAGES_DIR, fname)
+  page = generate_page(ast, page_url)
 #+end_src
 
-Next, the page is rendered to its final HTML representation. For
-details, see "Rendering a site page".
-
-**** TODO Eliminate 'title' keyword argument :med:low:
-
-#+name: Render page as HTML
-#+begin_src python
-  page_html = render_page('page.html', title=page.title, page=page, view=page.default_view)
-#+end_src
+Next, the page views are rendered to their final HTML
+representation. For details, see "Rendering a site page".
 
 Lastly, this HTML must be written to file. Much like reading, this is
 straightforward.
 
 **** TODO Better handling of page url :med:mid:
 
-#+name: Write page to file
+#+name: Render page views to HTML
 #+begin_src python
-  page.url = path_join(PAGES_DIR, fname)
-  outpath = path_join(BUILD_DIR, page.url, 'index.html')
-  write_file(outpath, page_html)
+  for view in page.views:
+      view_html = render_page_view(page, view)
+      outpath = path_join(BUILD_DIR, view.url, 'index.html')
+      write_file(outpath, view_html)
 #+end_src
 
 ** Generating the home page
@@ -724,7 +717,7 @@ in the AST node list.
 **** TODO "Prettify" the HTML output (newlines & indentation) :med:low:
 
 #+begin_src python :noweb-ref Function definitions
-  def generate_page(ast):
+  def generate_page(ast, page_url):
       title = ast.metadata['title']
       cdate = ast.metadata['date']
       mdate = ast.metadata['modified']
@@ -732,10 +725,12 @@ in the AST node list.
       abstract = ast.metadata['abstract']
       page = Page(title, cdate, mdate, category, abstract)
 
-      main_view = generate_main_view(ast)
+      main_view = generate_doc_view(ast)
+      main_view.url = path_join(page_url, 'doc')
       page.views.append(main_view)
 
       task_view = generate_task_view(ast)
+      task_view.url = path_join(page_url, 'tasks')
       page.views.append(task_view)
 
       page.default_view = main_view
@@ -744,18 +739,17 @@ in the AST node list.
 
 #+end_src
 
-*** Generating the main page view
+*** Generating the documentation page view
 
 #+begin_src python :noweb-ref Function definitions
-  def generate_main_view(ast):
-      <<Process AST nodes>>
+  def generate_doc_view(ast):
+      view = PageView('Doc')
+      
+      <<Generate doc view contents>>
 
-      <<Generate table of contents>>
+      <<Generate doc view table of contents>>
 
-      html = '<div class="table-of-contents">' + toc + '</div>' + \
-             '<div class="content">' + content + '</div>'
-
-      return PageView('Main', html)
+      return view
 
 #+end_src
 
@@ -764,15 +758,15 @@ own case, with support for recursively converting children.
 
 **** DONE Better method for stripping tags than hard-coded values  :easy:mid:
 
-#+name: Process AST nodes
+#+name: Generate doc view contents
 #+begin_src python
   headings = []
-  content = ''
+  view.content = ''
   for node in ast.nodes:
       node_html = render_node(node)
       if node.type == NodeType.HEADING:
           headings.append(node)
-      content += node_html
+      view.content += node_html
 #+end_src
 
 #+begin_src python :noweb-ref Function definitions
@@ -923,29 +917,29 @@ render function.
 
 #+end_src
 
-#+name: Generate table of contents
+#+name: Generate doc view table of contents
 #+begin_src python
-  toc = '<h1>Table of Contents</h1>'
+  view.toc = '<h1>Table of Contents</h1>'
   prev_level = 0
   for node in headings:
       if node.level > prev_level:
-          toc += '<ul><li>' * (node.level - prev_level)
+          view.toc += '<ul><li>' * (node.level - prev_level)
       else:
           if node.level < prev_level:
-              toc += '</li></ul>' * (prev_level - node.level)
-          toc += '</li><li>'
+              view.toc += '</li></ul>' * (prev_level - node.level)
+          view.toc += '</li><li>'
       text = node.inner_text()
       id_ = html_slugify(text)
-      toc += f'<a href="#{id_}">{text}</a>'
+      view.toc += f'<a href="#{id_}">{text}</a>'
       prev_level = node.level
-  toc += '</li></ul>' * prev_level
+  view.toc += '</li></ul>' * prev_level
 #+end_src
 
 *** Generating the task page view
 
 #+begin_src python :noweb-ref Function definitions
   def generate_task_view(ast):
-      html = '<div class="task-list">'
+      view = PageView('Tasks')
 
       stack = []
       for node in ast.nodes:
@@ -963,10 +957,6 @@ render function.
           else:
               section = ' > '.join([heading.inner_text() for heading in stack])
 
-          html += f'<div class="task {state}">'
-          html += f'<div class="task-header">'
-          html += f'<div class="task-state">{state.upper()}</div>'
-          html += f'<div class="task-tags">'
           for tag in node.tags:
               if tag in ['easy', 'med', 'hard']:
                   label = 'Diff'
@@ -974,16 +964,8 @@ render function.
                   label = 'Prio'
               else:
                   continue
-              html += f'<span class="task-tag {tag}">{label}: {tag.capitalize()}</span>'
-          html += '</div>'
-          html += '</div>'
-          html += f'<div class="task-section">{section}</div>'
-          html += f'<div class="task-desc">{node.inner_text()}</div>'
-          html += '</div>'
 
-      html += '</div>'
-
-      return PageView('Tasks', html)
+      return view
 
 #+end_src
 
@@ -998,6 +980,13 @@ output.
   def render_page(template, *args, **kwargs):
       jinja_template = jinja_env.get_template(template)
       return jinja_template.render(*args, **kwargs)
+
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def render_page_view(page, view):
+      jinja_template = jinja_env.get_template(f'view_{view.id}.html')
+      return jinja_template.render(page=page, view=view)
 
 #+end_src
 
@@ -1047,14 +1036,13 @@ boilerplate.
 
 #+end_src
 
-**** TODO More robust ID generation :easy:mid:
+**** DONE More robust ID generation                                :easy:mid:
 
 #+begin_src python :noweb-ref Class definitions
   class PageView:
-      def __init__(self, name, content):
-          self.id = name.lower().replace(' ', '-')
+      def __init__(self, name):
+          self.id = html_slugify(name)
           self.name = name
-          self.content = content
 
 #+end_src
 

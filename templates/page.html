@@ -13,14 +13,15 @@
     <nav class="top-nav">
         <div class="nav-item title">{{ title }}</div>
         <div class="nav-item tabs">
-        {% for view in page.views %}
-            <a id="tab-{{ view.id }}" class="tab" href="">{{ view.name }}</a>
+        {% for v in page.views %}
+            <a id="tab-{{ v.id }}" class="tab {{ 'active' if v == view }}" href="/{{ v.url }}">{{ v.name }}</a>
         {% endfor %}
         </div>
     </nav>
 
     <div class="view">
-        {{ view.content }}
+        {% block view %}
+        {% endblock %}
     </div>
 
     <div id="home-button" class="ui-button">

@@ -57,10 +57,9 @@ class Page:
         self.default_view = None
 
 class PageView:
-    def __init__(self, name, content):
-        self.id = name.lower().replace(' ', '-')
+    def __init__(self, name):
+        self.id = html_slugify(name)
         self.name = name
-        self.content = content
 
 
 def parse_org_file(contents):
@@ -276,7 +275,7 @@ def unwrap_block(block):
 def unwrap_blocks(blocks):
     return [unwrap_block(block) for block in blocks]
 
-def generate_page(ast):
+def generate_page(ast, page_url):
     title = ast.metadata['title']
     cdate = ast.metadata['date']
     mdate = ast.metadata['modified']
@@ -284,44 +283,45 @@ def generate_page(ast):
     abstract = ast.metadata['abstract']
     page = Page(title, cdate, mdate, category, abstract)
 
-    main_view = generate_main_view(ast)
+    main_view = generate_doc_view(ast)
+    main_view.url = path_join(page_url, 'doc')
     page.views.append(main_view)
 
     task_view = generate_task_view(ast)
+    task_view.url = path_join(page_url, 'tasks')
     page.views.append(task_view)
 
     page.default_view = main_view
 
     return page
 
-def generate_main_view(ast):
+def generate_doc_view(ast):
+    view = PageView('Doc')
+
     headings = []
-    content = ''
+    view.content = ''
     for node in ast.nodes:
         node_html = render_node(node)
         if node.type == NodeType.HEADING:
             headings.append(node)
-        content += node_html
+        view.content += node_html
 
-    toc = '<h1>Table of Contents</h1>'
+    view.toc = '<h1>Table of Contents</h1>'
     prev_level = 0
     for node in headings:
         if node.level > prev_level:
-            toc += '<ul><li>' * (node.level - prev_level)
+            view.toc += '<ul><li>' * (node.level - prev_level)
         else:
             if node.level < prev_level:
-                toc += '</li></ul>' * (prev_level - node.level)
-            toc += '</li><li>'
+                view.toc += '</li></ul>' * (prev_level - node.level)
+            view.toc += '</li><li>'
         text = node.inner_text()
         id_ = html_slugify(text)
-        toc += f'<a href="#{id_}">{text}</a>'
+        view.toc += f'<a href="#{id_}">{text}</a>'
         prev_level = node.level
-    toc += '</li></ul>' * prev_level
+    view.toc += '</li></ul>' * prev_level
 
-    html = '<div class="table-of-contents">' + toc + '</div>' + \
-           '<div class="content">' + content + '</div>'
-
-    return PageView('Main', html)
+    return view
 
 def render_nodes(nodes):
     html = ''
@@ -417,7 +417,7 @@ def render_node(node):
     return html
 
 def generate_task_view(ast):
-    html = '<div class="task-list">'
+    view = PageView('Tasks')
 
     stack = []
     for node in ast.nodes:
@@ -435,10 +435,6 @@ def generate_task_view(ast):
         else:
             section = ' > '.join([heading.inner_text() for heading in stack])
 
-        html += f'<div class="task {state}">'
-        html += f'<div class="task-header">'
-        html += f'<div class="task-state">{state.upper()}</div>'
-        html += f'<div class="task-tags">'
         for tag in node.tags:
             if tag in ['easy', 'med', 'hard']:
                 label = 'Diff'
@@ -446,20 +442,16 @@ def generate_task_view(ast):
                 label = 'Prio'
             else:
                 continue
-            html += f'<span class="task-tag {tag}">{label}: {tag.capitalize()}</span>'
-        html += '</div>'
-        html += '</div>'
-        html += f'<div class="task-section">{section}</div>'
-        html += f'<div class="task-desc">{node.inner_text()}</div>'
-        html += '</div>'
 
-    html += '</div>'
-
-    return PageView('Tasks', html)
+    return view
 
 def render_page(template, *args, **kwargs):
     jinja_template = jinja_env.get_template(template)
     return jinja_template.render(*args, **kwargs)
+
+def render_page_view(page, view):
+    jinja_template = jinja_env.get_template(f'view_{view.id}.html')
+    return jinja_template.render(page=page, view=view)
 
 def regex_match(pattern, string):
     """Return the list of match groups for a given regex pattern
@@ -600,13 +592,13 @@ for dirpath, fname, ext in walk_dir(PAGES_DIR):
     
     ast = parse_org_file(contents)
     
-    page = generate_page(ast)
+    page_url = path_join(PAGES_DIR, fname)
+    page = generate_page(ast, page_url)
     
-    page_html = render_page('page.html', title=page.title, page=page, view=page.default_view)
-    
-    page.url = path_join(PAGES_DIR, fname)
-    outpath = path_join(BUILD_DIR, page.url, 'index.html')
-    write_file(outpath, page_html)
+    for view in page.views:
+        view_html = render_page_view(page, view)
+        outpath = path_join(BUILD_DIR, view.url, 'index.html')
+        write_file(outpath, view_html)
 
     pages.append(page)
 

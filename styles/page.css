@@ -26,11 +26,17 @@
 .tab {
     display: flex;
     align-items: center;
-    background-color: transparent;
-    color: var(--theme-text);
+
     padding: 0 20px;
+
     border: none;
     border-bottom: 2px solid transparent;
+
+    background-color: transparent;
+    color: var(--theme-text);
+    text-decoration: none;
+    font-weight: normal;
+
     cursor: pointer;
 }
 
@@ -62,7 +68,6 @@ p {
 
 a {
     color: var(--theme-highlight);
-    font-weight: bold;
 }
 
 a:hover {
