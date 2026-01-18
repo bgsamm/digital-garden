@@ -99,15 +99,15 @@ or renamed "zombie" page does not persist between builds).
 
 *** Initializing Jinja
 
-**** TODO Remove file prefix from link once intra-file links supported :easy:low:
+**** DONE Remove file prefix from link once header links supported :easy:low:
 
 Jinja uses an ~Environment~ object as a high-level API for configuring
 and loading templates. This is created as a global variable for later
-use (see [[file:build_system.org::*Populating the HTML template][Populating the HTML template]]) and is set to load templates
-from a file system directory and trim whitespace from template blocks
-(see [[https://jinja.palletsprojects.com/en/stable/api/#high-level-api][documentation]]).
+use (see [[*Rendering a site page][Rendering a site page]]) and is set to load templates from a
+file system directory and trim whitespace from template blocks (see
+the Jinja [[https://jinja.palletsprojects.com/en/stable/api/#high-level-api][documentation]]).
 
-**** TODO Determine why the library is called jinja*2* :easy:low:
+**** TODO Determine why the library is called jinja*2*             :easy:low:
 
 #+begin_src python :noweb-ref Imports
   import jinja2
@@ -210,7 +210,7 @@ representation. For details, see "Rendering a site page".
 Lastly, this HTML must be written to file. Much like reading, this is
 straightforward.
 
-**** TODO Better handling of page url :med:mid:
+**** TODO Better handling of page url                               :med:mid:
 
 #+name: Render page views to HTML
 #+begin_src python
@@ -535,7 +535,6 @@ link text), and the link's ~Target~ (a 2-tuple).
 
 **** DONE Verify whether the Attr tuple is unused
 **** DONE Verify that second element of Target is title (and unused)
-**** TODO Pandoc categories certain valid internal links as "spurious" and emits them as spans; add custom handling for these :hard:med:
 
 #+begin_src python :noweb-ref Pandoc type unwrapping functions
   def unwrap_link(block):
@@ -623,18 +622,33 @@ which case the class list in the ~Attr~ tuple will be ~['todo',
 
 **** DONE Determine under what other circumstances Span gets emitted
 **** DONE Check how 'DONE' tasks get emitted
+**** DONE Pandoc categories certain valid internal links as "spurious" and emits them as spans; add custom handling for these :hard:mid:
+**** TODO Auto-detect invalid internal links                        :med:mid:
 
 #+begin_src python :noweb-ref Pandoc type unwrapping functions
   def unwrap_span(block):
-      node = DocNode(NodeType.TAG)
+      if 'spurious-link' in block[0][1]:
+          node = DocNode(NodeType.LINK)
 
-      if 'tag' in block[0][1]:
-          key, tag = block[0][2][0]
-          assert(key == 'tag-name')
+          key, target = block[0][2][0]
+          assert(key == 'target')
+
+          node.target = target
+          node.external = False
+
+          assert(type(block[1][0]) is pdt.Emph)
+          node.children = unwrap_blocks(block[1][0][0])
       else:
-          tag = block[0][1][0]
-          assert(tag == 'todo' or tag == 'done')
-      node.text = tag
+          node = DocNode(NodeType.TAG)
+
+          if 'tag' in block[0][1]:
+              key, tag = block[0][2][0]
+              assert(key == 'tag-name')
+          else:
+              tag = block[0][1][0]
+              assert(tag == 'todo' or tag == 'done')
+
+          node.text = tag
 
       return node
 
@@ -707,14 +721,14 @@ which case the class list in the ~Attr~ tuple will be ~['todo',
 
 * Generating page content
 
-**** TODO Auto-insert page title element :easy:med:
+**** TODO Auto-insert page title element                           :easy:mid:
 **** DONE Replace pandoc.write() with custom writer for better output formatting and control
 
 Now that the Org file has been parsed into an AST, the AST can be
 converted to HTML representing the page content by visiting each node
 in the AST node list.
 
-**** TODO "Prettify" the HTML output (newlines & indentation) :med:low:
+**** TODO "Prettify" the HTML output (newlines & indentation)       :med:low:
 
 #+begin_src python :noweb-ref Function definitions
   def generate_page(ast, page_url):
@@ -782,7 +796,7 @@ The strategy for rendering the page's contents is similar to that for
 generating the AST - define a map from node type to its corresponding
 render function.
 
-**** TODO Get everything to use render_default :med:low:
+**** TODO Get everything to use render_default                      :med:low:
 
 #+name: HTML render map
 #+begin_src python
@@ -804,9 +818,9 @@ render function.
   }
 #+end_src
 
-**** TODO Add figcaption for named blocks :easy:med:
-**** TODO Don't hard code language :easy:high:
-**** TODO Use Pandoc for build-time syntax highlighting :med:med:
+**** TODO Add figcaption for named blocks                          :easy:mid:
+**** TODO Don't hard code language                                :easy:high:
+**** TODO Use Pandoc for build-time syntax highlighting             :med:mid:
 
 #+begin_src python :noweb-ref Function definitions
   def render_code(node):
@@ -865,7 +879,7 @@ render function.
 
 #+end_src
 
-**** TODO Add support for start, style, & delim :med:low:
+**** TODO Add support for start, style, & delim                     :med:low:
 
 #+begin_src python :noweb-ref Function definitions
   def render_list(node):
@@ -936,6 +950,8 @@ render function.
 #+end_src
 
 *** Generating the task page view
+
+**** TODO Auto-detect two tags from same category                  :easy:mid:
 
 #+begin_src python :noweb-ref Function definitions
   def generate_task_view(ast):
@@ -1063,7 +1079,7 @@ useful throughout the build script.
 ** String utilities
 
 **** DONE Split into "Regex" and "HTML" sections
-**** TODO Add reference to "wrap your dependencies" :easy:low:
+**** TODO Add reference to "wrap your dependencies"                :easy:low:
 
 
 The functions here provide miscellaneous utilities for working with
@@ -1091,8 +1107,8 @@ This primarily exists to wrap the ~re~ library dependency.
 
 *** HTML utilities
 
-**** TODO Add reference to "reinvent the wheel" (html library) :easy:low:
-**** TODO Add support for escaping quotes? :easy:low:
+**** TODO Add reference to "reinvent the wheel" (html library)     :easy:low:
+**** TODO Add support for escaping quotes?                         :easy:low:
 
 This replaces a dependency on the ~html~ library.
 
@@ -1137,7 +1153,7 @@ escape sequences will also get replaced!
 
 ** File system utilities
 
-**** TODO Add link to "wrap your dependencies" mantra :easy:low:
+**** TODO Add link to "wrap your dependencies" mantra              :easy:low:
 
 These functions primarily serve to wrap dependencies on the ~os~ and
 ~shutil~ libraries.

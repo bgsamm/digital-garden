@@ -181,15 +181,28 @@ def unwrap_rawblock(block):
     return node
 
 def unwrap_span(block):
-    node = DocNode(NodeType.TAG)
+    if 'spurious-link' in block[0][1]:
+        node = DocNode(NodeType.LINK)
 
-    if 'tag' in block[0][1]:
-        key, tag = block[0][2][0]
-        assert(key == 'tag-name')
+        key, target = block[0][2][0]
+        assert(key == 'target')
+
+        node.target = target
+        node.external = False
+
+        assert(type(block[1][0]) is pdt.Emph)
+        node.children = unwrap_blocks(block[1][0][0])
     else:
-        tag = block[0][1][0]
-        assert(tag == 'todo' or tag == 'done')
-    node.text = tag
+        node = DocNode(NodeType.TAG)
+
+        if 'tag' in block[0][1]:
+            key, tag = block[0][2][0]
+            assert(key == 'tag-name')
+        else:
+            tag = block[0][1][0]
+            assert(tag == 'todo' or tag == 'done')
+
+        node.text = tag
 
     return node
 
