@@ -462,12 +462,18 @@ Inline code blocks are represented by ~Code~ objects and consist of an
 
 **** DONE Determine significance of 'verbatim' class
 **** DONE Verify whether rest of ~Attr~ tuple goes unused
+**** TODO More robust language handling                             :med:low:
 
 #+begin_src python :noweb-ref Pandoc type unwrapping functions
   def unwrap_code(block):
       node = DocNode(NodeType.CODE)
       node.text = block[1]
       node.inline = (type(block) is pdt.Code)
+
+      classes = block[0][1]
+      if len(classes) > 0:
+          assert(len(classes) == 1)
+          node.language = classes[0]
 
       return node
 
@@ -820,7 +826,7 @@ render function.
 #+end_src
 
 **** TODO Add figcaption for named blocks                          :easy:mid:
-**** TODO Don't hard code language                                :easy:high:
+**** DONE Don't hard code language                                :easy:high:
 **** TODO Use Pandoc for build-time syntax highlighting             :med:mid:
 
 #+begin_src python :noweb-ref Function definitions
@@ -831,7 +837,7 @@ render function.
           html = f'<code class="code-inline">{text}</code>'
       else:
           html = '<figure class="code-block">'
-          html += '<pre><code class="language-python">'
+          html += f'<pre><code class="language-{node.language}">'
           html += text
           html += '</code></pre></figure>'
 

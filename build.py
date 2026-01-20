@@ -88,6 +88,11 @@ def unwrap_code(block):
     node.text = block[1]
     node.inline = (type(block) is pdt.Code)
 
+    classes = block[0][1]
+    if len(classes) > 0:
+        assert(len(classes) == 1)
+        node.language = classes[0]
+
     return node
 
 def unwrap_head_or_para(block):
@@ -349,7 +354,7 @@ def render_code(node):
         html = f'<code class="code-inline">{text}</code>'
     else:
         html = '<figure class="code-block">'
-        html += '<pre><code class="language-python">'
+        html += f'<pre><code class="language-{node.language}">'
         html += text
         html += '</code></pre></figure>'
 
