@@ -1,0 +1,62 @@
+:PROPERTIES:
+:Title:    Algorithms and data structures
+:Author:   pjsamm
+:Date:     2026-01-20
+:Category: Notes
+:Abstract: Notes on fundamental algorithms and data structures in computer science.
+:END:
+
+#+OPTIONS: H:5
+#+OPTIONS: ^:{}
+
+#+PROPERTY: header-args    :noweb yes
+#+PROPERTY: header-args+   :eval never-export
+
+**** TODO Cite Intro to Algorithms textbook used as source        :easy:high:
+**** TODO Convert to proper C library                              :hard:low:
+
+* Overview
+
+**** TODO Insert definition markup once supported                  :easy:low:
+
+An algorithm is a sequence of computational steps that transforms
+input into output according to a certain input/output relationship
+(the problem statement).
+
+An algorithm is considered correct if, for every possible input, it
+halts with the correct output (as defined by the problem
+statement). Note that "incorrect" algorithms can still be useful.
+
+* Sorting
+
+**** TODO Add inline math markup where appropriate                 :easy:low:
+
+The sorting problem takes as input a sequence of n numbers and returns
+as output a permutation of said sequence such that each element is
+less than or equal to the next element.
+
+** Insertion sort
+
+**** TODO Better handling of examples/unit tests                    :med:mid:
+**** TODO Better handling of in-place nature of algorithm          :easy:mid:
+**** TODO Nicer printing of results                                :easy:low:
+
+#+begin_src python :results output
+  def insertion_sort(array):
+      for i in range(1, len(array)):
+          key = array[i]
+          j = i - 1
+          while j >= 0 and key < array[j]:
+              array[j + 1] = array[j]
+              j -= 1
+          array[j + 1] = key
+      return array
+
+  print(insertion_sort([5, 2, 4, 6, 1, 3]))
+  print(insertion_sort([31, 41, 59, 26, 41, 58]))
+#+end_src
+
+#+RESULTS:
+: [1, 2, 3, 4, 5, 6]
+: [26, 31, 41, 41, 58, 59]
+

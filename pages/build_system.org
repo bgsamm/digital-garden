@@ -20,6 +20,7 @@
 **** TODO Add support for footnotes/sidenotes                       :med:mid:
 **** DONE Use ~code~ instead of =verbatim= where appropriate       :easy:low:
 **** TODO Command line argument support                             :med:mid:
+**** TODO Interactive debugger for code blocks                     :hard:mid:
 
 * Overview
 
@@ -360,6 +361,7 @@ nodes.
 
 **** TODO Split children into children/inlines, more consistent handling of each :med:mid:
 **** TODO Add block quote support                                   :med:mid:
+**** TODO Add inline math support                                   :med:mid:
 
 The ~Block~ objects represent each of the individual structural
 elements in the Org file as one of several different subtypes

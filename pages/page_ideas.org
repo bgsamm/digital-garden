@@ -19,6 +19,10 @@
 - Chess games
 - 3D modelling
 
+* Notes
+
+- The halting problem
+
 * Misc.
 
 - Game Boy emulator
