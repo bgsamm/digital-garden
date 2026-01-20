@@ -1,0 +1,33 @@
+:PROPERTIES:
+:Title:    Programming in Java
+:Author:   pjsamm
+:Date:     2026-01-20
+:Category: Cheat sheet
+:Abstract: Reference for Java programming syntax.
+:END:
+
+#+OPTIONS: H:5
+#+OPTIONS: ^:{}
+
+#+PROPERTY: header-args    :noweb yes
+#+PROPERTY: header-args+   :eval never-export
+
+* Basic program structure
+
+In Java, all code must reside in a class.
+
+The entry point for a Java program looks as follows:
+
+#+begin_src java
+  public class Main {
+      public static void main(String[] args) {
+          // Execution begins here
+      }
+  }
+#+end_src
+
+**** TODO Make this a proper footnote/sidenote
+
+Note: instance main methods and unnamed classes are preview features
+that would allow for a simpler expression of the entry point in small
+programs.
