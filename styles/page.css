@@ -213,24 +213,32 @@ code {
     transition: var(--highlight-transition);
 }
 
-#task-view #task-list.diff-easy .task.easy {
-    display: block;
+#task-view #task-list.diff-easy .task:not(.easy) {
+    display: none;
 }
 
-#task-view #task-list.diff-med .task.med {
-    display: block;
+#task-view #task-list.diff-med .task:not(.med) {
+    display: none;
 }
 
-#task-view #task-list.diff-hard .task.hard {
-    display: block;
+#task-view #task-list.diff-hard .task:not(.hard) {
+    display: none;
 }
 
-#task-view #task-list.diff-any .task {
-    display: block;
+#task-view #task-list.prio-low .task:not(.low) {
+    display: none;
+}
+
+#task-view #task-list.prio-mid .task:not(.mid) {
+    display: none;
+}
+
+#task-view #task-list.prio-high .task:not(.high) {
+    display: none;
 }
 
 #task-view .task {
-    display: none;
+    display: block;
     
     padding: 10px;
     margin: 15px 0;
