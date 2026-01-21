@@ -1,0 +1,43 @@
+:PROPERTIES:
+:Title:    Abstract algebra
+:Author:   pjsamm
+:Date:     2026-01-20
+:Category: Notes
+:Abstract: Notes on abstract algebra, including group theory.
+:END:
+
+#+OPTIONS: H:5
+#+OPTIONS: ^:{}
+
+#+PROPERTY: header-args    :noweb yes
+#+PROPERTY: header-args+   :eval never-export
+
+* Set theory
+
+** Cartesian product
+
+**** TODO Insert proper inline math & math blocks where appropriate :easy:mid:
+
+The Cartesian product of two sets A and B is denoted A x B and is the
+set of all ordered pairs (a, b) such that a is in A and b is in B.
+
+** Relations
+
+A relation from set A to set B is any subset of A x B. x R y if (x,
+y) in R.
+
+A relation R on a set A is...
+- reflexive if, for all x in A, x R x.
+- symmetric if, for all x, y in A, x R y implies y R x.
+- transitive if, for all x, y, z in A, x R y and y R z implies x R z.
+
+*** Equivalence relations
+
+A relation is an equivalence relation if it is reflexive, symmetric, and transitive.
+
+Given an equivalence relation E on a set A, the equivalence class [x]
+is the set of all y in A such that y E x.
+
+*** Partitions
+
+

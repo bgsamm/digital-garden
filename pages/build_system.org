@@ -21,6 +21,7 @@
 **** DONE Use ~code~ instead of =verbatim= where appropriate       :easy:low:
 **** TODO Command line argument support                             :med:mid:
 **** TODO Interactive debugger for code blocks                     :hard:mid:
+**** TODO Site icon                                                 :med:low:
 
 * Overview
 
