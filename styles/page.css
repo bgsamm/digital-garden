@@ -178,8 +178,39 @@ code {
 /* Task view */
 
 #task-view {
-    width: 50%;
-    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 25% 1fr 25%;
+    grid-gap: 20px;
+    
+    padding: 20px 20px;
+}
+
+#task-view .task-filters {
+    display: flex;
+    flex-direction: column;
+    
+    height: min-content;
+    max-height: calc(100vh - 2 * 20px);
+    position: sticky;
+    top: 20px;
+    
+    margin: 0 10px;
+    padding: 20px;
+    
+    border: 2px solid var(--theme-border);
+    border-radius: 10px;
+    
+    background-color: var(--theme-panel);
+    box-shadow: 0 0 15px var(--theme-shadow);
+    
+    transition: var(--highlight-transition);
+}
+
+#task-view .task-filters:hover {
+    border: 2px solid var(--theme-highlight);
+    box-shadow: 0 0 15px var(--theme-glow);
+    
+    transition: var(--highlight-transition);
 }
 
 #task-view .task {
