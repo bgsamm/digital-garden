@@ -185,7 +185,7 @@ code {
     padding: 20px 20px;
 }
 
-#task-view .task-filters {
+#task-view #task-filters {
     display: flex;
     flex-direction: column;
     
@@ -206,14 +206,32 @@ code {
     transition: var(--highlight-transition);
 }
 
-#task-view .task-filters:hover {
+#task-view #task-filters:hover {
     border: 2px solid var(--theme-highlight);
     box-shadow: 0 0 15px var(--theme-glow);
     
     transition: var(--highlight-transition);
 }
 
+#task-view #task-list.diff-easy .task.easy {
+    display: block;
+}
+
+#task-view #task-list.diff-med .task.med {
+    display: block;
+}
+
+#task-view #task-list.diff-hard .task.hard {
+    display: block;
+}
+
+#task-view #task-list.diff-any .task {
+    display: block;
+}
+
 #task-view .task {
+    display: none;
+    
     padding: 10px;
     margin: 15px 0;
     

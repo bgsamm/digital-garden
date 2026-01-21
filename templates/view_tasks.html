@@ -2,24 +2,24 @@
 
 {% block view %}
     <div id="task-view">
-        <div class="task-filters">
+        <div id="task-filters">
             <h2>Filter</h2>
             <fieldset>
                 <legend>Difficulty</legend>
                 <div>
-                    <input type="radio" id="diff-filter-easy" name="diff-filter" onchange="updateDiffFilter()" value="easy" />
+                    <input type="radio" id="diff-filter-easy" name="diff-filter" onchange="updateDiffFilter('easy')" />
                     <label for="diff-filter-easy">Easy</label>
                 </div>
                 <div>
-                    <input type="radio" id="diff-filter-med" name="diff-filter" onchange="updateDiffFilter()" value="med" />
+                    <input type="radio" id="diff-filter-med" name="diff-filter" onchange="updateDiffFilter('med')" />
                     <label for="diff-filter-med">Medium</label>
                 </div>
                 <div>
-                    <input type="radio" id="diff-filter-hard" name="diff-filter" onchange="updateDiffFilter()" value="hard" />
+                    <input type="radio" id="diff-filter-hard" name="diff-filter" onchange="updateDiffFilter('hard')" />
                     <label for="diff-filter-hard">Hard</label>
                 </div>
                 <div>
-                    <input type="radio" id="diff-filter-any" name="diff-filter" onchange="updateDiffFilter()" value="any" checked />
+                    <input type="radio" id="diff-filter-any" name="diff-filter" onchange="updateDiffFilter('any')" checked />
                     <label for="diff-filter-any">Any</label>
                 </div>
             </fieldset>
@@ -43,14 +43,14 @@
                 </div>
             </fieldset>
         </div>
-        <div class="task-list">
+        <div id="task-list" class="diff-any">
         {% for task in view.tasks %}
-            <div class="task {{ task.state }}">
+            <div class="task {{ task.state }} {{ task.tags|join(' ') }}">
                 <div class="task-header">
                     <div class="task-state">{{ task.state|upper }}</div>
                     <div class="task-tags">
-                    {% for label, tag in task.tags %}
-                        <span class="task-tag {{ tag }}">{{ label }}: {{ tag|capitalize }}</span>
+                    {% for i in range(task.tags|length) %}
+                        <span class="task-tag {{ task.tags[i] }}">{{ task.labels[i] }}: {{ task.tags[i]|capitalize }}</span>
                     {% endfor %}
                     </div>
                 </div>
