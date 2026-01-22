@@ -1,0 +1,42 @@
+:PROPERTIES:
+:Title:    Blender cheat sheet
+:Author:   pjsamm
+:Date:     2026-01-22
+:Category: Cheat sheet
+:Abstract: List of useful shortcuts and other tips and tricks for Blender.
+:END:
+
+#+OPTIONS: H:5
+#+OPTIONS: ^:{}
+
+* Keyboard shortcuts
+
+** General
+
+| Shortcut | Action                  |
+|----------+-------------------------|
+| a        | Select all              |
+| g        | Move                    |
+| r        | Rotate                  |
+| s        | Scale                   |
+| n        | Toggle properties panel |
+| Tab      | Toggle mode             |
+
+** Object mode
+
+| Shortcut | Action   |
+|----------+----------|
+| S-a      | Add mesh |
+
+** Edit mode
+
+| Shortcut | Action                                       |
+|----------+----------------------------------------------|
+| C-r      | Loop cut (scroll to increase number of cuts) |
+| M-LMB    | Loop select                                  |
+| e        | Extrude                                      |
+| g g      | Edge slide                                   |
+| i        | Inset                                        |
+| m        | Merge                                        |
+| M-z      | Toggle x-ray                                 |
+| o        | Toggle proportional editing                  |
