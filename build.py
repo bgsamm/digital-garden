@@ -456,6 +456,7 @@ def generate_task_view(ast):
         else:
             task.section = ' > '.join([heading.inner_text() for heading in stack])
 
+        task.labels = []
         task.tags = []
         for tag in node.tags:
             if tag in ['easy', 'med', 'hard']:
@@ -464,7 +465,8 @@ def generate_task_view(ast):
                 label = 'Prio'
             else:
                 continue
-            task.tags.append((label, tag))
+            task.labels.append(label)
+            task.tags.append(tag)
 
         task.description = node.inner_text().strip()
 
