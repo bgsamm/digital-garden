@@ -5,6 +5,21 @@
         <div id="task-filters">
             <h2>Filter</h2>
             <fieldset>
+                <legend>State</legend>
+                <div>
+                    <input type="radio" id="state-filter-todo" name="state-filter" onchange="updateStateFilter()" value="todo" checked />
+                    <label for="state-filter-todo">Todo</label>
+                </div>
+                <div>
+                    <input type="radio" id="state-filter-done" name="state-filter" onchange="updateStateFilter()" value="done" />
+                    <label for="state-filter-done">Done</label>
+                </div>
+                <div>
+                    <input type="radio" id="state-filter-any" name="state-filter" onchange="updateStateFilter()" value="any" />
+                    <label for="state-filter-any">Any</label>
+                </div>
+            </fieldset>
+            <fieldset>
                 <legend>Difficulty</legend>
                 <div>
                     <input type="radio" id="diff-filter-easy" name="diff-filter" onchange="updateDiffFilter()" value="easy" />
@@ -43,7 +58,7 @@
                 </div>
             </fieldset>
         </div>
-        <div id="task-list" class="diff-any prio-any">
+        <div id="task-list" class="state-todo diff-any prio-any">
         {% for task in view.tasks %}
             <div class="task {{ task.state }} {{ task.tags|join(' ') }}">
                 <div class="task-header">

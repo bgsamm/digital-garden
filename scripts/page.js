@@ -1,3 +1,12 @@
+function updateStateFilter() {
+    const value = document.querySelector('input[name="state-filter"]:checked').value;
+    const taskList = document.getElementById('task-list');
+    taskList.classList.remove('state-todo');
+    taskList.classList.remove('state-done');
+    taskList.classList.remove('state-any');
+    taskList.classList.add(`state-${value}`);
+}
+
 function updateDiffFilter() {
     const value = document.querySelector('input[name="diff-filter"]:checked').value;
     const taskList = document.getElementById('task-list');

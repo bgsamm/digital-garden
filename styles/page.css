@@ -213,6 +213,14 @@ code {
     transition: var(--highlight-transition);
 }
 
+#task-view #task-list.state-todo .task:not(.todo) {
+    display: none;
+}
+
+#task-view #task-list.state-done .task:not(.done) {
+    display: none;
+}
+
 #task-view #task-list.diff-easy .task:not(.easy) {
     display: none;
 }
