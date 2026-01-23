@@ -1,0 +1,50 @@
+:PROPERTIES:
+:Title:    Binary analysis
+:Author:   pjsamm
+:Date:     2026-01-23
+:Category: Notes
+:Abstract: Notes on binary analysis with a focus on GameCube/Wii reverse engineering.
+:END:
+
+#+OPTIONS: H:5
+#+OPTIONS: ^:{}
+
+#+PROPERTY: header-args    :noweb yes
+#+PROPERTY: header-args+   :eval never-export
+
+**** TODO Delineate between general principles and case-specifics :hard:high:
+
+* Overview
+
+** The forward process
+
+1. Preprocessing
+2. Compilation
+3. Assembly
+4. Linking
+
+Steps 1-3 convert source and header files to object files.
+Step 4 converts these object files to an executable.
+
+*** Preprocessing
+
+Expands any macros (~#define~) and includes (~#include~) recursively.
+
+*** Compilation
+
+Converts the results from the preprocessing phase to assembly (NOT
+machine code), optionally applying optimizations. Symbolic information
+is still present to some degree after this stage.
+
+*** Assembly
+
+Converts the assembly code from the compilation phase into machine
+code for the target architecture, in the form of object files. Note
+that object files are relocatable.
+
+*** Linking
+
+Combines the object files produced by the assembly phase into a single
+executable, resolving external references (except for dynamic
+libraries) and potentially performing additional optimizations
+(link-time optimization, LTO).
