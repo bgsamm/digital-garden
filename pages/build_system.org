@@ -13,7 +13,8 @@
 #+PROPERTY: header-args+   :eval never-export
 
 **** DONE Tag all the tasks!                                      :easy:high:
-**** TODO Add filtering to task view                               :med:high:
+**** DONE Add filtering to task view                               :med:high:
+**** TODO Add sorting to task view                                  :med:mid:
 **** TODO Organize this page!!                                    :hard:high:
 **** TODO Better handling of options (e.g. heading export level)   :med:high:
 **** TODO Incorporate Jinja templates as literate programs          :med:low:
