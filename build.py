@@ -63,6 +63,13 @@ class PageView:
 
 
 def parse_org_file(contents):
+    lines = contents.split('\n')
+    for i, line in enumerate(lines):
+        matches = regex_match(r'^#\+INCLUDE:\s+\"(.+)\"', line)
+        if matches is not None:
+            lines[i] = read_file(matches[0])
+    contents = '\n'.join(lines)
+
     ast = pandoc.read(source=contents, format='org')
 
     # Unwrap 'Meta' object
@@ -523,7 +530,7 @@ def path_join(*args):
     """
     return os.path.join(*args)
 
-def read_file(path):
+def read_file(fpath):
     """Return the contents of a UTF-8 file as a string.
     """
     with open(fpath, 'r', encoding='utf-8') as f:

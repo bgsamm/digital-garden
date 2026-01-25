@@ -6,11 +6,7 @@
 :Abstract: Details of the source code for the site's build system.
 :END:
 
-#+OPTIONS: H:5
-#+OPTIONS: ^:{}
-
-#+PROPERTY: header-args    :noweb yes
-#+PROPERTY: header-args+   :eval never-export
+#+INCLUDE: "global_options.org"
 
 **** DONE Tag all the tasks!                                      :easy:high:
 **** DONE Add filtering to task view                               :med:high:
@@ -288,8 +284,12 @@ contains a ~Meta~ object and a list of ~Block~ objects as
 children. The task, then, breaks down into unwrapping these two
 elements.
 
+**** TODO Properly support #+INCLUDE directives                    :hard:med:
+
 #+begin_src python :noweb-ref Function definitions
   def parse_org_file(contents):
+      <<Hack for include directives>>
+      
       ast = pandoc.read(source=contents, format='org')
 
       <<Unwrap Pandoc metadata>>
@@ -298,6 +298,16 @@ elements.
 
       return DocTree(metadata, nodes)
 
+#+end_src
+
+#+name: Hack for include directives
+#+begin_src python
+  lines = contents.split('\n')
+  for i, line in enumerate(lines):
+      matches = regex_match(r'^#\+INCLUDE:\s+\"(.+)\"', line)
+      if matches is not None:
+          lines[i] = read_file(matches[0])
+  contents = '\n'.join(lines)
 #+end_src
 
 ** Unwrapping Pandoc metadata
@@ -1193,7 +1203,7 @@ These functions primarily serve to wrap dependencies on the ~os~ and
 *** Files
 
 #+begin_src python :noweb-ref Function definitions
-  def read_file(path):
+  def read_file(fpath):
       """Return the contents of a UTF-8 file as a string.
       """
       with open(fpath, 'r', encoding='utf-8') as f:
@@ -1309,4 +1319,3 @@ These functions primarily serve to wrap dependencies on the ~os~ and
               debug_print_node(child, indent=indent + 2)
 
 #+end_src
-
