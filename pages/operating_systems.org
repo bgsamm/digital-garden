@@ -1,0 +1,95 @@
+:PROPERTIES:
+:Title:    Operating systems
+:Author:   pjsamm
+:Date:     2026-01-26
+:Category: Notes
+:Abstract: Notes on operating system design.
+:END:
+
+#+OPTIONS: H:5
+#+OPTIONS: ^:{}
+
+#+PROPERTY: header-args    :noweb yes
+#+PROPERTY: header-args+   :eval never-export
+
+* Overview
+
+An *operating system* is a layer of software that serves two primary purposes:
+1. To present an abstracted interface of the underlying hardware to other programs; and
+2. To coordinate usage of hardware resources between programs.
+
+**** TODO Link to page on computer architecture once it exists     :easy:low:
+
+A typical computer consists of the following primary hardware
+resources which software would like to make use:
+- A processor (CPU), with one or more processing cores
+- Some amount of memory (RAM)
+- Miscellaneous I/O devices (e.g. drives, mouse, keyboard, monitor, printer, etc.)
+
+**** TODO Convert to proper note once supported                    :easy:low:
+
+(Note that this article considers only single-processor systems.)
+
+Additionally, the OS must ensure programs "play nicely" with each
+other (and the OS), and so it must enforce some level of system
+security.
+
+Altogether, this leads to a four component model of an operating
+system:
+- Processes and threads
+- Memory management
+- Devices and I/O
+- Security
+
+**** TODO Determine whether IPC should be its own component         :med:low:
+
+* Processes and threads
+
+** Process
+
+A *process* is an abstraction of a running program and is the
+fundamental building block of an operating system.
+
+*** Sequential process model
+
+Fundamentally, a process consists of the current state of the CPU
+(that is, the values of its various registers). Switching between
+processes, then, consists of updating the CPU state to the appropriate
+values; this is referred to as "context switching." In this way, each
+process can be said to have its own "virtual CPU." While the CPU may
+actually be switching rapidly between various processes (referred to
+as "multiprogramming"), from the perspective of any individual
+process, it appears to be executing sequentially; thus, it is referred
+to as the "sequential process model."
+
+*** Process creation
+
+*** Process termination
+
+*** Process hierarchies
+
+*** Process states
+
+*** Process implementation
+
+** Thread
+
+** Inter-process communication
+
+** Scheduling
+
+** Deadlocks
+
+* Memory management
+
+* Device and I/O management
+
+** File system
+
+* Security
+
+* Miscellaneous
+
+** Interrupts, traps, and system calls
+
+** Time management

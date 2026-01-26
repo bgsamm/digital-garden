@@ -22,6 +22,7 @@
 * Notes
 
 - The halting problem
+- Computer hardware/architecture
 
 * Misc.
 
