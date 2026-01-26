@@ -21,6 +21,8 @@
 | s        | Scale                   |
 | n        | Toggle properties panel |
 | Tab      | Toggle mode             |
+| .        | Change pivot point      |
+| S-s      | Move cursor             |
 
 ** Object mode
 
