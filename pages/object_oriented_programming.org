@@ -1,0 +1,96 @@
+:PROPERTIES:
+:Title:    Object oriented programming
+:Author:   pjsamm
+:Date:     2026-01-26
+:Category: Notes
+:Abstract: Notes on object oriented principles and design patterns.
+:END:
+
+#+OPTIONS: H:5
+#+OPTIONS: ^:{}
+
+#+PROPERTY: header-args    :noweb yes
+#+PROPERTY: header-args+   :eval never-export
+
+* Principles
+
+** Encapsulation
+
+** Polymorphism
+
+** Inheritance
+
+** Composition
+
+** Aggregation
+
+** Dependency injection
+
+A "service" defines an interface; a "client" is defined in terms of
+this interface; an "injector" invokes the client with a concrete
+instance of the service.
+
+Examples:
+- A memory allocator is provided as an input to a function
+- An output stream is provided as an input to a function
+
+* Design patterns
+
+Can be creational, structural, or behavioral.
+
+** Creational patterns
+
+*** Abstract factory
+
+AKA: Kit
+
+Provides an interface for creating related objects without specifying
+their concrete classes.
+
+*** Builder
+
+*** Factory method
+
+*** Prototype
+
+*** Singleton
+
+** Structural patterns
+
+*** Adapter
+
+*** Bridge
+
+*** Composite
+
+*** Decorator
+
+*** Facade
+
+*** Flyweight
+
+*** Proxy
+
+** Behavioral patterns
+
+*** Chain of responsibility
+
+*** Command
+
+*** Interpreter
+
+*** Iterator
+
+*** Mediator
+
+*** Memento
+
+*** Observer
+
+*** State
+
+*** Strategy
+
+*** Template method
+
+*** Visitor
