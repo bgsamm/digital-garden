@@ -12,11 +12,14 @@
 #+PROPERTY: header-args    :noweb yes
 #+PROPERTY: header-args+   :eval never-export
 
+**** TODO Insert proper inline math & math blocks where appropriate :easy:mid:
+**** TODO Split set theory into its own page?                      :easy:low:
+
 * Set theory
 
-** Cartesian product
+**** TODO Define 'ordering' (including partial & total)             :med:mid:
 
-**** TODO Insert proper inline math & math blocks where appropriate :easy:mid:
+** Cartesian product
 
 The Cartesian product of two sets A and B is denoted A x B and is the
 set of all ordered pairs (a, b) such that a is in A and b is in B.
@@ -30,6 +33,11 @@ A relation R on a set A is...
 - reflexive if, for all x in A, x R x.
 - symmetric if, for all x, y in A, x R y implies y R x.
 - transitive if, for all x, y, z in A, x R y and y R z implies x R z.
+
+**** TODO How is '=' defined here?                                  :med:mid:
+
+A relation R on a set A is *trichotomous* if, for all x, y in A,
+exactly one of x R y, y R x, or x = y holds.
 
 *** Equivalence relations
 

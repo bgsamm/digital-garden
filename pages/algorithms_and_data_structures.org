@@ -14,6 +14,7 @@
 
 **** TODO Cite Intro to Algorithms textbook used as source        :easy:high:
 **** TODO Convert to proper C library                              :hard:low:
+**** TODO Add inline math markup where appropriate                 :easy:low:
 
 * Overview
 
@@ -27,9 +28,108 @@ An algorithm is considered correct if, for every possible input, it
 halts with the correct output (as defined by the problem
 statement). Note that "incorrect" algorithms can still be useful.
 
-* Sorting
+* Analysis
 
-**** TODO Add inline math markup where appropriate                 :easy:low:
+**** TODO Move 'foundations' into its own page(s)?                 :easy:low:
+
+** Foundations
+
+** Asymptotic notation
+
+*** Big O notation
+
+*** Big theta notation
+
+** Amortized analysis
+
+** NP-completeness
+
+* Data structures
+
+** Dynamic array
+
+** Stack
+
+A *stack* is a last-in, first-out (LIFO) data structure.
+
+#+begin_src python
+  class Stack:
+      def __init__(self, n):
+          self.cap = n
+          self.items = [None] * n
+          self.top = -1
+
+      def push(self, x):
+          if self.top >= self.cap:
+              raise Exception('Stack overflow')
+          self.top += 1
+          self.items[self.top] = x
+
+      def pop(self):
+          if self.top < 0:
+              raise Exception('Stack underflow')
+          self.top -= 1
+          return self.items[self.top + 1]
+#+end_src
+
+** Queue
+
+A *queue* is a first-in, first-out (FIFO) data structure.
+
+#+begin_src python
+  class Queue:
+      def __init__(self, n):
+          self.cap = n
+          self.items = [None] * n
+          self.head = self.tail = 0
+
+      def enqueue(self, x):
+          if (self.tail + 1) % self.cap == self.head:
+              raise Exception('Queue overflow')
+          self.items[self.tail] = x
+          if self.tail >= self.cap - 1:
+              self.tail = 0
+          else:
+              self.tail += 1
+
+      def dequeue(self):
+          if self.head == self.tail:
+              raise Exception('Queue underflow')
+          x = self.items[self.head]
+          if self.head >= self.cap - 1:
+              self.head = 0
+          else:
+              self.head += 1
+          return x
+#+end_src
+
+*** Priority queues
+
+*** Double-ended queue
+
+** Linked list
+
+** Hash table
+
+** Heap
+
+*** Binomial heap
+
+*** Fibonacci heap
+
+** Tree
+
+*** Binary search tree
+
+*** Red-black tree
+
+*** AVL tree
+
+*** B-tree and B+-tree
+
+** Graph
+
+* Sorting
 
 The sorting problem takes as input a sequence of n numbers and returns
 as output a permutation of said sequence such that each element is
@@ -59,4 +159,44 @@ less than or equal to the next element.
 #+RESULTS:
 : [1, 2, 3, 4, 5, 6]
 : [26, 31, 41, 41, 58, 59]
+
+** Merge sort
+
+** Heapsort
+
+** Quicksort
+
+** Counting sort
+
+** Radix sort
+
+** Bucket sort
+
+* Searching
+
+** Linear search
+
+** Binary search
+
+** Breadth-first search
+
+** Depth-first search
+
+* Path finding
+
+** Dijkstra's algorithm
+
+** A*
+
+* Miscellaneous
+
+** Dynamic programming
+
+** Greedy algorithms
+
+** Disjoint sets
+
+** Minimum and maximum
+
+** Selection
 
