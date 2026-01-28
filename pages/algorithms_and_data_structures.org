@@ -6,11 +6,7 @@
 :Abstract: Notes on fundamental algorithms and data structures in computer science.
 :END:
 
-#+OPTIONS: H:5
-#+OPTIONS: ^:{}
-
-#+PROPERTY: header-args    :noweb yes
-#+PROPERTY: header-args+   :eval never-export
+#+INCLUDE: "global_options.org"
 
 **** TODO Cite Intro to Algorithms textbook used as source        :easy:high:
 **** TODO Convert to proper C library                              :hard:low:
