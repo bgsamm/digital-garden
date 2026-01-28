@@ -1,0 +1,73 @@
+:PROPERTIES:
+:Title:    Computer networking
+:Author:   pjsamm
+:Date:     2026-01-28
+:Category: Notes
+:Abstract: Notes on computer networking.
+:END:
+
+#+OPTIONS: H:5
+#+OPTIONS: ^:{}
+
+#+PROPERTY: header-args    :noweb yes
+#+PROPERTY: header-args+   :eval never-export
+
+* Overview
+
+** Five-layer model
+
+1. Phyiscal layer
+2. Link layer
+3. Network layer
+4. Transport layer
+5. Application layer
+
+** Protocols
+
+A *protocol* is a defined format and order of messages to be exchanged
+between communicating entities and the actions to be taken in response
+to certain events (such as recepit of a message).
+
+* Application layer
+
+Unit of transmission is a *message*.
+
+Two primary architectural paradigms:
+1. Client-server
+2. Peer-to-peer (P2P)
+
+Can also have a hybrid model.
+
+** Client-server architecture
+
+The process that initiates communication is the *client*, and the
+process the responds is the *server*. A single process can at
+different times play both roles, but in any single communication
+instance, it is either the client or the server.
+
+The software interface through which messages are sent is called a
+*socket*, which serves as the interface between the application and
+transport layers. A socket is identified by its *port number*.
+
+** Peer-to-peer architecture
+
+Challenges:
+- ISPs designed for asymmetric bandwidth usage
+- Difficult to secure
+- Lack of incentives for users to provide computing resources to other peers
+
+* Transport layer
+
+Unit of transmission is a *segment*.
+
+* Network layer
+
+Unit of transmission is a *datagram*.
+
+* Link layer
+
+Unit of transmission is a *frame*.
+
+* Physical layer
+
+Unit of transmission is a bit.
