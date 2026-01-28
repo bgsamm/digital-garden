@@ -131,11 +131,15 @@ A *queue* is a first-in, first-out (FIFO) data structure.
 
 * Sorting
 
+**** TODO Add complexity comparison table                         :easy:high:
+
 The sorting problem takes as input a sequence of n numbers and returns
 as output a permutation of said sequence such that each element is
 less than or equal to the next element.
 
-** Insertion sort
+** Comparison sort
+
+*** Insertion sort
 
 **** TODO Better handling of examples/unit tests                    :med:mid:
 **** TODO Better handling of in-place nature of algorithm          :easy:mid:
@@ -160,30 +164,37 @@ less than or equal to the next element.
 : [1, 2, 3, 4, 5, 6]
 : [26, 31, 41, 41, 58, 59]
 
-** Merge sort
+*** Merge sort
 
 #+begin_src python :results output
   def merge_sort(array):
-      n = len(array)
-      if n <= 1:
+      if len(array) <= 1:
           return array
 
-      list1 = array[:n // 2]
-      list2 = array[n // 2:]
+      mid = len(array) // 2
+      left = array[:mid]
+      right = array[mid:]
 
-      merge_sort(list1)
-      merge_sort(list2)
+      merge_sort(left)
+      merge_sort(right)
 
-      i = 0
-      j = 0
-      while i + j < n:
-          if j >= (n - n // 2) or (i < n//2 and list1[i] < list2[j]):
-              array[i + j] = list1[i]
+      i = j = 0
+      while i < len(left) and j < len(right):
+          if left[i] < right[j]:
+              array[i + j] = left[i]
               i += 1
           else:
-              array[i + j] = list2[j]
+              array[i + j] = right[j]
               j += 1
-              
+
+      while i < len(left):
+          array[i + j] = left[i]
+          i += 1
+
+      while j < len(right):
+          array[i + j] = right[j]
+          j += 1
+
       return array
 
   print(merge_sort([5, 2, 4, 6, 1, 3]))
@@ -194,9 +205,9 @@ less than or equal to the next element.
 : [1, 2, 3, 4, 5, 6]
 : [26, 31, 41, 41, 58, 59]
 
-** Heapsort
+*** Heapsort
 
-** Quicksort
+*** Quicksort
 
 #+begin_src python :results output
   def quick_sort(array):
@@ -205,9 +216,9 @@ less than or equal to the next element.
               return
 
           pivot = array[start]
-
           i = start + 1
           j = end
+          
           while True:
               while i <= end and array[i] <= pivot:
                   i += 1
@@ -217,15 +228,11 @@ less than or equal to the next element.
               if j < i:
                   break
 
-              temp = array[i]
-              array[i] = array[j]
-              array[j] = temp
+              array[i], array[j] = array[j], array[i]
 
-          if j > start:
-              array[start] = array[j]
-              array[j] = pivot
+          array[start], array[j] = array[j], array[start]
 
-          _quick_sort(array, start, j)
+          _quick_sort(array, start, j - 1)
           _quick_sort(array, j + 1, end)
 
       _quick_sort(array, 0, len(array) - 1)
@@ -239,11 +246,13 @@ less than or equal to the next element.
 : [1, 2, 3, 4, 5, 6]
 : [26, 31, 41, 41, 58, 59]
 
-** Counting sort
+** Distribution sort
 
-** Radix sort
+*** Counting sort
 
-** Bucket sort
+*** Radix sort
+
+*** Bucket sort
 
 * Searching
 
