@@ -6,11 +6,7 @@
 :Abstract: Notes on binary analysis with a focus on GameCube/Wii reverse engineering.
 :END:
 
-#+OPTIONS: H:5
-#+OPTIONS: ^:{}
-
-#+PROPERTY: header-args    :noweb yes
-#+PROPERTY: header-args+   :eval never-export
+#+INCLUDE: "global_options.org"
 
 **** TODO Delineate between general principles and case-specifics :hard:high:
 

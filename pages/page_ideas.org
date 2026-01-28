@@ -6,7 +6,7 @@
 :Abstract: A dumping ground for page ideas I'm not ready to actually make.
 :END:
 
-#+OPTIONS: H:5
+#+INCLUDE: "global_options.org"
 
 * Cheat sheets
 

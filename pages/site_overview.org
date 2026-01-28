@@ -6,10 +6,7 @@
 :Abstract: A high-level overview of the principles behind the site's design.
 :END:
 
-#+OPTIONS: H:5
-
-#+PROPERTY: header-args    :noweb yes
-#+PROPERTY: header-args+   :eval never-export
+#+INCLUDE: "global_options.org"
 
 **** TODO Organize these TODOs...                                  :med:high:
 **** TODO Tag these TODOs                                         :easy:high:

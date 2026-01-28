@@ -6,7 +6,7 @@
 :Abstract: Progress tracking toward my goal of watching 100 new movies.
 :END:
 
-#+OPTIONS: H:5
+#+INCLUDE: "global_options.org"
 
 **** TODO Add links to movie pages on a movie database :easy:low:
 **** TODO Incorporate movie posters :med:low:

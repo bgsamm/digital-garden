@@ -6,7 +6,7 @@
 :Abstract: Progress tracking toward my goal of listening to 100 new albums.
 :END:
 
-#+OPTIONS: H:5
+#+INCLUDE: "global_options.org"
 
 **** TODO Add links to album pages on a music database             :easy:low:
 **** TODO Incorporate album covers                                  :med:low:
