@@ -93,6 +93,7 @@ def parse_org_file(contents):
 def unwrap_code(block):
     node = DocNode(NodeType.CODE)
     node.text = block[1]
+    node.name = block[0][0]
     node.inline = (type(block) is pdt.Code)
 
     classes = block[0][1]
@@ -361,6 +362,8 @@ def render_code(node):
         html = f'<code class="code-inline">{text}</code>'
     else:
         html = '<figure class="code-block">'
+        if len(node.name) > 0:
+            html += f'<figcaption>{node.name}</figcaption>'
         html += f'<pre><code class="language-{node.language}">'
         html += text
         html += '</code></pre></figure>'
