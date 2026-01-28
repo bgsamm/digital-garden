@@ -840,7 +840,7 @@ render function.
   }
 #+end_src
 
-**** TODO Add figcaption for named blocks                          :easy:mid:
+**** DONE Add figcaption for named blocks                          :easy:mid:
 **** DONE Don't hard code language                                :easy:high:
 **** TODO Use Pandoc for build-time syntax highlighting             :med:mid:
 
