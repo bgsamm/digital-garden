@@ -1,5 +1,2 @@
 #+OPTIONS: H:5
 #+OPTIONS: ^:{}
-
-#+PROPERTY: header-args    :noweb yes
-#+PROPERTY: header-args+   :eval never-export

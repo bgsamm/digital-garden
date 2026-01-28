@@ -742,7 +742,7 @@ which case the class list in the ~Attr~ tuple will be ~['todo',
 
 * Generating page content
 
-**** TODO Auto-insert page title element                           :easy:mid:
+**** DONE Auto-insert page title element                           :easy:mid:
 **** DONE Replace pandoc.write() with custom writer for better output formatting and control
 
 Now that the Org file has been parsed into an AST, the AST can be
