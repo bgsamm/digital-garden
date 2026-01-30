@@ -284,7 +284,7 @@ contains a ~Meta~ object and a list of ~Block~ objects as
 children. The task, then, breaks down into unwrapping these two
 elements.
 
-**** TODO Properly support #+INCLUDE directives                    :hard:med:
+**** TODO Properly support #+INCLUDE directives                    :hard:mid:
 
 #+begin_src python :noweb-ref Function definitions
   def parse_org_file(contents):
@@ -975,7 +975,7 @@ render function.
 
 *** Generating the task page view
 
-**** TODO Auto-detect two tags from same category                  :easy:mid:
+**** DONE Auto-detect two tags from same category                  :easy:mid:
 
 #+begin_src python :noweb-ref Function definitions
   def generate_task_view(ast):
@@ -1000,6 +1000,8 @@ render function.
           else:
               task.section = ' > '.join([heading.inner_text() for heading in stack])
 
+          task.description = node.inner_text().strip()
+
           task.labels = []
           task.tags = []
           for tag in node.tags:
@@ -1009,10 +1011,14 @@ render function.
                   label = 'Prio'
               else:
                   continue
+
+              if label in task.labels:
+                  title = ast.metadata['title']
+                  desc = task.description
+                  raise ValueError(f'Multiple {label} tags for task "{desc}" in page "{title}".')
+
               task.labels.append(label)
               task.tags.append(tag)
-
-          task.description = node.inner_text().strip()
 
           view.tasks.append(task)
 

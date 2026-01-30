@@ -32,9 +32,9 @@
 **** TODO Something about "the rule of three" (e.g. max three levels of nesting)
 **** TODO "Don't solve problems you don't yet have"
 **** TODO "Assume and assert"
-**** TODO Custom "100 X Challenge" view?                           :hard:med:
+**** TODO Custom "100 X Challenge" view?                           :hard:mid:
 **** TODO Adaptive site layout                                    :hard:high:
-**** TODO Glossary/footnote system for acronyms                    :hard:med:
+**** TODO Glossary/footnote system for acronyms                    :hard:mid:
 **** TODO Principle regarding separating I/O from rest of code     :easy:low:
 
 * Design overview

@@ -466,6 +466,8 @@ def generate_task_view(ast):
         else:
             task.section = ' > '.join([heading.inner_text() for heading in stack])
 
+        task.description = node.inner_text().strip()
+
         task.labels = []
         task.tags = []
         for tag in node.tags:
@@ -475,10 +477,14 @@ def generate_task_view(ast):
                 label = 'Prio'
             else:
                 continue
+
+            if label in task.labels:
+                title = ast.metadata['title']
+                desc = task.description
+                raise ValueError(f'Multiple {label} tags for task "{desc}" in page "{title}".')
+
             task.labels.append(label)
             task.tags.append(tag)
-
-        task.description = node.inner_text().strip()
 
         view.tasks.append(task)
 
