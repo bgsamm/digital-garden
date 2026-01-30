@@ -103,11 +103,42 @@ A *queue* is a first-in, first-out (FIFO) data structure.
 
 *** Double-ended queue
 
+Also known as a *deque*.
+
 ** Linked list
+
+*** Singly linked list
+
+*** Doubly linked list
 
 ** Hash table
 
+alpha: load factor
+n: number of elements
+m: number of slots
+alpha = n / m
+
+*** Hash function
+
+Division method: h(k) = k mod m
+
+Multiplication method: h(k) = floor(m * (k * A - floor(k * A))), 0 < A < 1
+
+Universal hashing
+
+*** Chaining
+
+*** Open addressing
+
+Linear probing
+
+Quadratic probing
+
+Double hashing
+
 ** Heap
+
+*** Mergeable heap
 
 *** Binomial heap
 
@@ -117,7 +148,19 @@ A *queue* is a first-in, first-out (FIFO) data structure.
 
 *** Binary search tree
 
+Randomly built BST
+
 *** Red-black tree
+
+1. Every node is either red or black.
+2. Every leaf (null child) is black.
+3. If a node is red, both its children are black.
+4. Every path from a node to a leaf contains the same number of black nodes.
+
+Insertion:
+1. Insert new node as normal in BST with color red
+2. If property 3 is violated (because the new node's parent is red),
+   move up the tree while maintaining property 4 as an invariant
 
 *** AVL tree
 
@@ -275,6 +318,10 @@ less than or equal to the next element.
 ** Disjoint sets
 
 ** Minimum and maximum
+
+** Dynamic order statistics
+
+** Dynamic intervals
 
 ** Selection
 
