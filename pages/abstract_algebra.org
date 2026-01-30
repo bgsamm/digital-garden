@@ -11,7 +11,7 @@
 **** TODO Insert proper inline math & math blocks where appropriate :easy:mid:
 **** TODO Split set theory into its own page?                      :easy:low:
 
-* Set theory
+* Sets
 
 **** TODO Define 'ordering' (including partial & total)             :med:mid:
 
@@ -42,6 +42,37 @@ A relation is an equivalence relation if it is reflexive, symmetric, and transit
 Given an equivalence relation E on a set A, the equivalence class [x]
 is the set of all y in A such that y E x.
 
-*** Partitions
+** Partitions
+
+* Groups
+
+** Binary operations
+
+f: S x S -> S
+
+i.e. must be everywhere defined, well defined, & closed
+
+Commutative: a * b = b * a for all a,b in S
+Associative: (a * b) * c = a * (b * c) for all a,b,c in S
+
+** Isomorphisms
+
+Homomorphism:
+<S, *>, <S', *'>; f:S->S' s.t. f(x * y) = f(x) *' f(y).
+
+Isomorphism:
+Homomorphism where f is bijective.
+
+If S and S' have different cardinalities, they cannot be isomorphic.
+
+** Identity element
+
+<S, *>; e in S s.t. s * e = e * s = s for all s in S.
+
+If an identity element exists, it is unique.
+
+* Rings
+
+* Fields
 
 
