@@ -3,6 +3,7 @@ import pandoc
 import enum
 import pandoc.types as pdt
 import re
+import json
 import os
 import shutil
 import subprocess
@@ -63,14 +64,7 @@ class PageView:
         self.name = name
 
 
-def parse_org_file(contents):
-    lines = contents.split('\n')
-    for i, line in enumerate(lines):
-        matches = regex_match(r'^#\+INCLUDE:\s+\"(.+)\"', line)
-        if matches is not None:
-            lines[i] = read_file(matches[0])
-    contents = '\n'.join(lines)
-
+def parse_org_file(fpath):
     ast = pandoc.read(source=contents, format='org')
 
     # Unwrap 'Meta' object
@@ -533,6 +527,12 @@ def html_strip_tag(string):
     if end < 0:
         end = len(string)
     return string[start:end]
+
+def parse_json(json_str):
+    """Parses a JSON string into a corresponding Python object
+    (e.g. dict, list, etc.).
+    """
+    return json.loads(json_str)
 
 def path_join(*args):
     """Join several path elements together with the OS-appropriate

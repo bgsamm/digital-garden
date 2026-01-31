@@ -252,6 +252,7 @@ build directory.
   outdir = path_join(BUILD_DIR, SCRIPTS_DIR)
   copy_dir(SCRIPTS_DIR, outdir)
 #+end_src
+
 * Parsing an Org file
 
 **** TODO Eliminate the pandoc dependency once and for all!        :hard:low:
@@ -287,9 +288,7 @@ elements.
 **** TODO Properly support #+INCLUDE directives                    :hard:mid:
 
 #+begin_src python :noweb-ref Function definitions
-  def parse_org_file(contents):
-      <<Hack for include directives>>
-      
+  def parse_org_file(fpath):
       ast = pandoc.read(source=contents, format='org')
 
       <<Unwrap Pandoc metadata>>
@@ -298,16 +297,6 @@ elements.
 
       return DocTree(metadata, nodes)
 
-#+end_src
-
-#+name: Hack for include directives
-#+begin_src python
-  lines = contents.split('\n')
-  for i, line in enumerate(lines):
-      matches = regex_match(r'^#\+INCLUDE:\s+\"(.+)\"', line)
-      if matches is not None:
-          lines[i] = read_file(matches[0])
-  contents = '\n'.join(lines)
 #+end_src
 
 ** Unwrapping Pandoc metadata
@@ -1180,6 +1169,21 @@ escape sequences will also get replaced!
       if end < 0:
           end = len(string)
       return string[start:end]
+
+#+end_src
+
+*** JSON utilities
+
+#+begin_src python :noweb-ref Imports
+  import json
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def parse_json(json_str):
+      """Parses a JSON string into a corresponding Python object
+      (e.g. dict, list, etc.).
+      """
+      return json.loads(json_str)
 
 #+end_src
 
