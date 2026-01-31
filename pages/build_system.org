@@ -1285,6 +1285,28 @@ These functions primarily serve to wrap dependencies on the ~os~ and
 
 #+end_src
 
+** Process utilities
+
+#+begin_src python :noweb-ref Imports
+  import subprocess
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def run_subprocess(name, args, input_str=None):
+        """Run an external process with the given arguments and input string.
+        Returns the process's standard output as a string.
+        """
+        process = subprocess.run(
+            [name] + args,
+            input=input_str,
+            capture_output=True,
+            check=True,
+            encoding='utf-8'
+        )
+        return process.stdout
+
+#+end_src
+
 ** Date/time utilities
 
 #+begin_src python :noweb-ref Imports

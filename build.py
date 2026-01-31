@@ -5,6 +5,7 @@ import pandoc.types as pdt
 import re
 import os
 import shutil
+import subprocess
 import datetime
 
 BUILD_DIR = 'build'
@@ -589,6 +590,19 @@ def walk_dir(root):
         for filename in filenames:
             fname, ext = os.path.splitext(filename)
             yield dirpath, fname, ext
+
+def run_subprocess(name, args, input_str=None):
+      """Run an external process with the given arguments and input string.
+      Returns the process's standard output as a string.
+      """
+      process = subprocess.run(
+          [name] + args,
+          input=input_str,
+          capture_output=True,
+          check=True,
+          encoding='utf-8'
+      )
+      return process.stdout
 
 def timestamp_to_date(timestamp):
     datetime_obj = datetime.datetime.fromtimestamp(timestamp, datetime.UTC)
