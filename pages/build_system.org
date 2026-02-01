@@ -17,7 +17,7 @@
 **** TODO Add support for footnotes/sidenotes                       :med:mid:
 **** DONE Use ~code~ instead of =verbatim= where appropriate       :easy:low:
 **** TODO Command line argument support                             :med:mid:
-**** TODO Interactive debugger for code blocks                     :hard:mid:
+**** TODO Interactive debugger for code blocks         `           :hard:mid:
 **** TODO Site icon                                                 :med:low:
 **** TODO Progress printing                                         :med:mid:
 
@@ -93,8 +93,8 @@ or renamed "zombie" page does not persist between builds).
 
 #+name: Prepare build directory
 #+begin_src python
-  make_dir(BUILD_DIR)
-  empty_dir(BUILD_DIR)
+  util.dir_make(BUILD_DIR)
+  util.dir_empty(BUILD_DIR)
 #+end_src
 
 *** Initializing Jinja
@@ -152,8 +152,8 @@ page]].
 #+name: Process Org files
 #+begin_src python
   pages = []
-  for dirpath, fname, ext in walk_dir(PAGES_DIR):
-      if fname[0] == '.' or ext != '.org':
+  for dirpath, fname, ext in util.dir_walk(PAGES_DIR):
+      if fname[0] == '.' or fname[0] == '#' or ext != '.org':
           continue
 
       <<Process individual Org file>>
@@ -167,8 +167,6 @@ Processing an Org file consists of the following steps:
 
 #+name: Process individual Org file
 #+begin_src python
-  <<Read contents of Org file from disk>>
-
   <<Parse Org file contents into AST>>
 
   <<Generate page from AST>>
@@ -182,7 +180,7 @@ For details, see [[*Parsing an Org file][Parsing an Org file]].
 
 #+name: Parse Org file contents into AST
 #+begin_src python
-  fpath = path_join(dirpath, fname + ext)
+  fpath = util.path_join(dirpath, fname + ext)
   ast = parse_org_file(fpath)
 #+end_src
 
@@ -193,7 +191,7 @@ corresponding site page. For details, see [[*Generating page content][Generating
 
 #+name: Generate page from AST
 #+begin_src python
-  page_url = path_join(PAGES_DIR, fname)
+  page_url = util.path_join(PAGES_DIR, fname)
   page = generate_page(ast, page_url)
 #+end_src
 
@@ -207,8 +205,8 @@ straightforward.
 #+begin_src python
   for view in page.views:
       view_html = render_page_view(page, view)
-      outpath = path_join(BUILD_DIR, view.url, 'index.html')
-      write_file(outpath, view_html)
+      outpath = util.path_join(BUILD_DIR, view.url, 'index.html')
+      util.file_write(outpath, view_html)
 #+end_src
 
 ** Generating the home page
@@ -221,8 +219,8 @@ the list of pages generated as a template argument.
 #+name: Generate home page
 #+begin_src python
   homepage_html = render_page('index.html', title='Home', pages=pages)
-  outpath = path_join(BUILD_DIR, 'index.html')
-  write_file(outpath, homepage_html)
+  outpath = util.path_join(BUILD_DIR, 'index.html')
+  util.file_write(outpath, homepage_html)
 #+end_src
 
 ** Exporting static files
@@ -238,11 +236,11 @@ build directory.
 
 #+name: Export static files
 #+begin_src python
-  outdir = path_join(BUILD_DIR, STYLES_DIR)
-  copy_dir(STYLES_DIR, outdir)
+  outdir = util.path_join(BUILD_DIR, STYLES_DIR)
+  util.dir_copy(STYLES_DIR, outdir)
 
-  outdir = path_join(BUILD_DIR, SCRIPTS_DIR)
-  copy_dir(SCRIPTS_DIR, outdir)
+  outdir = util.path_join(BUILD_DIR, SCRIPTS_DIR)
+  util.dir_copy(SCRIPTS_DIR, outdir)
 #+end_src
 
 * Parsing an Org file
@@ -314,8 +312,8 @@ An ~Enum~ is created to represent the various output node types.
 #+name: Parse file into AST using Pandoc
 #+begin_src python
   args = ['-f', 'org', '-t', 'json', fpath]
-  json = run_subprocess('pandoc', args)
-  ast = parse_json(json)
+  json = util.process_run('pandoc', args)
+  ast = util.json_parse(json)
 #+end_src
 
 **** DONE Link to org-mode documentation on property drawers       :easy:low:
@@ -334,8 +332,8 @@ defines its metadata (e.g. title, author, creation date, etc.).
 
 #+name: Add file modification date to metadata
 #+begin_src python
-  mtime = get_file_mtime(fpath)
-  mdate = timestamp_to_date(mtime)
+  mtime = util.file_get_mtime(fpath)
+  mdate = util.datetime_timestamp_to_date(mtime)
   metadata['modified'] = mdate
 #+end_src
 
@@ -367,11 +365,11 @@ in the AST node list.
       page = Page(title, cdate, mdate, category, abstract)
 
       main_view = generate_doc_view(ast)
-      main_view.url = path_join(page_url, 'doc')
+      main_view.url = util.path_join(page_url, 'doc')
       page.views.append(main_view)
 
       task_view = generate_task_view(ast)
-      task_view.url = path_join(page_url, 'tasks')
+      task_view.url = util.path_join(page_url, 'tasks')
       page.views.append(task_view)
 
       page.default_view = main_view
@@ -451,7 +449,7 @@ render function.
 
 #+begin_src python :noweb-ref Function definitions
   def render_code(node):
-      text = html_escape(node.rawtext).strip()
+      text = util.html_escape(node.rawtext).strip()
 
       if node.inline:
           html = f'<code class="code-inline">{text}</code>'
@@ -477,7 +475,7 @@ render function.
 
 #+begin_src python :noweb-ref Function definitions
   def render_heading(node):
-      id_ = html_slugify(node.inner_text())
+      id_ = util.html_slugify(node.inner_text())
       tag = f'h{node.level}'
       return render_default(node, tag, id=id_)
 
@@ -502,7 +500,7 @@ render function.
               fname = target
               frag = ''
           fname = fname.replace('.org', '.html')
-          frag = '#' + html_slugify(frag[1:])
+          frag = '#' + util.html_slugify(frag[1:])
           target = fname + frag
       return render_default(node, 'a', href=target)
 
@@ -536,7 +534,7 @@ render function.
 
 #+begin_src python :noweb-ref Function definitions
   def render_token(node):
-      return html_escape(node.rawtext)
+      return util.html_escape(node.rawtext)
 
 #+end_src
 
@@ -572,7 +570,7 @@ render function.
               view.toc += '</li></ul>' * (prev_level - node.level)
           view.toc += '</li><li>'
       text = node.inner_text()
-      id_ = html_slugify(text)
+      id_ = util.html_slugify(text)
       view.toc += f'<a href="#{id_}">{text}</a>'
       prev_level = node.level
   view.toc += '</li></ul>' * prev_level
@@ -741,6 +739,7 @@ unwrapping them is set up.
       'OrderedList': unwrap_list,
       'Para': unwrap_header_or_para,
       'Plain': unwrap_textblock,
+      'RawBlock': unwrap_rawblock,
       'SoftBreak': unwrap_token,
       'Space': unwrap_token,
       'Span': unwrap_span,
@@ -857,6 +856,7 @@ link text), and the link's ~Target~ (a 2-tuple).
 **** DONE Verify that second element of Target is title (and unused)
 
 #+begin_src python :noweb-ref Pandoc unwrapping functions
+  @staticmethod
   def unwrap_link(type_, content):
       node = DocNode(NodeType.LINK)
 
@@ -894,6 +894,7 @@ An ~OrderedList~ contains a tuple of list attributes of the form
 is itself a list of blocks).
 
 #+begin_src python :noweb-ref Pandoc unwrapping functions
+  @staticmethod
   def unwrap_list(type_, content):
       node = DocNode(NodeType.LIST)
 
@@ -935,11 +936,13 @@ is itself a list of blocks).
 ~RawBlock~ objects contain their ~Format~ and associated ~Text~. This
 gets emitted by unhandled meta lines (lines starting with "#+").
 
-#+begin_src python :noweb-ref Pandoc type unwrapping functions
-  def unwrap_rawblock(block):
-      assert(block[0][0] == 'org')
+#+begin_src python :noweb-ref Pandoc unwrapping functions
+  @staticmethod
+  def unwrap_rawblock(type_, content):
+      fmt, text = content
+      assert(fmt == 'org')
 
-      matches = regex_match(r'#\+(\w+):\s+(.+)', block[1])
+      matches = util.regex_match(r'#\+(\w+):\s+(.+)', text)
       assert(matches is not None)
 
       node = DocNode(NodeType.META)
@@ -1111,270 +1114,15 @@ boilerplate.
 #+begin_src python :noweb-ref Class definitions
   class PageView:
       def __init__(self, name):
-          self.id = html_slugify(name)
+          self.id = util.html_slugify(name)
           self.name = name
 
 #+end_src
 
 * Utility functions
 
-The following are a collection of utility functions that will be
-useful throughout the build script.
-
-** String utilities
-
-**** DONE Split into "Regex" and "HTML" sections
-**** TODO Add reference to "wrap your dependencies"                :easy:low:
-
-
-The functions here provide miscellaneous utilities for working with
-strings.
-
-*** Regex utilities
-
-This primarily exists to wrap the ~re~ library dependency.
-
 #+begin_src python :noweb-ref Imports
-  import re
+  import util
 #+end_src
 
-#+begin_src python :noweb-ref Function definitions
-  def regex_match(pattern, string):
-      """Return the list of match groups for a given regex pattern
-      and input string, or None if the string was not a match
-      """
-      match_obj = re.match(pattern, string)
-      if match_obj is not None:
-          return match_obj.groups()
-      return None
-
-#+end_src
-
-*** HTML utilities
-
-**** TODO Add reference to "reinvent the wheel" (html library)     :easy:low:
-**** TODO Add support for escaping quotes?                         :easy:low:
-
-This replaces a dependency on the ~html~ library.
-
-Note that when escaping strings for use in HTML content, ampersands
-should be replaced first, else the ampersands in the angle bracket
-escape sequences will also get replaced!
-
-#+begin_src python :noweb-ref Function definitions
-  def html_escape(string):
-      """Replace the '&', '<', and '>' characters in a string with their
-      corresponding HTML escape sequences.
-      """
-      return string.replace('&', '&amp;') \
-                   .replace('<', '&lt;') \
-                   .replace('>', '&gt;')
-
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def html_slugify(string):
-      """Convert an arbitrary string to a valid CSS identifier
-      by replacing non-alphanumeric characters with hyphens.
-      """
-      slug = ''
-      for c in string:
-          slug += c.lower() if c.isalnum() else '-'
-      return slug
-
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def html_strip_tag(string):
-      """Remove the outermost HTML tag from a string.
-      """
-      start = min(0, string.find('>'))
-      end = string.rfind('<')
-      if end < 0:
-          end = len(string)
-      return string[start:end]
-
-#+end_src
-
-*** JSON utilities
-
-#+begin_src python :noweb-ref Imports
-  import json
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def parse_json(s):
-      """Parses a JSON string into a corresponding Python object
-      (e.g. dict, list, etc.).
-      """
-      return json.loads(s)
-
-#+end_src
-
-** File system utilities
-
-**** TODO Add link to "wrap your dependencies" mantra              :easy:low:
-
-These functions primarily serve to wrap dependencies on the ~os~ and
-~shutil~ libraries.
-
-#+begin_src python :noweb-ref Imports
-  import os
-#+end_src
-
-#+begin_src python :noweb-ref Imports
-  import shutil
-#+end_src
-
-*** Paths
-
-#+begin_src python :noweb-ref Function definitions
-  def path_join(*args):
-      """Join several path elements together with the OS-appropriate
-      path separator.
-      """
-      return os.path.join(*args)
-
-#+end_src
-
-*** Files
-
-#+begin_src python :noweb-ref Function definitions
-  def read_file(fpath):
-      """Return the contents of a UTF-8 file as a string.
-      """
-      with open(fpath, 'r', encoding='utf-8') as f:
-          contents = f.read()
-      return contents
-
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def write_file(fpath, string):
-      """Write a string to a file with UTF-8 encoding.
-      """
-      dirpath = os.path.split(fpath)[0]
-      os.makedirs(dirpath, exist_ok=True)
-      with open(fpath, 'w+', encoding='utf-8') as f:
-          f.write(string)
-
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def get_file_mtime(path):
-      """Get the Unix timestamp for the last modification time of a file
-      as recorded by the file system
-      """
-      return os.path.getmtime(path)
-
-#+end_src
-
-*** Directories
-
-#+begin_src python :noweb-ref Function definitions
-  def make_dir(path):
-      """Create a directory (and all necessary parent directories) if it
-      does not already exist.
-      """
-      os.makedirs(path, exist_ok=True)
-
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def empty_dir(root):
-      """Delete the contents of a directory.
-      """
-      for itemname in os.listdir(root):
-          itempath = os.path.join(root, itemname)
-          if os.path.isdir(itempath):
-              shutil.rmtree(itempath)
-          else:
-              os.remove(itempath)
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def copy_dir(indir, outdir):
-      """Copy the contents of one directory to another.
-      """
-      shutil.copytree(indir, outdir, dirs_exist_ok=True)
-
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def walk_dir(root):
-      """Walk recursively through the files in a directory tree,
-      yielding for each file its containing directory, name, and
-      extension.
-      """
-      for dirpath, dirnames, filenames in os.walk(root):
-          for filename in filenames:
-              fname, ext = os.path.splitext(filename)
-              yield dirpath, fname, ext
-
-#+end_src
-
-** Process utilities
-
-#+begin_src python :noweb-ref Imports
-  import subprocess
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def run_subprocess(name, args, input_str=None):
-        """Run an external process with the given arguments and input string.
-        Returns the process's standard output as a string.
-        """
-        process = subprocess.run(
-            [name] + args,
-            input=input_str,
-            capture_output=True,
-            check=True,
-            encoding='utf-8'
-        )
-        return process.stdout
-
-#+end_src
-
-** Date/time utilities
-
-#+begin_src python :noweb-ref Imports
-  import datetime
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def timestamp_to_date(timestamp):
-      datetime_obj = datetime.datetime.fromtimestamp(timestamp, datetime.UTC)
-      return datetime_obj.strftime('%Y-%m-%d')
-
-#+end_src
-
-** Debug utilities
-
-#+begin_src python :noweb-ref Function definitions
-  def debug_print_ast(ast):
-      print(f'Metadata: {ast.metadata}')
-      print('Nodes:')
-      for node in ast.nodes:
-          debug_print_node(node, indent=1)
-
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def debug_print_node(node, indent=0):
-      tab = ' ' * 2
-      ind = tab * indent
-
-      print(f'{ind}Type: {node.type}', end=' ')
-      if len(node.rawtext) > 0:
-          print(f'("{node.rawtext}")', end='')
-      print()
-
-      ind += tab
-
-      n_children = len(node.children)
-      if n_children > 0:
-          print(f'{ind}Children: {n_children}')
-          for child in node.children:
-              debug_print_node(child, indent=indent + 2)
-
-#+end_src
+#+INCLUDE: "build_system/#utilities.org" :minlevel 2

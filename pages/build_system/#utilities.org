@@ -1,0 +1,258 @@
+**** TODO Add reference to "wrap your dependencies"                :easy:low:
+
+The following are a collection of utility functions that will be
+useful throughout the build script, broken down into the following
+categories:
+
+#+begin_src python :tangle ../../util.py
+  <<Imports>>
+
+  <<String utilities>>
+
+  <<File system utilities>>
+
+  <<Process utilities>>
+
+  <<Date/time utilities>>
+#+end_src
+
+* String utilities
+
+**** DONE Split into "Regex" and "HTML" sections
+
+The functions here provide miscellaneous utilities for working with
+different kinds of strings.
+
+#+begin_src python :noweb-ref String utilities
+  <<Regex utilities>>
+
+  <<HTML utilities>>
+
+  <<JSON utilities>>
+#+end_src
+
+** Regex
+
+This primarily exists to wrap the ~re~ library dependency.
+
+#+begin_src python :noweb-ref Imports
+  import re
+#+end_src
+
+#+begin_src python :noweb-ref Regex utilities
+  def regex_match(pattern, string):
+      """Return the list of match groups for a given regex pattern
+      and input string, or None if the string was not a match
+      """
+      match_obj = re.match(pattern, string)
+      if match_obj is not None:
+          return match_obj.groups()
+      return None
+
+#+end_src
+
+** HTML
+
+**** TODO Add reference to "reinvent the wheel" (html library)     :easy:low:
+**** TODO Add support for escaping quotes?                         :easy:low:
+
+This replaces a dependency on the ~html~ library.
+
+Note that when escaping strings for use in HTML content, ampersands
+should be replaced first, else the ampersands in the angle bracket
+escape sequences will also get replaced!
+
+#+begin_src python :noweb-ref HTML utilities
+  def html_escape(string):
+      """Replace the '&', '<', and '>' characters in a string with their
+      corresponding HTML escape sequences.
+      """
+      return string.replace('&', '&amp;') \
+                   .replace('<', '&lt;') \
+                   .replace('>', '&gt;')
+
+#+end_src
+
+#+begin_src python :noweb-ref HTML utilities
+  def html_slugify(string):
+      """Convert an arbitrary string to a valid CSS identifier
+      by replacing non-alphanumeric characters with hyphens.
+      """
+      slug = ''
+      for c in string:
+          slug += c.lower() if c.isalnum() else '-'
+      return slug
+
+#+end_src
+
+#+begin_src python :noweb-ref HTML utilities
+  def html_strip_tag(string):
+      """Remove the outermost HTML tag from a string.
+      """
+      start = min(0, string.find('>'))
+      end = string.rfind('<')
+      if end < 0:
+          end = len(string)
+      return string[start:end]
+
+#+end_src
+
+** JSON
+
+#+begin_src python :noweb-ref Imports
+  import json
+#+end_src
+
+#+begin_src python :noweb-ref JSON utilities
+  def json_parse(s):
+      """Parses a JSON string into a corresponding Python object
+      (e.g. dict, list, etc.).
+      """
+      return json.loads(s)
+
+#+end_src
+
+* File system utilities
+
+These functions primarily serve to wrap dependencies on the ~os~ and
+~shutil~ libraries.
+
+#+begin_src python :noweb-ref Imports
+  import os
+#+end_src
+
+#+begin_src python :noweb-ref Imports
+  import shutil
+#+end_src
+
+#+name: File system utilities
+#+begin_src python
+  <<Path utilities>>
+
+  <<File utilities>>
+
+  <<Directory utilities>>
+#+end_src
+
+** Paths
+
+#+begin_src python :noweb-ref Path utilities
+  def path_join(*args):
+      """Join several path elements together with the OS-appropriate
+      path separator.
+      """
+      return os.path.join(*args)
+
+#+end_src
+
+** Files
+
+#+begin_src python :noweb-ref File utilities
+  def file_read(fpath):
+      """Return the contents of a UTF-8 file as a string.
+      """
+      with open(fpath, 'r', encoding='utf-8') as f:
+          contents = f.read()
+      return contents
+
+#+end_src
+
+#+begin_src python :noweb-ref File utilities
+  def file_write(fpath, string):
+      """Write a string to a file with UTF-8 encoding.
+      """
+      dirpath = os.path.split(fpath)[0]
+      os.makedirs(dirpath, exist_ok=True)
+      with open(fpath, 'w+', encoding='utf-8') as f:
+          f.write(string)
+
+#+end_src
+
+#+begin_src python :noweb-ref File utilities
+  def file_get_mtime(path):
+      """Get the Unix timestamp for the last modification time of a file
+      as recorded by the file system
+      """
+      return os.path.getmtime(path)
+
+#+end_src
+
+** Directories
+
+#+begin_src python :noweb-ref Directory utilities
+  def dir_make(path):
+      """Create a directory (and all necessary parent directories) if it
+      does not already exist.
+      """
+      os.makedirs(path, exist_ok=True)
+
+#+end_src
+
+#+begin_src python :noweb-ref Directory utilities
+  def dir_empty(root):
+      """Delete the contents of a directory.
+      """
+      for itemname in os.listdir(root):
+          itempath = os.path.join(root, itemname)
+          if os.path.isdir(itempath):
+              shutil.rmtree(itempath)
+          else:
+              os.remove(itempath)
+#+end_src
+
+#+begin_src python :noweb-ref Directory utilities
+  def dir_copy(indir, outdir):
+      """Copy the contents of one directory to another.
+      """
+      shutil.copytree(indir, outdir, dirs_exist_ok=True)
+
+#+end_src
+
+#+begin_src python :noweb-ref Directory utilities
+  def dir_walk(root):
+      """Walk recursively through the files in a directory tree,
+      yielding for each file its containing directory, name, and
+      extension.
+      """
+      for dirpath, dirnames, filenames in os.walk(root):
+          for filename in filenames:
+              fname, ext = os.path.splitext(filename)
+              yield dirpath, fname, ext
+
+#+end_src
+
+* Process utilities
+
+#+begin_src python :noweb-ref Imports
+  import subprocess
+#+end_src
+
+#+begin_src python :noweb-ref Process utilities
+  def process_run(name, args, input_str=None):
+        """Run an external process with the given arguments and input string.
+        Returns the process's standard output as a string.
+        """
+        process = subprocess.run(
+            [name] + args,
+            input=input_str,
+            capture_output=True,
+            check=True,
+            encoding='utf-8'
+        )
+        return process.stdout
+
+#+end_src
+
+* Date/time utilities
+
+#+begin_src python :noweb-ref Imports
+  import datetime
+#+end_src
+
+#+begin_src python :noweb-ref Date/time utilities
+  def datetime_timestamp_to_date(timestamp):
+      """Convert a Unix timestamp to a string of the form YYYY-MM-DD"""
+      datetime_obj = datetime.datetime.fromtimestamp(timestamp, datetime.UTC)
+      return datetime_obj.strftime('%Y-%m-%d')
+
+#+end_src

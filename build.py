@@ -1,11 +1,6 @@
 import jinja2
 import enum
-import re
-import json
-import os
-import shutil
-import subprocess
-import datetime
+import util
 
 BUILD_DIR = 'build'
 TEMPLATES_DIR = 'templates'
@@ -148,6 +143,7 @@ class Pandoc:
     
         return node
     
+    @staticmethod
     def unwrap_link(type_, content):
         node = DocNode(NodeType.LINK)
     
@@ -174,6 +170,7 @@ class Pandoc:
     
         return node
     
+    @staticmethod
     def unwrap_list(type_, content):
         node = DocNode(NodeType.LIST)
     
@@ -199,6 +196,20 @@ class Pandoc:
     def unwrap_meta(type_, content):
         node = DocNode(NodeType.META)
         node.rawtext = content
+        return node
+    
+    @staticmethod
+    def unwrap_rawblock(type_, content):
+        fmt, text = content
+        assert(fmt == 'org')
+    
+        matches = util.regex_match(r'#\+(\w+):\s+(.+)', text)
+        assert(matches is not None)
+    
+        node = DocNode(NodeType.META)
+        node.key = matches[0].lower()
+        node.value = matches[1]
+    
         return node
     
     @staticmethod
@@ -314,6 +325,7 @@ class Pandoc:
         'OrderedList': unwrap_list,
         'Para': unwrap_header_or_para,
         'Plain': unwrap_textblock,
+        'RawBlock': unwrap_rawblock,
         'SoftBreak': unwrap_token,
         'Space': unwrap_token,
         'Span': unwrap_span,
@@ -335,21 +347,21 @@ class Page:
 
 class PageView:
     def __init__(self, name):
-        self.id = html_slugify(name)
+        self.id = util.html_slugify(name)
         self.name = name
 
 
 def parse_org_file(fpath):
     args = ['-f', 'org', '-t', 'json', fpath]
-    json = run_subprocess('pandoc', args)
-    ast = parse_json(json)
+    json = util.process_run('pandoc', args)
+    ast = util.json_parse(json)
 
     metadata = {}
     for key, block in ast['meta'].items():
         metadata[key] = Pandoc.unwrap_block(block).inner_text()
     
-    mtime = get_file_mtime(fpath)
-    mdate = timestamp_to_date(mtime)
+    mtime = util.file_get_mtime(fpath)
+    mdate = util.datetime_timestamp_to_date(mtime)
     metadata['modified'] = mdate
 
     nodes = Pandoc.unwrap_blocks(ast['blocks'])
@@ -365,11 +377,11 @@ def generate_page(ast, page_url):
     page = Page(title, cdate, mdate, category, abstract)
 
     main_view = generate_doc_view(ast)
-    main_view.url = path_join(page_url, 'doc')
+    main_view.url = util.path_join(page_url, 'doc')
     page.views.append(main_view)
 
     task_view = generate_task_view(ast)
-    task_view.url = path_join(page_url, 'tasks')
+    task_view.url = util.path_join(page_url, 'tasks')
     page.views.append(task_view)
 
     page.default_view = main_view
@@ -397,7 +409,7 @@ def generate_doc_view(ast):
                 view.toc += '</li></ul>' * (prev_level - node.level)
             view.toc += '</li><li>'
         text = node.inner_text()
-        id_ = html_slugify(text)
+        id_ = util.html_slugify(text)
         view.toc += f'<a href="#{id_}">{text}</a>'
         prev_level = node.level
     view.toc += '</li></ul>' * prev_level
@@ -411,7 +423,7 @@ def render_nodes(nodes):
     return html
 
 def render_code(node):
-    text = html_escape(node.rawtext).strip()
+    text = util.html_escape(node.rawtext).strip()
 
     if node.inline:
         html = f'<code class="code-inline">{text}</code>'
@@ -431,7 +443,7 @@ def render_default(node, tag, **kwargs):
     return f'<{tag}{attrs}>{body}</{tag}>'
 
 def render_heading(node):
-    id_ = html_slugify(node.inner_text())
+    id_ = util.html_slugify(node.inner_text())
     tag = f'h{node.level}'
     return render_default(node, tag, id=id_)
 
@@ -449,7 +461,7 @@ def render_link(node):
             fname = target
             frag = ''
         fname = fname.replace('.org', '.html')
-        frag = '#' + html_slugify(frag[1:])
+        frag = '#' + util.html_slugify(frag[1:])
         target = fname + frag
     return render_default(node, 'a', href=target)
 
@@ -469,7 +481,7 @@ def render_text(node):
     return render_nodes(node.children)
 
 def render_token(node):
-    return html_escape(node.rawtext)
+    return util.html_escape(node.rawtext)
 
 html_render_map = {
     NodeType.CODE: render_code,
@@ -553,147 +565,9 @@ def render_page_view(page, view):
     jinja_template = jinja_env.get_template(f'view_{view.id}.html')
     return jinja_template.render(page=page, view=view)
 
-def regex_match(pattern, string):
-    """Return the list of match groups for a given regex pattern
-    and input string, or None if the string was not a match
-    """
-    match_obj = re.match(pattern, string)
-    if match_obj is not None:
-        return match_obj.groups()
-    return None
 
-def html_escape(string):
-    """Replace the '&', '<', and '>' characters in a string with their
-    corresponding HTML escape sequences.
-    """
-    return string.replace('&', '&amp;') \
-                 .replace('<', '&lt;') \
-                 .replace('>', '&gt;')
-
-def html_slugify(string):
-    """Convert an arbitrary string to a valid CSS identifier
-    by replacing non-alphanumeric characters with hyphens.
-    """
-    slug = ''
-    for c in string:
-        slug += c.lower() if c.isalnum() else '-'
-    return slug
-
-def html_strip_tag(string):
-    """Remove the outermost HTML tag from a string.
-    """
-    start = min(0, string.find('>'))
-    end = string.rfind('<')
-    if end < 0:
-        end = len(string)
-    return string[start:end]
-
-def parse_json(s):
-    """Parses a JSON string into a corresponding Python object
-    (e.g. dict, list, etc.).
-    """
-    return json.loads(s)
-
-def path_join(*args):
-    """Join several path elements together with the OS-appropriate
-    path separator.
-    """
-    return os.path.join(*args)
-
-def read_file(fpath):
-    """Return the contents of a UTF-8 file as a string.
-    """
-    with open(fpath, 'r', encoding='utf-8') as f:
-        contents = f.read()
-    return contents
-
-def write_file(fpath, string):
-    """Write a string to a file with UTF-8 encoding.
-    """
-    dirpath = os.path.split(fpath)[0]
-    os.makedirs(dirpath, exist_ok=True)
-    with open(fpath, 'w+', encoding='utf-8') as f:
-        f.write(string)
-
-def get_file_mtime(path):
-    """Get the Unix timestamp for the last modification time of a file
-    as recorded by the file system
-    """
-    return os.path.getmtime(path)
-
-def make_dir(path):
-    """Create a directory (and all necessary parent directories) if it
-    does not already exist.
-    """
-    os.makedirs(path, exist_ok=True)
-
-def empty_dir(root):
-    """Delete the contents of a directory.
-    """
-    for itemname in os.listdir(root):
-        itempath = os.path.join(root, itemname)
-        if os.path.isdir(itempath):
-            shutil.rmtree(itempath)
-        else:
-            os.remove(itempath)
-def copy_dir(indir, outdir):
-    """Copy the contents of one directory to another.
-    """
-    shutil.copytree(indir, outdir, dirs_exist_ok=True)
-
-def walk_dir(root):
-    """Walk recursively through the files in a directory tree,
-    yielding for each file its containing directory, name, and
-    extension.
-    """
-    for dirpath, dirnames, filenames in os.walk(root):
-        for filename in filenames:
-            fname, ext = os.path.splitext(filename)
-            yield dirpath, fname, ext
-
-def run_subprocess(name, args, input_str=None):
-      """Run an external process with the given arguments and input string.
-      Returns the process's standard output as a string.
-      """
-      process = subprocess.run(
-          [name] + args,
-          input=input_str,
-          capture_output=True,
-          check=True,
-          encoding='utf-8'
-      )
-      return process.stdout
-
-def timestamp_to_date(timestamp):
-    datetime_obj = datetime.datetime.fromtimestamp(timestamp, datetime.UTC)
-    return datetime_obj.strftime('%Y-%m-%d')
-
-def debug_print_ast(ast):
-    print(f'Metadata: {ast.metadata}')
-    print('Nodes:')
-    for node in ast.nodes:
-        debug_print_node(node, indent=1)
-
-def debug_print_node(node, indent=0):
-    tab = ' ' * 2
-    ind = tab * indent
-
-    print(f'{ind}Type: {node.type}', end=' ')
-    if len(node.rawtext) > 0:
-        print(f'("{node.rawtext}")', end='')
-    print()
-
-    ind += tab
-
-    n_children = len(node.children)
-    if n_children > 0:
-        print(f'{ind}Children: {n_children}')
-        for child in node.children:
-            debug_print_node(child, indent=indent + 2)
-
-
-make_dir(BUILD_DIR)
-empty_dir(BUILD_DIR)
+util.dir_make(BUILD_DIR)
+util.dir_empty(BUILD_DIR)
 
 jinja_env = jinja2.Environment(
     loader=jinja2.FileSystemLoader(TEMPLATES_DIR),
@@ -702,31 +576,29 @@ jinja_env = jinja2.Environment(
 )
 
 pages = []
-for dirpath, fname, ext in walk_dir(PAGES_DIR):
-    if fname[0] == '.' or ext != '.org':
+for dirpath, fname, ext in util.dir_walk(PAGES_DIR):
+    if fname[0] == '.' or fname[0] == '#' or ext != '.org':
         continue
 
-    
-    
-    fpath = path_join(dirpath, fname + ext)
+    fpath = util.path_join(dirpath, fname + ext)
     ast = parse_org_file(fpath)
     
-    page_url = path_join(PAGES_DIR, fname)
+    page_url = util.path_join(PAGES_DIR, fname)
     page = generate_page(ast, page_url)
     
     for view in page.views:
         view_html = render_page_view(page, view)
-        outpath = path_join(BUILD_DIR, view.url, 'index.html')
-        write_file(outpath, view_html)
+        outpath = util.path_join(BUILD_DIR, view.url, 'index.html')
+        util.file_write(outpath, view_html)
 
     pages.append(page)
 
 homepage_html = render_page('index.html', title='Home', pages=pages)
-outpath = path_join(BUILD_DIR, 'index.html')
-write_file(outpath, homepage_html)
+outpath = util.path_join(BUILD_DIR, 'index.html')
+util.file_write(outpath, homepage_html)
 
-outdir = path_join(BUILD_DIR, STYLES_DIR)
-copy_dir(STYLES_DIR, outdir)
+outdir = util.path_join(BUILD_DIR, STYLES_DIR)
+util.dir_copy(STYLES_DIR, outdir)
 
-outdir = path_join(BUILD_DIR, SCRIPTS_DIR)
-copy_dir(SCRIPTS_DIR, outdir)
+outdir = util.path_join(BUILD_DIR, SCRIPTS_DIR)
+util.dir_copy(SCRIPTS_DIR, outdir)
