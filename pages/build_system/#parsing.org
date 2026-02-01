@@ -1,0 +1,527 @@
+**** DONE Eliminate the pandoc dependency once and for all!        :hard:low:
+**** TODO Insert link to "wrap dependencies" mantra                :easy:low:
+**** TODO Better document how Pandoc exports Org files              :med:low:
+**** TODO Properly support #+INCLUDE directives                    :hard:mid:
+
+#+begin_src python :tangle ../../parse.py
+  <<Imports>>
+
+  <<Public class definitions>>
+
+  <<Public function definitions>>
+
+  <<Private function definitions>>
+
+  <<Pandoc unwrapping map>>
+#+end_src
+
+An ~Enum~ is created to represent the various output node types.
+
+#+begin_src python :noweb-ref Imports
+  import enum
+#+end_src
+
+#+begin_src python :noweb-ref Public class definitions
+  class NodeType(enum.Enum):
+      CODE = enum.auto()
+      HEADING = enum.auto()
+      LINK = enum.auto()
+      LIST = enum.auto()
+      LIST_ITEM = enum.auto()
+      META = enum.auto()
+      PARAGRAPH = enum.auto()
+      TABLE = enum.auto()
+      TABLE_ROW = enum.auto()
+      TABLE_CELL = enum.auto()
+      TAG = enum.auto()
+      TASK = enum.auto()
+      TEXT = enum.auto()
+      TOKEN = enum.auto()
+
+#+end_src
+
+#+begin_src python :noweb-ref Public class definitions
+  class DocTree:
+      def __init__(self, metadata, nodes):
+          self.metadata = metadata
+          self.nodes = nodes
+
+#+end_src 
+
+#+begin_src python :noweb-ref Public class definitions
+  class DocNode:
+      def __init__(self, type_):
+          self.type = type_
+          self.rawtext = None
+          self.children = []
+
+      def inner_text(self):
+          if self.rawtext is not None:
+              return self.rawtext
+          return ''.join([child.inner_text() for child in self.children])
+
+#+end_src
+
+#+begin_src python :noweb-ref Imports
+  import util
+#+end_src
+
+#+begin_src python :noweb-ref Public function definitions
+  def parse_org_file(fpath):
+      <<Parse file into AST using Pandoc>>
+
+      <<Unwrap Pandoc metadata>>
+
+      <<Unwrap Pandoc blocks>>
+
+      return DocTree(metadata, nodes)
+
+#+end_src
+
+#+name: Parse file into AST using Pandoc
+#+begin_src python
+  args = ['-f', 'org', '-t', 'json', fpath]
+  json = util.process_run('pandoc', args)
+  ast = util.json_parse(json)
+#+end_src
+
+**** DONE Link to org-mode documentation on property drawers       :easy:low:
+
+Every Org file in this repository starts with a [[https://orgmode.org/manual/Property-Syntax.html][property drawer]] that
+defines its metadata (e.g. title, author, creation date, etc.).
+
+#+name: Unwrap Pandoc metadata
+#+begin_src python
+  metadata = {}
+  for key, block in ast['meta'].items():
+      metadata[key] = _pandoc_unwrap_block(block).inner_text()
+
+  <<Add file modification date to metadata>>
+#+end_src
+
+#+name: Add file modification date to metadata
+#+begin_src python
+  mtime = util.file_get_mtime(fpath)
+  mdate = util.datetime_timestamp_to_date(mtime)
+  metadata['modified'] = mdate
+#+end_src
+
+#+name: Unwrap Pandoc blocks
+#+begin_src python
+  nodes = _pandoc_unwrap_blocks(ast['blocks'])
+#+end_src
+
+* Unwrapping Pandoc blocks
+
+**** TODO Add block quote support                                   :med:mid:
+**** TODO Add LaTeX support                                         :med:mid:
+
+The heavy-lifting of parsing an Org file is performed by Pandoc.
+
+Unwrapping a block consists of looking up the block type's unwrapper
+in our map and applying it.
+
+#+begin_src python :noweb-ref Private function definitions
+  def _pandoc_unwrap_block(block):
+      t = _pandoc_get_type(block)
+      c = _pandoc_get_content(block)
+
+      if t not in _pandoc_unwrapper_map:
+          raise TypeError(f'Unhandled block type: {t}')
+
+      node = _pandoc_unwrapper_map[t](t, c)
+
+      return node
+
+#+end_src
+
+An additional helper function is also defined for unwrapping a list of
+blocks.
+
+#+begin_src python :noweb-ref Private function definitions
+  def _pandoc_unwrap_blocks(blocks):
+      return [_pandoc_unwrap_block(block) for block in blocks]
+
+#+end_src
+
+#+begin_src python :noweb-ref Private function definitions
+  def _pandoc_get_type(block):
+      """Returns the type string of a Pandoc block."""
+      return block.get('t')
+
+#+end_src
+
+#+begin_src python :noweb-ref Private function definitions
+  def _pandoc_get_content(block):
+      """Returns the content field of a Pandoc block."""
+      return block.get('c')
+
+#+end_src
+
+#+begin_src python :noweb-ref Private function definitions
+  def _pandoc_unwrap_attr(attr):
+      """Unpacks a Pandoc Attr tuple: (identifier, classes, key-value pairs)."""
+      # Pandoc Schema: [id, [class1, class2], [[key, val], ...]]
+      return {
+          'id': attr[0],
+          'cls': attr[1],
+          'kvs': dict(attr[2])
+      }
+
+#+end_src
+
+Then, a map from Pandoc types to the functions responsible for
+unwrapping them is set up.
+
+#+name: Pandoc unwrapping map
+#+begin_src python
+  <<Pandoc unwrapping functions>>
+
+  _pandoc_unwrapper_map = {
+      'Code': _pandoc_unwrap_code,
+      'CodeBlock': _pandoc_unwrap_code,
+      'BulletList': _pandoc_unwrap_list,
+      'Emph': _pandoc_unwrap_textblock,
+      'Header': _pandoc_unwrap_header_or_para,
+      'Link': _pandoc_unwrap_link,
+      'MetaString': _pandoc_unwrap_meta,
+      'OrderedList': _pandoc_unwrap_list,
+      'Para': _pandoc_unwrap_header_or_para,
+      'Plain': _pandoc_unwrap_textblock,
+      'RawBlock': _pandoc_unwrap_rawblock,
+      'SoftBreak': _pandoc_unwrap_token,
+      'Space': _pandoc_unwrap_token,
+      'Span': _pandoc_unwrap_span,
+      'Str': _pandoc_unwrap_token,
+      'Strong': _pandoc_unwrap_textblock,
+      'Table': _pandoc_unwrap_table,
+  }
+#+end_src
+
+** Unwrapping code
+
+Code blocks are represented by the ~CodeBlock~ type, which consists of
+an ~Attr~ tuple and the contained code (as raw text). The language is
+specified in the class list of the ~Attr~ tuple.
+
+**** DONE Determine whether attributes list contains anything useful
+**** DONE Verify whether language is only element of class list
+
+Inline code blocks are represented by the ~Code~ type and consists of
+an ~Attr~ tuple and the contained code (as raw text).
+
+**** DONE Determine significance of 'verbatim' class
+**** DONE Verify whether rest of ~Attr~ tuple goes unused
+**** TODO More robust language handling                             :med:low:
+
+#+begin_src python :noweb-ref Pandoc unwrapping functions
+  def _pandoc_unwrap_code(type_, content):
+      node = DocNode(NodeType.CODE)
+
+      attr, text = content
+      attr = _pandoc_unwrap_attr(attr)
+
+      node.rawtext = text
+      node.name = attr['id']
+      node.inline = (type_ == 'Code')
+
+      classes = attr['cls']
+      if len(classes) > 0:
+          assert(len(classes) == 1)
+          node.language = classes[0]
+
+      return node
+
+#+end_src
+
+** Unwrapping headers and paragraphs
+
+**** DONE Verify whether the class and attribute lists are unused
+**** DONE Clean up TODO detection/unwrapping logic
+**** DONE Split task conversion into a separate function           :easy:low:
+**** DONE Split tag identification into a separate function        :easy:low:
+
+~TODO~ items are represented in an Org mode using the same syntax as
+headings. They get parsed as a ~Span~ in either a ~Header~ or a ~Para~
+block's inlines (since Pandoc exports headings deeper than
+~org-export-headline-levels~ as paragraphs).
+
+#+begin_src python :noweb-ref Pandoc unwrapping functions
+  def _pandoc_unwrap_header_or_para(type_, content):
+      def convert_to_task(node):
+          is_todo = (node.children[0].rawtext == 'todo')
+          is_done = (node.children[0].rawtext == 'done')
+          assert(is_todo or is_done)
+          node.type = NodeType.TASK
+          node.done = is_done
+          # Strip task keyword and first space
+          node.children = node.children[2:]
+
+      def apply_tags(node):
+          # Tags occur at the end of a line, separated by non-breaking spaces
+          first_tag_idx = -1
+          for i, child in enumerate(node.children):
+              if child.type == NodeType.TAG:
+                  first_tag_idx = i
+                  break
+          if first_tag_idx >= 0:
+              node.tags = [node.rawtext for node in node.children[first_tag_idx:]
+                           if node.type == NodeType.TAG]
+              node.children = node.children[:first_tag_idx]
+          else:
+              node.tags = []
+
+      if type_ == 'Header':
+          node = DocNode(NodeType.HEADING)
+
+          level, attr, inlines = content
+          attr = _pandoc_unwrap_attr(attr)
+
+          node.level = level
+      else:
+          assert(type_ == 'Para')
+          node = DocNode(NodeType.PARAGRAPH)
+          inlines = content
+
+      node.children = _pandoc_unwrap_blocks(inlines)
+
+      if node.children[0].type == NodeType.TAG:
+          convert_to_task(node)
+
+      # Must be done after task conversion, since tasks are tags
+      apply_tags(node)
+
+      return node
+
+#+end_src
+
+** Unwrapping links
+
+~Link~ blocks contain an ~Attr~ tuple, a list of ~Inline~ tokens (the
+link text), and the link's ~Target~ (a 2-tuple).
+
+**** DONE Verify whether the Attr tuple is unused
+**** DONE Verify that second element of Target is title (and unused)
+
+#+begin_src python :noweb-ref Pandoc unwrapping functions
+  def _pandoc_unwrap_link(type_, content):
+      node = DocNode(NodeType.LINK)
+
+      attr, inlines, target = content
+      attr = _pandoc_unwrap_attr(attr)
+
+      target, title = target
+      node.title = title
+      node.target = target
+
+      i = target.find(':')
+      if i >= 0 and i < len(target) - 1 and target[i + 1] != ':':
+          scheme = target[:i]
+          if scheme == 'http' or scheme == 'https':
+              node.external = True
+          elif scheme == 'file':
+              node.external = False
+          else:
+              raise ValueError(f'Unhandled link scheme: {scheme}')
+      else:
+          node.external = False
+
+      node.children = _pandoc_unwrap_blocks(inlines)
+
+      return node
+
+#+end_src
+
+** Unwrapping lists
+
+**** TODO Convert style & delim to non-Pandoc type                  :med:low:
+
+An ~OrderedList~ contains a tuple of list attributes of the form
+(start, style, delim), then a list of the list's items (each of which
+is itself a list of blocks).
+
+#+begin_src python :noweb-ref Pandoc unwrapping functions
+  def _pandoc_unwrap_list(type_, content):
+      node = DocNode(NodeType.LIST)
+
+      node.ordered = (type_ == 'OrderedList')
+
+      if node.ordered:
+          listattrs, items = content
+          start, style, delim = listattrs
+          node.start = start
+          node.style = _pandoc_get_type(style)
+          node.delim = _pandoc_get_type(delim)
+      else:
+          items = content
+
+      for block in items:
+          item = DocNode(NodeType.LIST_ITEM)
+          item.children = _pandoc_unwrap_blocks(block)
+          node.children.append(item)
+
+      return node
+
+#+end_src
+
+** Unwrapping meta blocks
+
+#+begin_src python :noweb-ref Pandoc unwrapping functions
+  def _pandoc_unwrap_meta(type_, content):
+      node = DocNode(NodeType.META)
+      node.rawtext = content
+      return node
+
+#+end_src
+
+** Unwrapping raw blocks
+
+**** TODO More testing of other cases that emit RawBlock (see Pandoc source code) :easy:low:
+
+~RawBlock~ objects contain their ~Format~ and associated ~Text~. This
+gets emitted by unhandled meta lines (lines starting with "#+").
+
+#+begin_src python :noweb-ref Pandoc unwrapping functions
+  def _pandoc_unwrap_rawblock(type_, content):
+      fmt, text = content
+      assert(fmt == 'org')
+
+      matches = util.regex_match(r'#\+(\w+):\s+(.+)', text)
+      assert(matches is not None)
+
+      node = DocNode(NodeType.META)
+      node.key = matches[0].lower()
+      node.value = matches[1]
+
+      return node
+
+#+end_src
+
+** Unwrapping spans
+
+~Span~ blocks consist of an ~Attr~ tuple and a list of inline
+tokens, much like a header. This gets emitted for ~TODO~ items, in
+which case the class list in the ~Attr~ tuple will be ~['todo',
+'TODO']~.
+
+**** DONE Determine under what other circumstances Span gets emitted
+**** DONE Check how 'DONE' tasks get emitted
+**** DONE Pandoc categories certain valid internal links as "spurious" and emits them as spans; add custom handling for these :med:mid:
+**** TODO Auto-detect invalid internal links                        :med:mid:
+
+#+begin_src python :noweb-ref Pandoc unwrapping functions
+  def _pandoc_unwrap_span(type_, content):
+      attr, inlines = content
+      attr = _pandoc_unwrap_attr(attr)
+
+      if 'spurious-link' in attr['cls']:
+          node = DocNode(NodeType.LINK)
+
+          node.target = attr['kvs']['target']
+          node.external = False
+
+          # Spurious links get wrapped in an 'Emph' block
+          assert(len(inlines) == 1)
+          node.children = _pandoc_unwrap_blocks(inlines)[0].children
+      else:
+          node = DocNode(NodeType.TAG)
+
+          if 'tag' in attr['cls']:
+              tag = attr['kvs']['tag-name']
+          else:
+              tag = attr['cls'][0]
+
+          node.rawtext = tag
+
+      return node
+
+#+end_src
+
+** Unwrapping tables
+
+#+begin_src python :noweb-ref Pandoc unwrapping functions
+  def _pandoc_unwrap_table(type_, content):
+      def unwrap_cell(cell, is_header=False):
+          attr, align, rowspan, colspan, children = cell
+          attr = _pandoc_unwrap_attr(attr)
+
+          node = DocNode(NodeType.TABLE_CELL)
+          node.is_header = is_header
+          node.rowspan = rowspan
+          node.colspan = colspan
+          node.children = _pandoc_unwrap_blocks(children)
+
+          return node
+
+      def unwrap_row(row, is_header=False):
+          attr, cells = row
+          attr = _pandoc_unwrap_attr(attr)
+
+          node = DocNode(NodeType.TABLE_ROW)
+          node.children = [unwrap_cell(cell, is_header) for cell in cells]
+
+          return node
+
+      def unwrap_head(head):
+          attr, rows = head
+          attr = _pandoc_unwrap_attr(attr)
+
+          assert(len(rows) <= 1)
+
+          if len(rows) == 0:
+              return None
+          return unwrap_row(rows[0], is_header=True)
+
+      def unwrap_body(body):
+          assert(len(body) == 1)
+
+          attr, rowheadcols, head, rows = body[0]
+          attr = _pandoc_unwrap_attr(attr)
+
+          assert(len(head) == 0)
+
+          return [unwrap_row(row) for row in rows]
+
+      node = DocNode(NodeType.TABLE)
+
+      attr, caption, colspecs, tablehead, tablebody, tablefoot = content
+      attr = _pandoc_unwrap_attr(attr)
+
+      header = unwrap_head(tablehead)
+      if header is not None:
+          node.children.append(header)
+
+      node.children += unwrap_body(tablebody)
+
+      return node
+
+#+end_src
+
+** Unwrapping styled text
+
+#+begin_src python :noweb-ref Pandoc unwrapping functions
+  def _pandoc_unwrap_textblock(type_, content):
+      node = DocNode(NodeType.TEXT)
+      node.children = _pandoc_unwrap_blocks(content)
+
+      node.strong = (type_ == 'Strong')
+      node.emph = (type_ == 'Emph')
+
+      return node
+
+#+end_src
+
+** Unwrapping text tokens
+
+#+begin_src python :noweb-ref Pandoc unwrapping functions
+  def _pandoc_unwrap_token(type_, content):
+      node = DocNode(NodeType.TOKEN)
+
+      if content is not None:
+          node.rawtext = content
+      else:
+          node.rawtext = ' '
+
+      return node
+
+#+end_src
