@@ -6,7 +6,7 @@
 :Abstract: Details of the source code for the site's build system.
 :END:
 
-#+INCLUDE: "global_options.org"
+#+INCLUDE: "../global_options.org"
 
 **** DONE Tag all the tasks!                                      :easy:high:
 **** DONE Add filtering to task view                               :med:high:
@@ -19,6 +19,7 @@
 **** TODO Command line argument support                             :med:mid:
 **** TODO Interactive debugger for code blocks                     :hard:mid:
 **** TODO Site icon                                                 :med:low:
+**** TODO Progress printing                                         :med:mid:
 
 * Overview
 
@@ -175,23 +176,14 @@ Processing an Org file consists of the following steps:
   <<Render page views to HTML>>
 #+end_src
 
-**** TODO Link to principle about separating I/O                   :easy:low:
 **** DONE Insert links to subsections once supported               :easy:low:
 
-Reading the contents of the Org file is straightforward.
-
-#+name: Read contents of Org file from disk
-#+begin_src python
-  fpath = path_join(dirpath, fname + ext)
-  contents = read_file(fpath)
-#+end_src
-
-Once the contents have been read, they can be parsed into an AST. For
-details, see [[*Parsing an Org file][Parsing an Org file]].
+For details, see [[*Parsing an Org file][Parsing an Org file]].
 
 #+name: Parse Org file contents into AST
 #+begin_src python
-  ast = parse_org_file(contents)
+  fpath = path_join(dirpath, fname + ext)
+  ast = parse_org_file(fpath)
 #+end_src
 
 The AST is then used to generate an abstract representation of the
@@ -255,121 +247,34 @@ build directory.
 
 * Parsing an Org file
 
-**** TODO Eliminate the pandoc dependency once and for all!        :hard:low:
+**** DONE Eliminate the pandoc dependency once and for all!        :hard:low:
 **** TODO Insert link to "wrap dependencies" mantra                :easy:low:
-
-**** DONE Insert link to pandoc library documentation              :easy:low:
 **** TODO Better document how Pandoc exports Org files              :med:low:
-
-The heavy-lifting of parsing an Org file is performed by Pandoc, which
-is interfaced with via the [[https://boisgera.github.io/pandoc/][pandoc]] Python library.
-
-#+begin_src python :noweb-ref Imports
-  import pandoc
-#+end_src
-
-This library handles running the Pandoc subprocess and converting the
-JSON it produces into more user-friendly Python classes.
-
-**** DONE Insert link to to-do handling                            :easy:low:
-
-However, to truly hide the dependency from the rest of the script,
-these classes must all be "unwrapped" and converted to a
-library-agnostic format. This will also present an opportunity for
-additional processing along the way to better handle certain
-Org-specific elements, such as [[*Unwrapping headers and paragraphs][to-do items]].
-
-The API provided by the ~pandoc~ library for parsing is
-~pandoc.read()~. This returns a root ~Pandoc~ object, which itself
-contains a ~Meta~ object and a list of ~Block~ objects as
-children. The task, then, breaks down into unwrapping these two
-elements.
-
 **** TODO Properly support #+INCLUDE directives                    :hard:mid:
 
-#+begin_src python :noweb-ref Function definitions
-  def parse_org_file(fpath):
-      ast = pandoc.read(source=contents, format='org')
+#+begin_src python :noweb-ref Class definitions
+  class DocTree:
+      def __init__(self, metadata, nodes):
+          self.metadata = metadata
+          self.nodes = nodes
 
-      <<Unwrap Pandoc metadata>>
+#+end_src 
 
-      <<Unwrap Pandoc blocks>>
+#+begin_src python :noweb-ref Class definitions
+  class DocNode:
+      def __init__(self, type_):
+          self.type = type_
+          self.rawtext = None
+          self.children = []
 
-      return DocTree(metadata, nodes)
+      def inner_text(self):
+          if self.rawtext is not None:
+              return self.rawtext
+          return ''.join([child.inner_text() for child in self.children])
 
 #+end_src
 
-** Unwrapping Pandoc metadata
-
-**** DONE Link to org-mode documentation on property drawers       :easy:low:
-**** TODO Link to pandoc Python documentation on types             :easy:low:
-**** TODO Extract thoughts about asserting assumptions into design principles :easy:low:
-**** TODO Convert notes to proper footnotes/sidenotes               :med:low:
-
-Every Org file in this repository starts with a
-[[https://orgmode.org/manual/Property-Syntax.html][property drawer]]
-that defines its metadata (e.g. title, author, creation date,
-etc.). This populates the aforementioned ~Meta~ object, which contains
-a dictionary of (~str~, ~MetaString~) pairs.
-
-(Note 1: The types used by the ~pandoc~ library are generally
-"list-like," meaning rather than as member variables, attributes are
-accessed via indices and slices.)
-
-(Note 2: ~assert~ statements are used throughout this section of the
-script to document my assumptions about how Pandoc parses Org files,
-so that it is immediately clear if these assumptions ever turn out to
-be incorrect.)
-
-(Note 3: Technically, the type of the dictionary values is defined to
-be ~MetaValue~, which can be one of many possible child types; I am
-presently assuming that in the case of Org files, it always uses
-~MetaString~.)
-
-#+name: Unwrap Pandoc metadata
-#+begin_src python
-  # Unwrap 'Meta' object
-  metadata = ast[0][0]
-  for k, v in metadata.items():
-      assert(type(v) is pandoc.types.MetaString)
-      # Unwrap 'MetaString' object
-      metadata[k] = v[0]
-
-  <<Add file modification date to metadata>>
-#+end_src
-
-#+name: Add file modification date to metadata
-#+begin_src python
-  mtime = get_file_mtime(fpath)
-  mdate = timestamp_to_date(mtime)
-  metadata['modified'] = mdate
-#+end_src
-
-** Unwrapping Pandoc blocks
-
-Unwrapping the list of ~Block~ objects contained as the second element
-of the root ~Pandoc~ object is performed by iterating through them,
-unwrapping each block individually, and appending it to a list of
-nodes.
-
-#+name: Unwrap Pandoc blocks
-#+begin_src python
-  nodes = []
-  for block in ast[1]:
-      node = unwrap_block(block)
-      nodes.append(node)
-#+end_src
-
-**** TODO Split children into children/inlines, more consistent handling of each :med:mid:
-**** TODO Add block quote support                                   :med:mid:
-**** TODO Add inline math support                                   :med:mid:
-
-The ~Block~ objects represent each of the individual structural
-elements in the Org file as one of several different subtypes
-(e.g. ~Header~, ~Para~, ~CodeBlock~, etc.).
-
-To start then, an ~Enum~ is created to represent the various output
-node types.
+An ~Enum~ is created to represent the various output node types.
 
 #+begin_src python :noweb-ref Imports
   import enum
@@ -394,341 +299,52 @@ node types.
 
 #+end_src
 
-Then, a map from Pandoc types to the functions responsible for
-unwrapping them is set up.
-
-#+begin_src python :noweb-ref Imports
-  import pandoc.types as pdt
-#+end_src
-
-#+name: Pandoc type unwrapping map
-#+begin_src python :noweb-ref
-  pandoc_type_map = {
-      pdt.BulletList: unwrap_list,
-      pdt.Code: unwrap_code,
-      pdt.CodeBlock: unwrap_code,
-      pdt.Emph: unwrap_textblock,
-      pdt.Header: unwrap_head_or_para,
-      pdt.Link: unwrap_link,
-      pdt.OrderedList: unwrap_list,
-      pdt.Para: unwrap_head_or_para,
-      pdt.Plain: unwrap_textblock,
-      pdt.RawBlock: unwrap_rawblock,
-      pdt.SoftBreak: unwrap_token,
-      pdt.Space: unwrap_token,
-      pdt.Span: unwrap_span,
-      pdt.Str: unwrap_token,
-      pdt.Strong: unwrap_textblock,
-      pdt.Table: unwrap_table,
-  }
-#+end_src
-
-Finally, unwrapping a block consists of looking up the block type's
-unwrapper in our map and applying it.
-
 #+begin_src python :noweb-ref Function definitions
-  <<Pandoc type unwrapping functions>>
-  <<Pandoc type unwrapping map>>
+  def parse_org_file(fpath):
+      <<Parse file into AST using Pandoc>>
 
-  def unwrap_block(block):
-      pandoc_type = type(block)
+      <<Unwrap Pandoc metadata>>
 
-      if pandoc_type not in pandoc_type_map:
-          raise TypeError(f'Unhandled block type: {pandoc_type}')
+      <<Unwrap Pandoc blocks>>
 
-      node = pandoc_type_map[pandoc_type](block)
-
-      return node
+      return DocTree(metadata, nodes)
 
 #+end_src
 
-An additional helper function is also defined for unwrapping a list of
-blocks.
-
-#+begin_src python :noweb-ref Function definitions
-  def unwrap_blocks(blocks):
-      return [unwrap_block(block) for block in blocks]
-
+#+name: Parse file into AST using Pandoc
+#+begin_src python
+  args = ['-f', 'org', '-t', 'json', fpath]
+  json = run_subprocess('pandoc', args)
+  ast = parse_json(json)
 #+end_src
 
-*** Unwrapping code
+**** DONE Link to org-mode documentation on property drawers       :easy:low:
 
-Code blocks are represented by ~CodeBlock~ objects, which consist of
-an ~Attr~ tuple and the contained code (text). The language is
-specified in the class list of the ~Attr~ tuple.
+Every Org file in this repository starts with a [[https://orgmode.org/manual/Property-Syntax.html][property drawer]] that
+defines its metadata (e.g. title, author, creation date, etc.).
 
-**** DONE Determine whether attributes list contains anything useful
-**** DONE Verify whether language is only element of class list
+#+name: Unwrap Pandoc metadata
+#+begin_src python
+  metadata = {}
+  for key, block in ast['meta'].items():
+      metadata[key] = Pandoc.unwrap_block(block).inner_text()
 
-Inline code blocks are represented by ~Code~ objects and consist of an
-~Attr~ tuple and the contained code (text).
-
-**** DONE Determine significance of 'verbatim' class
-**** DONE Verify whether rest of ~Attr~ tuple goes unused
-**** TODO More robust language handling                             :med:low:
-
-#+begin_src python :noweb-ref Pandoc type unwrapping functions
-  def unwrap_code(block):
-      node = DocNode(NodeType.CODE)
-      node.text = block[1]
-      node.name = block[0][0]
-      node.inline = (type(block) is pdt.Code)
-
-      classes = block[0][1]
-      if len(classes) > 0:
-          assert(len(classes) == 1)
-          node.language = classes[0]
-
-      return node
-
+  <<Add file modification date to metadata>>
 #+end_src
 
-*** Unwrapping headers and paragraphs
-
-**** TODO Determine whether 'tokens' is really the appropriate term :easy:low:
-
-~Header~ objects contain the header level (1, 2, 3, etc.), an ~Attr~
-tuple of the form (id, classes, attributes), and then a list
-representing the parsed header tokens (type ~Inline~). These must be
-unwrapped recursively.
-
-Because ~TODO~ items are represented in an Org mode using the same
-syntax as headings, they end up getting parsed as a ~Span~ in either a
-~Header~ or a ~Para~ object's ~Inline~ tokens (since Pandoc exports
-headings deeper than ~org-export-headline-levels~ as paragraphs).
-
-**** DONE Verify whether the class and attribute lists are unused
-**** DONE Clean up TODO detection/unwrapping logic
-**** TODO Split into unwrap_head/unwrap_para (merge para with textblock?) :med:low:
-
-#+begin_src python :noweb-ref Pandoc type unwrapping functions
-  def unwrap_head_or_para(block):
-      if type(block) is pdt.Header:
-          node = DocNode(NodeType.HEADING)
-          node.level = block[0]
-          i = 2
-      else:
-          node = DocNode(NodeType.PARAGRAPH)
-          i = 0
-
-      node.children = unwrap_blocks(block[i])
-
-      if node.children[0].type == NodeType.TAG:
-          is_todo = (node.children[0].text == 'todo')
-          is_done = (node.children[0].text == 'done')
-          assert(is_todo or is_done)
-          node.type = NodeType.TASK
-          node.done = is_done
-          # Skip TODO keyword and first space
-          node.children = node.children[2:]
-
-      first_tag_idx = -1
-      for i, child in enumerate(node.children):
-          if child.type == NodeType.TAG:
-              first_tag_idx = i
-              break
-
-      if first_tag_idx >= 0:
-          node.tags = [tag.text for tag in node.children[first_tag_idx:]
-                       if tag.type == NodeType.TAG]
-          node.children = node.children[:first_tag_idx]
-      else:
-          node.tags = []
-
-      return node
-
+#+name: Add file modification date to metadata
+#+begin_src python
+  mtime = get_file_mtime(fpath)
+  mdate = timestamp_to_date(mtime)
+  metadata['modified'] = mdate
 #+end_src
 
-*** Unwrapping links
-
-~Link~ objects contain an ~Attr~ tuple, a list of ~Inline~ tokens (the
-link text), and the link's ~Target~ (a 2-tuple).
-
-**** DONE Verify whether the Attr tuple is unused
-**** DONE Verify that second element of Target is title (and unused)
-
-#+begin_src python :noweb-ref Pandoc type unwrapping functions
-  def unwrap_link(block):
-      node = DocNode(NodeType.LINK)
-
-      node.target = target = block[2][0]
-
-      i = target.find(':')
-      if i >= 0 and i < len(target) - 1 and target[i + 1] != ':':
-          scheme = target[:i]
-          if scheme == 'http' or scheme == 'https':
-              node.external = True
-          elif scheme == 'file':
-              node.external = False
-          else:
-              raise ValueError(f'Unhandled link scheme: {scheme}')
-      else:
-          node.external = False
-
-      assert(block[2][1] == '') # Unused title field
-
-      node.children = unwrap_blocks(block[1])
-
-      return node
-
+#+name: Unwrap Pandoc blocks
+#+begin_src python
+  nodes = Pandoc.unwrap_blocks(ast['blocks'])
 #+end_src
 
-*** Unwrapping lists
-
-An ~OrderedList~ contains a tuple of list attributes of the form
-(start, style, delim), then a list of the list's items (each of which
-is itself a list of blocks).
-
-#+begin_src python :noweb-ref Pandoc type unwrapping functions
-  def unwrap_list(block):
-      node = DocNode(NodeType.LIST)
-
-      node.ordered = (type(block) is pdt.OrderedList)
-
-      if node.ordered:
-          node.start = block[0][0]
-          node.style = str(block[0][1])[:-2] # Strip trailing parens
-          node.delim = str(block[0][2])[:-2] # ""
-          i = 1
-      else:
-          i = 0
-
-      for item in block[i]:
-          item_node = DocNode(NodeType.LIST_ITEM)
-          item_node.children = unwrap_blocks(item)
-          node.children.append(item_node)
-
-      return node
-
-#+end_src
-
-*** Unwrapping raw blocks
-
-**** TODO More testing of other cases that emit RawBlock (see Pandoc source code) :easy:low:
-
-~RawBlock~ objects contain their ~Format~ and associated ~Text~. This
-gets emitted by unhandled meta lines (lines starting with "#+").
-
-#+begin_src python :noweb-ref Pandoc type unwrapping functions
-  def unwrap_rawblock(block):
-      assert(block[0][0] == 'org')
-
-      matches = regex_match(r'#\+(\w+):\s+(.+)', block[1])
-      assert(matches is not None)
-
-      node = DocNode(NodeType.META)
-      node.key = matches[0].lower()
-      node.value = matches[1]
-
-      return node
-
-#+end_src
-
-*** Unwrapping spans
-
-~Span~ objects consist of an ~Attr~ tuple and a list of ~Inline~
-tokens, much like a header. This gets emitted for ~TODO~ items, in
-which case the class list in the ~Attr~ tuple will be ~['todo',
-'TODO']~.
-
-**** DONE Determine under what other circumstances Span gets emitted
-**** DONE Check how 'DONE' tasks get emitted
-**** DONE Pandoc categories certain valid internal links as "spurious" and emits them as spans; add custom handling for these :med:mid:
-**** TODO Auto-detect invalid internal links                        :med:mid:
-
-#+begin_src python :noweb-ref Pandoc type unwrapping functions
-  def unwrap_span(block):
-      if 'spurious-link' in block[0][1]:
-          node = DocNode(NodeType.LINK)
-
-          key, target = block[0][2][0]
-          assert(key == 'target')
-
-          node.target = target
-          node.external = False
-
-          assert(type(block[1][0]) is pdt.Emph)
-          node.children = unwrap_blocks(block[1][0][0])
-      else:
-          node = DocNode(NodeType.TAG)
-
-          if 'tag' in block[0][1]:
-              key, tag = block[0][2][0]
-              assert(key == 'tag-name')
-          else:
-              tag = block[0][1][0]
-              assert(tag == 'todo' or tag == 'done')
-
-          node.text = tag
-
-      return node
-
-#+end_src
-
-*** Unwrapping tables
-
-#+begin_src python :noweb-ref Pandoc type unwrapping functions
-  def unwrap_table(block):
-      def unwrap_cell(cell, is_header=False):
-          node = DocNode(NodeType.TABLE_CELL)
-          node.is_header = is_header
-          assert(cell[2][0] == 1)
-          assert(cell[3][0] == 1)
-          assert(len(cell[4]) <= 1)
-          node.children = unwrap_blocks(cell[4])
-          return node
-
-      def unwrap_row(row, is_header=False):
-          node = DocNode(NodeType.TABLE_ROW)
-          node.children = [unwrap_cell(cell, is_header) for cell in row[1]]
-          return node
-
-      node = DocNode(NodeType.TABLE)
-
-      table_head = block[3]
-      if len(table_head[1]) != 0:
-          assert(len(table_head[1]) == 1)
-          node.children.append(unwrap_row(table_head[1][0], is_header=True))
-
-      assert(len(block[4]) == 1)
-      table_body = block[4][0]
-      assert(table_body[1][0] == 0)
-      assert(len(table_body[2]) == 0)
-
-      node.children += [unwrap_row(row) for row in table_body[3]]
-
-      return node
-
-#+end_src
-
-*** Unwrapping styled text
-
-#+begin_src python :noweb-ref Pandoc type unwrapping functions
-  def unwrap_textblock(block):
-      node = DocNode(NodeType.TEXT)
-      node.children = unwrap_blocks(block[0])
-
-      node.strong = (type(block) is pdt.Strong)
-      node.emph = (type(block) is pdt.Emph)
-
-      return node
-
-#+end_src
-
-*** Unwrapping text tokens
-
-#+begin_src python :noweb-ref Pandoc type unwrapping functions
-  def unwrap_token(block):
-      node = DocNode(NodeType.TOKEN)
-
-      if type(block) is pdt.Str:
-          node.text = block[0]
-      else:
-          node.text = ' '
-
-      return node
-
-#+end_src
+** Unwrapping Pandoc blocks
 
 * Generating page content
 
@@ -835,7 +451,7 @@ render function.
 
 #+begin_src python :noweb-ref Function definitions
   def render_code(node):
-      text = html_escape(node.text).strip()
+      text = html_escape(node.rawtext).strip()
 
       if node.inline:
           html = f'<code class="code-inline">{text}</code>'
@@ -920,7 +536,7 @@ render function.
 
 #+begin_src python :noweb-ref Function definitions
   def render_token(node):
-      return html_escape(node.text)
+      return html_escape(node.rawtext)
 
 #+end_src
 
@@ -1036,6 +652,436 @@ output.
 
 #+end_src
 
+* Interfacing with Pandoc
+**** TODO Add block quote support                                   :med:mid:
+**** TODO Add LaTeX support                                         :med:mid:
+
+The heavy-lifting of parsing an Org file is performed by Pandoc.
+
+#+begin_src python :noweb-ref Class definitions
+  class Pandoc:
+      """Helper functions to navigate Pandoc's JSON format."""
+
+      <<Pandoc helper functions>>
+      <<Pandoc unwrapping functions>>
+      <<Pandoc unwrapping map>>
+      
+#+end_src
+
+#+begin_src python :noweb-ref Pandoc helper functions
+  @staticmethod
+  def get_type(block):
+      """Returns the type string of a Pandoc block."""
+      return block.get('t')
+
+#+end_src
+
+#+begin_src python :noweb-ref Pandoc helper functions
+  @staticmethod
+  def get_content(block):
+      """Returns the content field of a Pandoc block."""
+      return block.get('c')
+
+#+end_src
+
+#+begin_src python :noweb-ref Pandoc helper functions
+  @staticmethod
+  def unwrap_attr(attr):
+      """Unpacks a Pandoc Attr tuple: (identifier, classes, key-value pairs)."""
+      # Pandoc Schema: [id, [class1, class2], [[key, val], ...]]
+      return {
+          'id': attr[0],
+          'cls': attr[1],
+          'kvs': dict(attr[2])
+      }
+
+#+end_src
+
+Unwrapping a block consists of looking up the block type's unwrapper
+in our map and applying it.
+
+#+begin_src python :noweb-ref Pandoc helper functions
+  @staticmethod
+  def unwrap_block(block):
+      t = Pandoc.get_type(block)
+      c = Pandoc.get_content(block)
+
+      if t not in Pandoc.unwrapper_map:
+          raise TypeError(f'Unhandled block type: {t}')
+
+      node = Pandoc.unwrapper_map[t](t, c)
+
+      return node
+
+#+end_src
+
+An additional helper function is also defined for unwrapping a list of
+blocks.
+
+#+begin_src python :noweb-ref Pandoc helper functions
+  @staticmethod
+  def unwrap_blocks(blocks):
+      return [Pandoc.unwrap_block(block) for block in blocks]
+
+#+end_src
+
+Then, a map from Pandoc types to the functions responsible for
+unwrapping them is set up.
+
+#+name: Pandoc unwrapping map
+#+begin_src python :noweb-ref
+  unwrapper_map = {
+      'Code': unwrap_code,
+      'CodeBlock': unwrap_code,
+      'BulletList': unwrap_list,
+      'Emph': unwrap_textblock,
+      'Header': unwrap_header_or_para,
+      'Link': unwrap_link,
+      'MetaString': unwrap_meta,
+      'OrderedList': unwrap_list,
+      'Para': unwrap_header_or_para,
+      'Plain': unwrap_textblock,
+      'SoftBreak': unwrap_token,
+      'Space': unwrap_token,
+      'Span': unwrap_span,
+      'Str': unwrap_token,
+      'Strong': unwrap_textblock,
+      'Table': unwrap_table,
+  }
+#+end_src
+
+*** Unwrapping code
+
+Code blocks are represented by the ~CodeBlock~ type, which consists of
+an ~Attr~ tuple and the contained code (as raw text). The language is
+specified in the class list of the ~Attr~ tuple.
+
+**** DONE Determine whether attributes list contains anything useful
+**** DONE Verify whether language is only element of class list
+
+Inline code blocks are represented by the ~Code~ type and consists of
+an ~Attr~ tuple and the contained code (as raw text).
+
+**** DONE Determine significance of 'verbatim' class
+**** DONE Verify whether rest of ~Attr~ tuple goes unused
+**** TODO More robust language handling                             :med:low:
+
+#+begin_src python :noweb-ref Pandoc unwrapping functions
+  def unwrap_code(type_, content):
+      node = DocNode(NodeType.CODE)
+
+      attr, text = content
+      attr = Pandoc.unwrap_attr(attr)
+
+      node.rawtext = text
+      node.name = attr['id']
+      node.inline = (type_ == 'Code')
+
+      classes = attr['cls']
+      if len(classes) > 0:
+          assert(len(classes) == 1)
+          node.language = classes[0]
+
+      return node
+
+#+end_src
+
+*** Unwrapping headers and paragraphs
+
+**** DONE Verify whether the class and attribute lists are unused
+**** DONE Clean up TODO detection/unwrapping logic
+**** DONE Split task conversion into a separate function           :easy:low:
+**** DONE Split tag identification into a separate function        :easy:low:
+
+~TODO~ items are represented in an Org mode using the same syntax as
+headings. They get parsed as a ~Span~ in either a ~Header~ or a ~Para~
+block's inlines (since Pandoc exports headings deeper than
+~org-export-headline-levels~ as paragraphs).
+
+#+begin_src python :noweb-ref Pandoc unwrapping functions
+  @staticmethod
+  def unwrap_header_or_para(type_, content):
+      def convert_to_task(node):
+          is_todo = (node.children[0].rawtext == 'todo')
+          is_done = (node.children[0].rawtext == 'done')
+          assert(is_todo or is_done)
+          node.type = NodeType.TASK
+          node.done = is_done
+          # Strip task keyword and first space
+          node.children = node.children[2:]
+
+      def apply_tags(node):
+          # Tags occur at the end of a line, separated by non-breaking spaces
+          first_tag_idx = -1
+          for i, child in enumerate(node.children):
+              if child.type == NodeType.TAG:
+                  first_tag_idx = i
+                  break
+          if first_tag_idx >= 0:
+              node.tags = [node.rawtext for node in node.children[first_tag_idx:]
+                           if node.type == NodeType.TAG]
+              node.children = node.children[:first_tag_idx]
+          else:
+              node.tags = []
+
+      if type_ == 'Header':
+          node = DocNode(NodeType.HEADING)
+
+          level, attr, inlines = content
+          attr = Pandoc.unwrap_attr(attr)
+
+          node.level = level
+      else:
+          assert(type_ == 'Para')
+          node = DocNode(NodeType.PARAGRAPH)
+          inlines = content
+
+      node.children = Pandoc.unwrap_blocks(inlines)
+
+      if node.children[0].type == NodeType.TAG:
+          convert_to_task(node)
+
+      # Must be done after task conversion, since tasks are tags
+      apply_tags(node)
+
+      return node
+
+#+end_src
+
+*** Unwrapping links
+
+~Link~ blocks contain an ~Attr~ tuple, a list of ~Inline~ tokens (the
+link text), and the link's ~Target~ (a 2-tuple).
+
+**** DONE Verify whether the Attr tuple is unused
+**** DONE Verify that second element of Target is title (and unused)
+
+#+begin_src python :noweb-ref Pandoc unwrapping functions
+  def unwrap_link(type_, content):
+      node = DocNode(NodeType.LINK)
+
+      attr, inlines, target = content
+      attr = Pandoc.unwrap_attr(attr)
+
+      target, title = target
+      node.title = title
+      node.target = target
+
+      i = target.find(':')
+      if i >= 0 and i < len(target) - 1 and target[i + 1] != ':':
+          scheme = target[:i]
+          if scheme == 'http' or scheme == 'https':
+              node.external = True
+          elif scheme == 'file':
+              node.external = False
+          else:
+              raise ValueError(f'Unhandled link scheme: {scheme}')
+      else:
+          node.external = False
+
+      node.children = Pandoc.unwrap_blocks(inlines)
+
+      return node
+
+#+end_src
+
+*** Unwrapping lists
+
+**** TODO Convert style & delim to non-Pandoc type                  :med:low:
+
+An ~OrderedList~ contains a tuple of list attributes of the form
+(start, style, delim), then a list of the list's items (each of which
+is itself a list of blocks).
+
+#+begin_src python :noweb-ref Pandoc unwrapping functions
+  def unwrap_list(type_, content):
+      node = DocNode(NodeType.LIST)
+
+      node.ordered = (type_ == 'OrderedList')
+
+      if node.ordered:
+          listattrs, items = content
+          start, style, delim = listattrs
+          node.start = start
+          node.style = Pandoc.get_type(style)
+          node.delim = Pandoc.get_type(delim)
+      else:
+          items = content
+
+      for block in items:
+          item = DocNode(NodeType.LIST_ITEM)
+          item.children = Pandoc.unwrap_blocks(block)
+          node.children.append(item)
+
+      return node
+
+#+end_src
+
+*** Unwrapping meta blocks
+
+#+begin_src python :noweb-ref Pandoc unwrapping functions
+  @staticmethod
+  def unwrap_meta(type_, content):
+      node = DocNode(NodeType.META)
+      node.rawtext = content
+      return node
+
+#+end_src
+
+*** Unwrapping raw blocks
+
+**** TODO More testing of other cases that emit RawBlock (see Pandoc source code) :easy:low:
+
+~RawBlock~ objects contain their ~Format~ and associated ~Text~. This
+gets emitted by unhandled meta lines (lines starting with "#+").
+
+#+begin_src python :noweb-ref Pandoc type unwrapping functions
+  def unwrap_rawblock(block):
+      assert(block[0][0] == 'org')
+
+      matches = regex_match(r'#\+(\w+):\s+(.+)', block[1])
+      assert(matches is not None)
+
+      node = DocNode(NodeType.META)
+      node.key = matches[0].lower()
+      node.value = matches[1]
+
+      return node
+
+#+end_src
+
+*** Unwrapping spans
+
+~Span~ blocks consist of an ~Attr~ tuple and a list of inline
+tokens, much like a header. This gets emitted for ~TODO~ items, in
+which case the class list in the ~Attr~ tuple will be ~['todo',
+'TODO']~.
+
+**** DONE Determine under what other circumstances Span gets emitted
+**** DONE Check how 'DONE' tasks get emitted
+**** DONE Pandoc categories certain valid internal links as "spurious" and emits them as spans; add custom handling for these :med:mid:
+**** TODO Auto-detect invalid internal links                        :med:mid:
+
+#+begin_src python :noweb-ref Pandoc unwrapping functions
+  @staticmethod
+  def unwrap_span(type_, content):
+      attr, inlines = content
+      attr = Pandoc.unwrap_attr(attr)
+
+      if 'spurious-link' in attr['cls']:
+          node = DocNode(NodeType.LINK)
+
+          node.target = attr['kvs']['target']
+          node.external = False
+
+          # Spurious links get wrapped in an 'Emph' block
+          assert(len(inlines) == 1)
+          node.children = Pandoc.unwrap_blocks(inlines)[0].children
+      else:
+          node = DocNode(NodeType.TAG)
+
+          if 'tag' in attr['cls']:
+              tag = attr['kvs']['tag-name']
+          else:
+              tag = attr['cls'][0]
+
+          node.rawtext = tag
+
+      return node
+
+#+end_src
+
+*** Unwrapping tables
+
+#+begin_src python :noweb-ref Pandoc unwrapping functions
+  @staticmethod
+  def unwrap_table(type_, content):
+      def unwrap_cell(cell, is_header=False):
+          attr, align, rowspan, colspan, children = cell
+          attr = Pandoc.unwrap_attr(attr)
+
+          node = DocNode(NodeType.TABLE_CELL)
+          node.is_header = is_header
+          node.rowspan = rowspan
+          node.colspan = colspan
+          node.children = Pandoc.unwrap_blocks(children)
+
+          return node
+
+      def unwrap_row(row, is_header=False):
+          attr, cells = row
+          attr = Pandoc.unwrap_attr(attr)
+
+          node = DocNode(NodeType.TABLE_ROW)
+          node.children = [unwrap_cell(cell, is_header) for cell in cells]
+
+          return node
+
+      def unwrap_head(head):
+          attr, rows = head
+          attr = Pandoc.unwrap_attr(attr)
+
+          assert(len(rows) <= 1)
+
+          if len(rows) == 0:
+              return None
+          return unwrap_row(rows[0], is_header=True)
+
+      def unwrap_body(body):
+          assert(len(body) == 1)
+
+          attr, rowheadcols, head, rows = body[0]
+          attr = Pandoc.unwrap_attr(attr)
+
+          assert(len(head) == 0)
+
+          return [unwrap_row(row) for row in rows]
+
+      node = DocNode(NodeType.TABLE)
+
+      attr, caption, colspecs, tablehead, tablebody, tablefoot = content
+      attr = Pandoc.unwrap_attr(attr)
+
+      header = unwrap_head(tablehead)
+      if header is not None:
+          node.children.append(header)
+
+      node.children += unwrap_body(tablebody)
+
+      return node
+
+#+end_src
+
+*** Unwrapping styled text
+
+#+begin_src python :noweb-ref Pandoc unwrapping functions
+  def unwrap_textblock(type_, content):
+      node = DocNode(NodeType.TEXT)
+      node.children = Pandoc.unwrap_blocks(content)
+
+      node.strong = (type_ == 'Strong')
+      node.emph = (type_ == 'Emph')
+
+      return node
+
+#+end_src
+
+*** Unwrapping text tokens
+
+#+begin_src python :noweb-ref Pandoc unwrapping functions
+  @staticmethod
+  def unwrap_token(type_, content):
+      node = DocNode(NodeType.TOKEN)
+
+      if content is not None:
+          node.rawtext = content
+      else:
+          node.rawtext = ' '
+
+      return node
+
+#+end_src
+
 * Class definitions
 
 **** TODO Extract my philosophy on OOP/classes into a better location? :easy:low:
@@ -1045,28 +1091,6 @@ generally do not define methods beyond their constructors. I have
 determined that the improved readability compared to tuples and
 improved usability compared to dictionaries is worth the additional
 boilerplate.
-
-#+begin_src python :noweb-ref Class definitions
-  class DocTree:
-      def __init__(self, metadata, nodes):
-          self.metadata = metadata
-          self.nodes = nodes
-
-#+end_src 
-
-#+begin_src python :noweb-ref Class definitions
-  class DocNode:
-      def __init__(self, type_):
-          self.type = type_
-          self.text = ''
-          self.children = []
-
-      def inner_text(self):
-          if len(self.text) > 0:
-              return self.text
-          return ''.join([child.inner_text() for child in self.children])
-
-#+end_src
 
 #+begin_src python :noweb-ref Class definitions
   class Page:
@@ -1179,11 +1203,11 @@ escape sequences will also get replaced!
 #+end_src
 
 #+begin_src python :noweb-ref Function definitions
-  def parse_json(json_str):
+  def parse_json(s):
       """Parses a JSON string into a corresponding Python object
       (e.g. dict, list, etc.).
       """
-      return json.loads(json_str)
+      return json.loads(s)
 
 #+end_src
 
@@ -1341,8 +1365,8 @@ These functions primarily serve to wrap dependencies on the ~os~ and
       ind = tab * indent
 
       print(f'{ind}Type: {node.type}', end=' ')
-      if len(node.text) > 0:
-          print(f'("{node.text}")', end='')
+      if len(node.rawtext) > 0:
+          print(f'("{node.rawtext}")', end='')
       print()
 
       ind += tab
