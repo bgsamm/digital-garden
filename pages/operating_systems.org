@@ -1,91 +1,51 @@
 :PROPERTIES:
-:Title:    Operating systems
+:Title:    MINIX 3 reimplementation
 :Author:   pjsamm
 :Date:     2026-01-26
-:Category: Notes
-:Abstract: Notes on operating system design.
+:Category: Litprog
+:Abstract: A literate programming reimplementation of the MINIX 3 OS.
 :END:
 
 #+INCLUDE: "global_options.org"
 
 * Overview
 
-An *operating system* is a layer of software that serves two primary purposes:
-1. To present an abstracted interface of the underlying hardware to other programs; and
-2. To coordinate usage of hardware resources between programs.
+This page contains a reimplementation of the MINIX 3 operating system,
+developed alongside the third edition of "Operating Systems: Design
+and Implementation" by Andrew S. Tanenbaum.
 
-**** TODO Link to page on computer architecture once it exists     :easy:low:
+** MINIX 3 architecture
 
-A typical computer consists of the following primary hardware
-resources which software would like to make use:
-- A processor (CPU), with one or more processing cores
-- Some amount of memory (RAM)
-- Miscellaneous I/O devices (e.g. drives, mouse, keyboard, monitor, printer, etc.)
+MINIX 3 is divided into four layers:
+1. The kernel (including the clock and system tasks)
+2. Device drivers
+3. Server processes (process manager, file system, etc.)
+4. User processes (including init)
 
-**** TODO Convert to proper note once supported                    :easy:low:
+Only processes in layer 1 may use kernel mode instructions; all other
+layers run in user mode.
 
-(Note that this article considers only single-processor systems.)
+* Layer 1: The kernel
 
-Additionally, the OS must ensure programs "play nicely" with each
-other (and the OS), and so it must enforce some level of system
-security.
+The kernel is responsible for scheduling processes and managing their
+states (ready, running, or blocked), as well as passing messages
+between processes. It also provides access to I/O ports and
+interrupts, since modern processors require use of kernel mode
+instructions for these operations.
 
-Altogether, this leads to a four component model of an operating
-system:
-- Processes and threads
-- Memory management
-- Devices and I/O
-- Security
+** The clock task
 
-**** TODO Determine whether IPC should be its own component         :med:low:
+The clock task interfaces with the hardware that generates timing
+signals; it is not accessible to user applications and interfaces only
+with the kernel.
 
-* Processes and threads
+** The system task
 
-** Process
+The system task implements the kernel calls required by user
+applications in layers 2 and 3.
 
-A *process* is an abstraction of a running program and is the
-fundamental building block of an operating system.
+* Layer 2: Device drivers
 
-*** Sequential process model
+* Layer 3: Server processes
 
-Fundamentally, a process consists of the current state of the CPU
-(that is, the values of its various registers). Switching between
-processes, then, consists of updating the CPU state to the appropriate
-values; this is referred to as "context switching." In this way, each
-process can be said to have its own "virtual CPU." While the CPU may
-actually be switching rapidly between various processes (referred to
-as "multiprogramming"), from the perspective of any individual
-process, it appears to be executing sequentially; thus, it is referred
-to as the "sequential process model."
-
-*** Process creation
-
-*** Process termination
-
-*** Process hierarchies
-
-*** Process states
-
-*** Process implementation
-
-** Thread
-
-** Inter-process communication
-
-** Scheduling
-
-** Deadlocks
-
-* Memory management
-
-* Device and I/O management
-
-** File system
-
-* Security
-
-* Miscellaneous
-
-** Interrupts, traps, and system calls
-
-** Time management
+* Layer 4: User processes
