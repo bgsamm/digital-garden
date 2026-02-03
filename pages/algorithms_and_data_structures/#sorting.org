@@ -1,3 +1,8 @@
+Note: Throughout the code here, I use loops that decrement a variable
+of type ~size_t~. This should generally be avoided as ~size_t~ is
+unsigned, leading to a risk of infinite loops. I have chosen to
+prioritize clarity over safety.
+
 #+begin_src c :tangle ../../temp/sort_test.c
   #include <stdio.h>
   #include "sort.h"
