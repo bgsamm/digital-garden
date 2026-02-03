@@ -27,3 +27,4 @@
 * Misc.
 
 - Game Boy emulator
+- Pokemon battle sim
