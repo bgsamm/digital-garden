@@ -1,0 +1,31 @@
+#+begin_comment
+Desired interface:
+- Input: an abstract syntax tree representing the
+  page, including its type (in the metadata)
+- Output: a collection of HTML strings, one for
+  each view, possibly with some metadata
+#+end_comment
+
+#+begin_src python :tangle ../../render.py
+  <<Function definitions>>
+#+end_src
+
+When it comes time to actually render a page, we use the Jinja
+~Environment~ created earlier to load the template (AFAIK Jinja
+handles caching for us), then use the template to render the final
+output.
+
+#+begin_src python :noweb-ref Function definitions
+  def render_page(template, *args, **kwargs):
+      jinja_template = jinja_env.get_template(template)
+      return jinja_template.render(*args, **kwargs)
+
+#+end_src
+
+#+begin_src python :noweb-ref Function definitions
+  def render_page_view(page, view):
+      jinja_template = jinja_env.get_template(f'view_{view.id}.html')
+      return jinja_template.render(page=page, view=view)
+
+#+end_src
+

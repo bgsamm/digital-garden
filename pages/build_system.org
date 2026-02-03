@@ -17,7 +17,7 @@
 **** TODO Add support for footnotes/sidenotes                       :med:mid:
 **** DONE Use ~code~ instead of =verbatim= where appropriate       :easy:low:
 **** TODO Command line argument support                             :med:mid:
-**** TODO Interactive debugger for code blocks         `           :hard:mid:
+**** TODO Interactive debugger for code blocks                     :hard:mid:
 **** TODO Site icon                                                 :med:low:
 **** TODO Progress printing                                         :med:mid:
 **** TODO Better handling of minlevel for includes                  :med:low:
