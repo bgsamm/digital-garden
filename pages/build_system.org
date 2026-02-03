@@ -20,6 +20,7 @@
 **** TODO Interactive debugger for code blocks         `           :hard:mid:
 **** TODO Site icon                                                 :med:low:
 **** TODO Progress printing                                         :med:mid:
+**** TODO Better handling of minlevel for includes                  :med:low:
 
 * Overview
 
