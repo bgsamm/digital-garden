@@ -72,14 +72,11 @@ The overall structure of the program is as follows:
 ** Preparing the build environment
 
 Before the actual build process can begin, some initial setup must be
-performed. First, the build directory must be prepared, and second, a
-Jinja environment must be created.
+performed.
 
 #+name: Prepare build environment
 #+begin_src python
   <<Prepare build directory>>
-
-  <<Initialize Jinja>>
 #+end_src
 
 *** Preparing the build directory
@@ -96,35 +93,6 @@ or renamed "zombie" page does not persist between builds).
 #+begin_src python
   util.dir_make(BUILD_DIR)
   util.dir_empty(BUILD_DIR)
-#+end_src
-
-*** Initializing Jinja
-
-**** DONE Remove file prefix from link once header links supported :easy:low:
-
-Jinja uses an ~Environment~ object as a high-level API for configuring
-and loading templates. This is created as a global variable for later
-use (see [[*Rendering a site page][Rendering a site page]]) and is set to load templates from a
-file system directory and trim whitespace from template blocks (see
-the Jinja [[https://jinja.palletsprojects.com/en/stable/api/#high-level-api][documentation]]).
-
-**** TODO Determine why the library is called jinja*2*             :easy:low:
-
-#+begin_src python :noweb-ref Imports
-  import jinja2
-#+end_src
-
-#+begin_src python :noweb-ref Global constants
-  TEMPLATES_DIR = 'templates'
-#+end_src
-
-#+name: Initialize Jinja
-#+begin_src python
-  jinja_env = jinja2.Environment(
-      loader=jinja2.FileSystemLoader(TEMPLATES_DIR),
-      trim_blocks=True,
-      lstrip_blocks=True
-  )
 #+end_src
 
 ** Processing Org files
@@ -243,6 +211,7 @@ build directory.
   outdir = util.path_join(BUILD_DIR, SCRIPTS_DIR)
   util.dir_copy(SCRIPTS_DIR, outdir)
 #+end_src
+
 * Generating page content
 
 **** DONE Auto-insert page title element                           :easy:mid:
