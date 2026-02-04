@@ -1,69 +1,125 @@
 :PROPERTIES:
-:Title:    Computer networking
+:Title:    Net/3 reimplementation
 :Author:   pjsamm
 :Date:     2026-01-28
 :Category: Notes
-:Abstract: Notes on computer networking.
+:Abstract: A reimplementation of the Net/3 version of the Berkeley sockets API.
 :END:
 
 #+INCLUDE: "global_options.org"
 
 * Overview
 
-** Five-layer model
+This page reimplements version 4.4BSD-Lite, aka Net/3, of the Berkeley
+sockets API, based on the source code description in "TCP/IP
+Illustrated, Volume 2" by W. Richard Stevens and Gary R. Wright.
 
-1. Phyiscal layer
-2. Link layer
-3. Network layer
-4. Transport layer
-5. Application layer
+The code is structured into 3 layers:
+1. The socket layer
+2. The protocol layer
+3. The interface layer
 
-** Protocols
+* The socket layer
 
-A *protocol* is a defined format and order of messages to be exchanged
-between communicating entities and the actions to be taken in response
-to certain events (such as recepit of a message).
+The socket layer is the protocol-independent interface for creating
+sockets.
 
-* Application layer
+** ~socket~ system call
 
-Unit of transmission is a *message*.
+#+name: struct socket_args definition
+#+begin_src c
+  struct socket_args {
+      int domain;
+      int type;
+      int protocol;
+  };
+#+end_src
 
-Two primary architectural paradigms:
-1. Client-server
-2. Peer-to-peer (P2P)
+#+name: socket function signature
+#+begin_src c
+  int socket(struct proc *p, struct socket_args *uap, int *retval)
+#+end_src
 
-Can also have a hybrid model.
+#+name: socket function definition
+#+begin_src c
+  <<socket function signature>> {
+      <<socket::Variable declarations>>
 
-** Client-server architecture
+      <<socket::Try to allocate a new file structure and descriptor>>
 
-The process that initiates communication is the *client*, and the
-process the responds is the *server*. A single process can at
-different times play both roles, but in any single communication
-instance, it is either the client or the server.
+      <<socket::Set file attributes to those of a socket>>
 
-The software interface through which messages are sent is called a
-*socket*, which serves as the interface between the application and
-transport layers. A socket is identified by its *port number*.
+      <<socket::Try creating the socket using socreate>>
 
-** Peer-to-peer architecture
+      return error;
+  }
+#+end_src
 
-Challenges:
-- ISPs designed for asymmetric bandwidth usage
-- Difficult to secure
-- Lack of incentives for users to provide computing resources to other peers
+#+name: socket::Variable declarations
+#+begin_src c
+  struct filedesc *fdp = p->p_fd;
+  struct socket *so;
+  struct file *fp;
+  int fd, error;
+#+end_src
 
-* Transport layer
+#+name: socket::Try to allocate a new file structure and descriptor
+#+begin_src c
+  if (error = falloc(p, &fp, &fd))
+      return error;
+#+end_src
 
-Unit of transmission is a *segment*.
+#+name: socket::Set file attributes to those of a socket
+#+begin_src c
+  fp->f_flag = FREAD | FWRITE;
+  fp->f_type = DTYPE_SOCKET;
+  fp->f_ops = &socketops;  
+#+end_src
 
-* Network layer
+#+name: socket::Try creating the socket using socreate
+#+begin_src c
+  if (error = socreate(uap->domain, &so, uap->type, uap->protocol)) {
+      fdp->fd_ofiles[fd] = 0;
+      ffree(fp);
+  } else {
+      fp->f_data = (caddr_t) so;
+      ,*retval = fd;
+  }
+#+end_src
 
-Unit of transmission is a *datagram*.
+** ~socreate~
 
-* Link layer
+#+name: socreate function signature
+#+begin_src c
+  int socreate(int dom, struct socket **aso, int type, int proto)
+#+end_src
 
-Unit of transmission is a *frame*.
+#+name: socreate function definition
+#+begin_src c
+  <<socreate function signature>> {
+      struct proc *p = curproc;
+      struct protosw *prp;
+      struct socket *so;
+      int error;
 
-* Physical layer
+      if (proto)
+          prp = pffindproto(dom, proto, type);
+      else
+          prp = pffindtype(dom, type);
 
-Unit of transmission is a bit.
+      if (prp == 0 || prp->pr_usrreq == 0)
+          return EPROTONOSUPPORT;
+      if (prp->pr_type != type)
+          return EPROTOTYPE;
+
+      MALLOC(so, struct socket *, sizeof(*so), M_SOCKET, M_WAIT);
+      bzero((caddr_t) so, sizeof(*so));
+
+      so->so_type = type;
+      if (p->p_ucred->cr_uid == 0)
+          so->so_state = SS_PRIV;
+      so->so_proto = prp;
+
+      
+  }
+#+end_src
