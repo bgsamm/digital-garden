@@ -1,0 +1,14 @@
+:PROPERTIES:
+:Title:    Nand to Tetris
+:Author:   pjsamm
+:Date:     2026-02-07
+:Category: Project
+:Abstract: My implementation of the nand2tetris course.
+:END:
+
+#+INCLUDE: "../global_options.org"
+
+* Logic gates
+
+** NAND and NOR
+
