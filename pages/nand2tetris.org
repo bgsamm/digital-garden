@@ -15,7 +15,7 @@
 **** TODO Consistent capitalization                                :easy:low:
 **** TODO Split into subfile w/ better organization                :easy:mid:
 
-** NAND and NOR
+** Nand & Nor
 
 ~NAND~ and ~NOR~ are the only two functionally complete logical
 connectives; that is, any possible truth table can be produced using
@@ -74,7 +74,7 @@ As you can see, the constructions are identical apart from exchanging
 the gate names. In particular, both use the fact that a single line
 connected to both inputs inverts the line. Speaking of which...
 
-** NOT
+** Not
 
 ~NOT~ is the only unary gate of interest (the only other possibilities
 being pass-through or constant gates). It has the following truth
@@ -107,7 +107,7 @@ is omitted.
 For clarity, I will use ~NOT x~ rather than ~x NAND x~ or ~x NOR x~
 going forward.
 
-** AND
+** And
 
 The truth table for AND is:
 
@@ -150,7 +150,7 @@ inputs to be inverted rather than the output:
   }
 #+end_src
 
-** OR
+** Or
 
 ~OR~ has the following truth table:
 
@@ -190,7 +190,7 @@ need only invert the output:
   }
 #+end_src
 
-** XOR
+** Xor
 
 Starting with ~XOR~, I will only be considering constructions using
 ~NAND~ for simplicity.
@@ -222,7 +222,7 @@ gates, the minimum number of ~NAND~ gates needed is just 4:
   }
 #+end_src
 
-** XNOR
+** Xnor
 
 ~XNOR~ (a.k.a. ~EQ~) has the following truth table:
 
@@ -252,7 +252,7 @@ binary connectives (using ~NAND~) at 5 gates:
   }
 #+end_src
 
-** MUX
+** Mux
 
 From here, we move to higher order gates, starting with ~MUX~
 (i.e. "multiplexor"), which uses one input to select between two other
@@ -278,7 +278,7 @@ inputs:
   }
 #+end_src
 
-** DMUX
+** Dmux
 
 ~DMUX~, on the other hand, uses one input to select which of two
 output lines its other input should appear on:
@@ -304,7 +304,7 @@ output lines its other input should appear on:
   }
 #+end_src
 
-** NOT16
+** Not16
 
 ~NOT16~ takes a 16-bit input an inverts each individual bit:
 
@@ -333,7 +333,7 @@ output lines its other input should appear on:
   }
 #+end_src
 
-** AND16
+** And16
 
 ~AND16~ takes two 16-bit inputs and computes their bitwise ~AND~:
 
@@ -362,7 +362,7 @@ output lines its other input should appear on:
   }
 #+end_src
 
-** OR16
+** Or16
 
 Similarly, ~OR16~ takes two 16-bit inputs and computes their bitwise ~OR~:
 
@@ -391,7 +391,7 @@ Similarly, ~OR16~ takes two 16-bit inputs and computes their bitwise ~OR~:
   }
 #+end_src
 
-** MUX16
+** Mux16
 
 ~MUX16~ takes two 16-bit inputs and a 1-bit input to select between them:
 
