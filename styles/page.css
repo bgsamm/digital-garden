@@ -121,7 +121,7 @@ code {
 }
 
 .code-inline {
-    background-color: var(--theme-panel);
+    background-color: var(--theme-bg);
     border-radius: 5px;
     padding: 2px 6px;
 }
