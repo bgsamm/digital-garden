@@ -439,6 +439,8 @@ which case the class list in the ~Attr~ tuple will be ~['todo',
 
 ** Unwrapping tables
 
+**** TODO Add support for table titles                              :med:mid:
+
 #+begin_src python :noweb-ref Pandoc unwrapping functions
   def _pandoc_unwrap_table(type_, content):
       def unwrap_cell(cell, is_header=False):
