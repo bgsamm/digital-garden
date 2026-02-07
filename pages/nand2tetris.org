@@ -509,3 +509,181 @@ output lines its other input should appear on:
       DMux4Way(in=w2, sel=sel[0..1], a=e, b=f, c=g, d=h);
   }
 #+end_src
+
+* Arithmetic logic unit
+
+** Half adder
+
+A half adder computes the sum of two bits and has the following truth
+table:
+
+#+name: Half adder truth table
+| a | b | sum | carry |
+|---+---+-----+-------|
+| 0 | 0 |   0 |     0 |
+| 1 | 0 |   1 |     0 |
+| 0 | 1 |   1 |     0 |
+| 1 | 1 |   0 |     1 |
+
+As can be seen, this amounts to an ~Xor~ gate for the sum bit and an
+~And~ gate for the carry bit:
+
+#+name: Half adder
+#+begin_src java
+  CHIP HalfAdder {
+      IN a, b;    // 1-bit inputs
+      OUT sum,    // Right bit of a + b 
+          carry;  // Left bit of a + b
+
+      PARTS:
+      Xor(a=a, b=b, out=sum);
+      And(a=a, b=b, out=carry);
+  }
+#+end_src
+
+** Full adder
+
+A full adder computes the sum of two input bits, plus an incoming
+carry bit (so three input bits). It has the following truth table:
+
+#+name: Full adder truth table
+| a | b | c | sum | carry |
+|---+---+---+-----+-------|
+| 0 | 0 | 0 |   0 |     0 |
+| 0 | 1 | 0 |   1 |     0 |
+| 1 | 0 | 0 |   1 |     0 |
+| 1 | 1 | 0 |   0 |     1 |
+| 0 | 0 | 1 |   1 |     0 |
+| 0 | 1 | 1 |   0 |     1 |
+| 1 | 0 | 1 |   0 |     1 |
+| 1 | 1 | 1 |   1 |     1 |
+
+This can be constructed using two half adders (hence the names half
+and full adder), with an ~Or~ gate to determine the carry bit:
+
+#+begin_src java
+  CHIP FullAdder {
+      IN a, b, c;  // 1-bit inputs
+      OUT sum,     // Right bit of a + b + c
+          carry;   // Left bit of a + b + c
+
+      PARTS:
+      HalfAdder(a=a, b=b, sum=i1, carry=i2);
+      HalfAdder(a=c, b=i1, sum=sum, carry=i3);
+      Or(a=i2, b=i3, out=carry);
+  }
+#+end_src
+
+** 16-bit adder
+
+Full adders can be chained together to produce a multi-bit adder; in
+this case, we construct a 16-bit adder for our 16-bit computer:
+
+#+begin_src java
+  CHIP Add16 {
+      IN a[16], b[16];
+      OUT out[16];
+
+      PARTS:
+      HalfAdder(a=a[0], b=b[0], sum=out[0], carry=c1);
+      FullAdder(a=a[1], b=b[1], c=c1, sum=out[1], carry=c2);
+      FullAdder(a=a[2], b=b[2], c=c2, sum=out[2], carry=c3);
+      FullAdder(a=a[3], b=b[3], c=c3, sum=out[3], carry=c4);
+      FullAdder(a=a[4], b=b[4], c=c4, sum=out[4], carry=c5);
+      FullAdder(a=a[5], b=b[5], c=c5, sum=out[5], carry=c6);
+      FullAdder(a=a[6], b=b[6], c=c6, sum=out[6], carry=c7);
+      FullAdder(a=a[7], b=b[7], c=c7, sum=out[7], carry=c8);
+      FullAdder(a=a[8], b=b[8], c=c8, sum=out[8], carry=c9);
+      FullAdder(a=a[9], b=b[9], c=c9, sum=out[9], carry=c10);
+      FullAdder(a=a[10], b=b[10], c=c10, sum=out[10], carry=c11);
+      FullAdder(a=a[11], b=b[11], c=c11, sum=out[11], carry=c12);
+      FullAdder(a=a[12], b=b[12], c=c12, sum=out[12], carry=c13);
+      FullAdder(a=a[13], b=b[13], c=c13, sum=out[13], carry=c14);
+      FullAdder(a=a[14], b=b[14], c=c14, sum=out[14], carry=c15);
+      FullAdder(a=a[15], b=b[15], c=c15, sum=out[15], carry=oflw);
+  }
+#+end_src
+
+Note that in this design, the overflow (~oflw~) bit goes unused.
+
+** 16-bit incrementer
+
+We also define a special case of the 16-bit adder that simply
+increments a number by 1:
+
+#+begin_src java
+  CHIP Inc16 {
+      IN in[16];
+      OUT out[16];
+
+      PARTS:
+      Add16(a=in, b[0]=true, b[1..15]=false, out=out);
+  }
+#+end_src
+
+** ALU
+
+We now have everything needed to construct the ALU:
+
+#+begin_src java
+  CHIP ALU {
+      IN  
+          x[16], y[16],  // 16-bit inputs        
+          zx, // zero the x input?
+          nx, // negate the x input?
+          zy, // zero the y input?
+          ny, // negate the y input?
+          f,  // compute (out = x + y) or (out = x & y)?
+          no; // negate the out output?
+      OUT 
+          out[16], // 16-bit output
+          zr,      // if (out == 0) equals 1, else 0
+          ng;      // if (out < 0)  equals 1, else 0
+
+      PARTS:
+      Mux16(a=x, b=false, sel=zx, out=i1);
+      Not16(in=i1, out=i2);
+      Mux16(a=i1, b=i2, sel=nx, out=i3);
+
+      Mux16(a=y, b=false, sel=zy, out=i4);
+      Not16(in=i4, out=i5);
+      Mux16(a=i4, b=i5, sel=ny, out=i6);
+
+      And16(a=i3, b=i6, out=i7);
+      Add16(a=i3, b=i6, out=i8);
+      Mux16(a=i7, b=i8, sel=f, out=i9);
+
+      Not16(in=i9, out=i10);
+      Mux16(a=i9, b=i10, sel=no, out[0..7]=i11, out[8..15]=i12, out=out, out[15]=ng);
+
+      Or8Way(in=i11, out=i13);
+      Or8Way(in=i12, out=i14);
+      Or(a=i13, b=i14, out=i15);
+      Not(in=i15, out=zr);
+  }
+#+end_src
+
+By setting the six control pins to different combinations, the ALU
+will perform different operations. 64 such combinations exist, but
+only 18 are defined in the specification, as follows:
+
+| zx | nx | zy | ny | f | no | out     |
+|----+----+----+----+---+----+---------|
+|  1 |  0 |  1 |  0 | 1 |  0 | 0       |
+|  1 |  1 |  1 |  1 | 1 |  1 | 1       |
+|  1 |  1 |  1 |  0 | 1 |  0 | -1      |
+|  0 |  0 |  1 |  1 | 0 |  0 | x       |
+|  1 |  1 |  0 |  0 | 0 |  0 | y       |
+|  0 |  0 |  1 |  1 | 0 |  1 | !x      |
+|  1 |  1 |  0 |  0 | 0 |  1 | !y      |
+|  0 |  0 |  1 |  1 | 1 |  1 | -x      |
+|  1 |  1 |  0 |  0 | 1 |  1 | -y      |
+|  0 |  1 |  1 |  1 | 1 |  1 | x+1     |
+|  1 |  1 |  0 |  1 | 1 |  1 | y+1     |
+|  0 |  0 |  1 |  1 | 1 |  0 | x-1     |
+|  1 |  1 |  0 |  0 | 1 |  0 | y-1     |
+|  0 |  0 |  0 |  0 | 1 |  0 | x+y     |
+|  0 |  1 |  0 |  0 | 1 |  1 | x-y     |
+|  0 |  0 |  0 |  1 | 1 |  1 | y-x     |
+|  0 |  0 |  0 |  0 | 0 |  0 | x&y     |
+|  0 |  1 |  0 |  1 | 0 |  1 | x\vert​y |
