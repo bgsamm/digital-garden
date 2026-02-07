@@ -57,7 +57,7 @@ def _pandoc_unwrap_block(block):
     c = _pandoc_get_content(block)
 
     if t not in _pandoc_unwrapper_map:
-        raise TypeError(f'Unhandled block type: {t}')
+        raise TypeError(f'Unhandled block type: {t} ({c})')
 
     node = _pandoc_unwrapper_map[t](t, c)
 

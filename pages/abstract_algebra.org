@@ -7,72 +7,388 @@
 :END:
 
 #+INCLUDE: "global_options.org"
+#+OPTIONS: tex:nil
 
-**** TODO Insert proper inline math & math blocks where appropriate :easy:mid:
+**** TODO Insert proper inline math & math blocks (remove tex:nil) :easy:mid:
 **** TODO Split set theory into its own page?                      :easy:low:
+
+NOTE: The following theorems and definitions are taken directly from
+"Introduction to Abstract Algebra" by Malik, Mordeson, and Sen. This
+is temporary!
 
 * Sets
 
-**** TODO Define 'ordering' (including partial & total)             :med:mid:
+*Theorem 1.1.1* Let A and B be sets. Then A = B if and only if A ⊆ B
+and B ⊆ A.
 
-** Cartesian product
+*Definition 1.1.2* The union of two sets A and B, written A ∪ B, is
+defined to be the set A ∪ B = {x | x ∈ A or x ∈ B}.
 
-The Cartesian product of two sets A and B is denoted A x B and is the
-set of all ordered pairs (a, b) such that a is in A and b is in B.
+*Definition 1.1.3* The intersection of two sets A and B, written A ∩
+B, is defined to be the set A ∩ B = {x | x ∈ A and x ∈ B}.
+
+*Theorem 1.1.4* Let A and B be sets. Then the following statements
+hold: (i) A ⊆ A ∪ B and B ⊆ A ∪ B. (ii) A ∩ B ⊆ A and A ∩ B ⊆ B.
+
+*Definition 1.1.6* Given two sets A and B, the relative complement of
+B in A, denoted by the set difference A\B, is the set A\B = {x | x ∈
+A, but x /∈ B}.
+
+*Definition 1.1.8* Let A and B be nonempty sets and x ∈ A, y ∈ B.  (i)
+The ordered pair (x, y) is defined to be the set {{x}, {x, y}}.  (ii)
+The Cartesian cross product (Cartesian product) of A and B, written A
+× B, is defined to be the set A × B = {(x, y) | x ∈ A, y ∈ B}.
+
+*Definition 1.1.10* For any set X, the power set of X, written P(X),
+is defined to be the set {A | A is a subset of X}.
+
+** Integers
+
+*Principle of Well-Ordering*: Every nonempty subset of Z# has a smallest
+(least) element, i.e., if ∅ 6 = S ⊆ Z#, then there exists x ∈ S such
+that x ≤ y for all y ∈ S.
+
+*Theorem 1.2.1 (Principle of Mathematical Induction)* Let S ⊆ Z#. Let
+n0 ∈ S. Suppose S sat- isfies either of the following conditions.  (i)
+For all n ≥ n0, n ∈ Z#, if n ∈ S, then n + 1 ∈ S.  (ii) For all n0 ≤ m
+< n, n ∈ Z#, if m ∈ S, then n ∈ S.  Then {n ∈ Z# | n ≥ n0} ⊆ S.
+
+*Theorem 1.2.3 (Division Algorithm)* Let x, y ∈ Z with y 6 = 0. Then
+there exist unique integers q and r such that x = qy + r, 0 ≤ r < |y|
+.
+
+*Corollary 1.2.4* For any two integers x and y with y > 0, there exist
+unique integers q and r such that x = qy + r, where 0 ≤ r < y.
+
+*Definition 1.2.5* Let x, y ∈ Z with x 6 = 0. Then x is said to divide y
+or x is a divisor (or factor) of y, written x|y, provided there exists
+q ∈ Z such that y = qx. When x does not divide y, we sometimes write
+x - y.
+
+*Definition 1.2.6* Let x, y ∈ Z. A nonzero integer c is called a common
+divisor of x and y if c|x and c|y.
+
+*Definition 1.2.7* A nonzero integer d is called a greatest common
+divisor (gcd) of the integers x and y if (i) d|x and d|y, (ii) for all
+c ∈ Z if c|x and c|y, then c|d
+
+*Theorem 1.2.8* Let x, y ∈ Z with either x 6 = 0 or y 6 = 0. Then x
+and y have a positive greatest common divisor d. Moreover, there exist
+elements s, t ∈ Z such that d = sx + ty.
+
+*Definition 1.2.10* (i) An integer p > 1 is called prime if the only
+divisors of p are ±1 and ±p.  (ii) Two integers x and y are called
+relatively prime if gcd(x, y) = 1.
+
+*Theorem 1.2.11* Let x and y be nonzero integers. Then x and y are
+relatively prime if and only if there exist s, t ∈ Z such that 1 =
+sx + ty.
+
+*Theorem 1.2.12* Let x, y, z ∈ Z with x 6 = 0. If x|yz and x, y are
+relatively prime, then x|z.
+
+*Corollary 1.2.13* Let x, y, p ∈ Z with p a prime. If p|xy, then
+ either p|x or p|y.
+
+*Corollary 1.2.14* Let x1, x2, . . . , xn, p ∈ Z with p a prime. If
+p|x1x2 · · · xn, then p|xi for some i, 1 ≤ i ≤ n.
+
+*Theorem 1.2.15 (Fundamental Theorem of Arithmetic)* Any integer n > 1
+has a unique factor- ization (up to order) n = pe1 1 pe2 2 · · · pes s
+, (1.1) where p1, p2, . . . , ps are distinct primes and e1, e2,
+. . . , es are positive integers.
+
+*Corollary 1.2.16* Any integer n < −1 has a unique factorization (up
+to order) n = (−1)pe1 1 pe2 2 · · · pes s , where p1, p2, . . . , ps
+are distinct primes and e1, e2, . . . , es are positive integers.
+
+*Theorem 1.2.17 (Euclid)* There are an infinite number of primes.
+
+*Definition 1.2.18* Let n be a positive integer. Let φ(n) denote the
+number of positive integers m such that m ≤ n and gcd(m, n) = 1, i.e.,
+φ(n) = |{m ∈ N | m ≤ n and gcd(m, n) = 1}| .  φ(n) is called the Euler
+φ-function.
 
 ** Relations
 
-A relation from set A to set B is any subset of A x B. x R y if (x,
-y) in R.
+*Definition 1.3.1* A binary relation or simply a relation R from a set
+A into a set B is a subset of A × B.
 
-A relation R on a set A is...
-- reflexive if, for all x in A, x R x.
-- symmetric if, for all x, y in A, x R y implies y R x.
-- transitive if, for all x, y, z in A, x R y and y R z implies x R z.
+*Definition 1.3.4* Let R be a relation from a set A into a set B. Then
+the domain of R, denoted by D(R), is defined to be the set {x | x ∈ A
+and there exists y ∈ B such that (x, y) ∈ R}.  The range or image of
+R, denoted by I(R), is defined to be the set {y | y ∈ B and there
+exists x ∈ A such that (x, y) ∈ R}.
 
-**** TODO How is '=' defined here?                                  :med:mid:
+*Definition 1.3.7* Let R be a binary relation on a set A. Then R is
+called (i) reflexive if for all x ∈ A, xRx, (ii) symmetric if for all
+x, y ∈ A, xRy implies yRx, (iii) transitive if for all x, y, z ∈ A,
+xRy and yRz imply xRz.
 
-A relation R on a set A is *trichotomous* if, for all x, y in A,
-exactly one of x R y, y R x, or x = y holds.
+*Definition 1.3.8* A binary relation E on a set A is called an
+equivalence relation on A if E is reflexive, symmetric, and
+transitive.
 
-*** Equivalence relations
+*Definition 1.3.12* Let E be an equivalence relation on a set A. For
+all x ∈ A, let [x] denote the set [x] = {y ∈ A | yEx}.  The set [x] is
+called the equivalence class (with respect to E) determined by x.
 
-A relation is an equivalence relation if it is reflexive, symmetric, and transitive.
+*Theorem 1.3.13* Let E be an equivalence relation on the set A. Then
+(i) for all x ∈ A, [x] 6 = ∅, (ii) if y ∈ [x], then [x] = [y], where
+x, y ∈ A, (iii) for all x, y ∈ A, either [x] = [y] or [x] ∩ [y] = ∅,
+(iv) A = ∪x∈A[x], i.e., A is the union of all equivalence classes with
+respect to E.
 
-Given an equivalence relation E on a set A, the equivalence class [x]
-is the set of all y in A such that y E x.
+*Definition 1.3.14* Let A be a set and P be a collection of nonempty
+subsets of A. Then P is called a partition of A if the following
+properties are satisfied: (i) for all B, C ∈ P, either B = C or B ∩ C
+= ∅.  (ii) A = ∪B∈P B.
 
-** Partitions
+*Theorem 1.3.16* Let E be an equivalence relation on the set A. Then P
+= {[x] | x ∈ A} is a partition of A.
 
-* Groups
+*Theorem 1.3.18* Let P be a partition of the set A. Define a relation
+E on A by for all x, y ∈ A, xEy if there exists B ∈ P such that x, y ∈
+B. Then E is an equivalence relation on A and the equivalence classes
+are precisely the elements of P.
+
+*Definition 1.3.19* Let R be a relation from a set A into a set B and
+S be a relation from B into a set C. The composition of R and S,
+denoted by S ◦ R, is the relation from A into C defined by x(S ◦ R)y
+if there exists z ∈ B such that xRz and zSy for all x ∈ A, y ∈ C.
+
+*Definition 1.3.20* Let R be a relation from a set A into a set B. The
+inverse of R, denoted by R−1, is the relation from B into A defined by
+xR−1y if yRx for all x ∈ B, y ∈ A.
+
+*Theorem 1.3.21* Let R be a relation on a set A. Then R is an
+equivalence relation on A if and only if (i) 4 ⊆ R, where 4 = {(x,
+x) | x ∈ A}, (ii) R = R−1, and (iii) R ◦ R ⊆ R.
+
+** Functions
+
+*Definition 1.4.1* Let A and B be nonempty sets. A relation f from A
+into B is called a function (or mapping) from A into B if (i) D(f ) =
+A and (ii) for all (x, y), (x0, y0) ∈ f, x = x0 implies y = y0.  When
+(ii) is satisfied by a relation f, we say that f is well defined or
+single-valued.
+
+*Definition 1.4.7* Let f be a function from a set A into a set B. Then
+(i) f is called one-one if for all x, x0 ∈ A, f (x) = f (x0) implies x
+= x0.  (ii) f is called onto B (or f maps A onto B) if I(f ) = B.
+
+*Definition 1.4.10* Let A, B, and C be nonempty sets and f : A → B and
+g : B → C. The composition ◦ of f and g, written g ◦ f, is the
+relation from A into C defined as follows: g ◦ f = {(x, z) | x ∈ A, z
+∈ C, there exists y ∈ B such that f (x) = y and g(y) = z}.
+
+*Theorem 1.4.11* Suppose that f : A → B and g : B → C. Then (i) g ◦
+f : A → C, i.e., g ◦ f is a function from A into C.  (ii) If f and g
+are one-one, then g ◦ f is one-one.  (iii) If f is onto B and g is
+onto C, then g ◦ f is onto C.
+
+*Theorem 1.4.13* Let f : A → B, g : B → C, and h : C → D. Then h ◦ (g
+◦ f ) = (h ◦ g) ◦ f.  That is, composition of functions is
+associative.
+
+*Lemma 1.4.14* Let A be a set and f : A → A be a one-one
+function. Then f n : A → A is a one-one function for all integers n
+≥ 1.
+
+*Theorem 1.4.15* Let A be a finite set. If f : A → A is one-one, then
+f is onto A.
+
+*Definition 1.4.16* Let A and B be sets and f : A → B.  (i) f is
+called left invertible if there exists g : B → A such that g ◦ f = iA.
+(ii) f is called right invertible if there exists h : B → A such that
+f ◦ h = iB .  A function f : A → B is called invertible if f is both
+left and right invertible.
+
+*Theorem 1.4.18* Let A and B be sets and f : A → B. Then the following
+assertions hold.  (i) f is one-one if and only if f is left
+invertible.  (ii) f is onto B if and only if f is right invertible.
+(iii) f is one-one and onto B if and only if f is invertible.
+
+*Definition 1.4.19* Let f : A → B and A0 be a nonempty subset of
+A. The restriction of f to A0, written f |A0 , is defined to be f |A0
+= {(x0, f (x0)) | x0 ∈ A0}.
+
+*Definition 1.4.20* Let f : A0 → B and A be a set containing A0. A
+function g : A → B is called an extension of f to A if g|A0 = f.
 
 ** Binary operations
 
-f: S x S -> S
+*Definition 1.5.1* Let S be a nonempty set. A binary operation on S is
+a function from S × S into S.
 
-i.e. must be everywhere defined, well defined, & closed
+*Definition 1.5.2* A mathematical system is an ordered (n + 1)-tuple
+(S, ∗1, . . . , ∗n), where S is a nonempty set and ∗i is a binary
+operation on S, i = 1, 2, . . . , n. S is called the underlying set of
+the system.
 
-Commutative: a * b = b * a for all a,b in S
-Associative: (a * b) * c = a * (b * c) for all a,b,c in S
+*Definition 1.5.3* Let (S, ∗) be a mathematical system. Then (i) ∗ is
+called associative if for all x, y, z ∈ S, x ∗ (y ∗ z) = (x ∗ y) ∗ z.
+(ii) ∗ is called commutative if for all x, y ∈ S, x ∗ y = y ∗ x.
 
-** Isomorphisms
+*Definition 1.5.8* Let (S, ∗) be a mathematical system. An element e ∈
+S is called an identity of (S, ∗) if for all x ∈ S, e ∗ x = x = x ∗ e.
 
-Homomorphism:
-<S, *>, <S', *'>; f:S->S' s.t. f(x * y) = f(x) *' f(y).
+*Theorem 1.5.11* An identity element (if it exists) of a mathematical
+ system (S, ∗) is unique.
 
-Isomorphism:
-Homomorphism where f is bijective.
+* Groups
 
-If S and S' have different cardinalities, they cannot be isomorphic.
+** Elementary properties
 
-** Identity element
+*Definition 2.1.1* A group is an ordered pair (G, ∗), where G is a
+nonempty set and ∗ is a binary operation on G such that the following
+properties hold: (G1) For all a, b, c ∈ G, a ∗ (b ∗ c) = (a ∗ b) ∗ c
+(associative law).  (G2) There exists e ∈ G such that for all a ∈ G, a
+∗ e = a = e ∗ a (existence of an identity).  (G3) For all a ∈ G, there
+exists b ∈ G such that a ∗ b = e = b ∗ a (existence of an inverse).
+Thus, a group is a mathematical system (G, ∗) satisfying axioms G1 to
+G3.
 
-<S, *>; e in S s.t. s * e = e * s = s for all s in S.
+*Theorem 2.1.4* Let (G, ∗) be a group.  (i) There exists a unique
+element e ∈ G such that e ∗ a = a = a ∗ e for all a ∈ G.  (ii) For all
+a ∈ G, there exists a unique b ∈ G such that a ∗ b = e = b ∗ a.
 
-If an identity element exists, it is unique.
+*Definition 2.1.6* Let (G, ∗) be a group. If for all a, b ∈ G a ∗ b =
+b ∗ a, then (G, ∗) is called a commutative or Abelian group. A group
+(G, ∗) is called noncommutative if it is not commutative.
 
-* Rings
+*Theorem 2.1.16* Let (G, ∗) be a group.  (i) (a−1)−1 = a for all a ∈
+G.  (ii) (a ∗ b)−1 = b−1 ∗ a−1 for all a, b ∈ G.  (iii) (Cancellation
+Law) For all a, b, c ∈ G, if either a ∗ c = b ∗ c or c ∗ a = c ∗ b,
+then a = b.  (iv) For all a, b ∈ G, the equations a ∗ x = b and y ∗ a
+= b have unique solutions in G for x and y.
 
-* Fields
+*Corollary 2.1.17* Let (G, ∗) be a group and a ∈ G. If a ∗ a = a, then
+ a = e.
 
+*Corollary 2.1.18* In a multiplication table for a group (G, ∗), each
+element appears exactly once in each row and exactly once in each
+column.
 
+*Definition 2.1.19* Let (G, ∗) be a group and a1, a2, . . . , an ∈ G
+be n elements of G (not necessarily distinct). The meaningful product
+of a1, a2, . . . , an (in this order) is defined as follows: If n = 1,
+then the meaningful product is a1.  If n > 1, then the meaningful
+product of a1, a2, . . . , an is any product of the form (a1 ∗ · · · ∗
+am) ∗ (am+1 ∗ · · · ∗ an), where 1 ≤ m < n and (a1∗ · · · ∗ am) and
+(am+1∗ · · · ∗ an) are meaningful products of m and n − m elements,
+respectively.
+
+*Definition 2.1.20* Let (G, ∗) be a group and a1, a2, . . . , an ∈ G,
+n ≥ 1. The standard product of a1, a2, . . . , an denoted by a1∗ a2∗ ·
+· · ∗ an is defined recursively as a1 = a1 a1 ∗ a2 ∗ · · · ∗ an = (a1
+∗ a2 ∗ · · · ∗ an−1) ∗ an if n > 1.
+
+*Theorem 2.1.21* Let (G, ∗) be a group and a1, a2, . . . , an ∈ G, n
+≥ 1. Then all possible meaningful products of a1, a2, . . . , an (in
+this order) are equal to the standard product of a1, a2, . . . , an
+(in this order).
+
+*Definition 2.1.22* A semigroup is an ordered pair (S, ∗), where S is
+a nonempty set and ∗ is an associative binary operation on S.
+
+*Definition 2.1.24* A semigroup (S, ∗) is commutative if ∗ is
+commutative, i.e., a ∗ b = b ∗ a for all a, b ∈ S. A semigroup (S, ∗)
+which is not commutative is called noncommutative.
+
+*Definition 2.1.25* Let (S, ∗) be a semigroup.  (i) We say that (S, ∗)
+is with identity if the mathematical system (S, ∗) has an identity.
+(ii) An element a ∈ S is called idempotent if a ∗ a = a.
+
+*Theorem 2.1.30* A semigroup (S, ∗) is a group if and only if (i)
+there exists e ∈ S such that e ∗ a = a for all a ∈ S, (i.e., e is a
+left identity), and (ii) for all a ∈ S there exists b ∈ S such that b
+∗ a = e, (i.e., every element has a left inverse).
+
+*Theorem 2.1.33* A semigroup (S, ∗) is a group if and only if for all
+a, b ∈ S the equations a ∗ x = b and y ∗ a = b have solutions in S for
+x and y.
+
+*Theorem 2.1.34* A finite semigroup (S, ∗) is a group if and only if
+(S, ∗) satisfies the cancellation laws (i.e., a ∗ c = b ∗ c implies a
+= b and c ∗ a = c ∗ b implies a = b for all a, b, c ∈ S).
+
+*Definition 2.1.38* A group (G, ∗) is called a finite group if G has
+only a finite number of elements.  The order, written |G|, of a group
+(G, ∗) is the number of elements of G.
+
+*Definition 2.1.40* A group with an infinite number of elements is
+ called an infinite group.
+
+*Definition 2.1.42* Let (G, ∗) be a group and a ∈ G. If there exists a
+positive integer n such that an = e, then the smallest such positive
+integer is called the order of a. If no such positive integer n
+exists, then we say that a is of infinite order.
+
+*Theorem 2.1.46* Let (G, ∗) be a group and a be an element of G such
+that ◦(a) = n.  (i) If am = e for some positive integer m, then n
+divides m.  (ii) For every positive integer t, ◦(at) = n gcd(t, n) .
+
+*Definition 2.1.47* A group (G, ∗) is called a torsion group if every
+element of G is of finite order. If every nonidentity element of G is
+of infinite order, then G is called a torsion-free group.
+
+** Permutation groups
+
+*Definition 3.1.1* Let X be a nonempty set. A permutation π of X is a
+one-one function from X onto X.
+
+*Definition 3.1.3* A group (G, ∗) is called a permutation group on a
+nonempty set X if the elements of G are permutations of X and the
+operation ∗ is the composition of two functions.
+
+*Theorem 3.1.10* (i) (Sn, ◦) is a group for any positive integer n
+≥ 1.  (ii) If n ≥ 3, then (Sn, ◦) is noncommutative.  (iii) |Sn| = n!
+
+*Definition 3.1.11* The group (Sn, ◦) is called the symmetric group on
+In.
+
+*Definition 3.1.12* Let π be an element of Sn. Then π is called a
+k-cycle, written (i1 i2 · · · ik), if π = μ i1 i2 · · · ik−1 ik i2 i3
+· · · ik i1 ¶ , i.e., π(ij ) = ij+1, j = 1, 2, . . . , k − 1, π(ik) =
+i1, and π(a) = a for any other element of In.
+
+*Definition 3.1.14* Let α, β ∈ Sn. Then α and β are called conjugate
+if there exists γ ∈ Sn such that γ ◦ α ◦ γ−1 = β.
+
+*Theorem 3.1.15* Let π = (i1i2 · · · il) ∈ Sn be a cycle. Then for all
+α ∈ Sn, α ◦ π ◦ α−1 = (α(i1) α(i2) · · · α(il)).
+
+*Definition 3.1.16* Let π1, π2, . . . , πk ∈ Sn. Then π1, π2, . . . ,
+πk are called disjoint if for all i, 1 ≤ i ≤ k and for all a ∈ In,
+πi(a) 6 = a implies πj (a) = a for all j 6 = i, 1 ≤ j ≤ k.
+
+*Theorem 3.1.17* Let π, λ ∈ Sn such that π and λ are disjoint. Then π
+◦ λ = λ ◦ π, i.e., π and λ commute.
+
+*Theorem 3.1.18* Any nonidentity permutation π of Sn (n ≥ 2) can be
+uniquely expressed (up to the order of the factors) as a product of
+disjoint cycles, where each cycle is of length at least 2.
+
+*Corollary 3.1.19* Let n ≥ 2. Any permutation π of Sn can be expressed
+as a product of transpositions.
+
+*Lemma 3.1.21* Let n ≥ 2. Let σ = (i j) ∈ Sn, i < j, be a
+transposition. Then σ(X ) = −X .
+
+*Theorem 3.1.22* Let n ≥ 2. Let π ∈ Sn. Suppose π = σ1 ◦ σ2 ◦ · · · ◦
+σr = τ 1 ◦ τ 2 ◦ · · · ◦ τ s, where σi, τ j ∈ Sn are transpositions, i
+= 1, 2, . . . , r, and j = 1, 2, . . . , s. Then both r and s are
+either even or odd.
+
+*Definition 3.1.23* Let π ∈ Sn. If π is a product of an even number of
+transpositions, then π is called an even permutation; otherwise π is
+called an odd permutation.
+
+*Corollary 3.1.24* Let π ∈ Sn be a k-cycle. Then π is an even
+permutation if and only if k is odd.
+
+*Theorem 3.1.25* For n ≥ 2, the pair (An, ◦) is a group, called the
+alternating group on In.
+
+*Theorem 3.1.26* Every element in An is a product of 3-cycles, n ≥ 3.
