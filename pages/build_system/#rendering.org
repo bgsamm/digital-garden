@@ -1,67 +1,106 @@
-#+begin_comment
-Desired interface:
-- Input: an abstract syntax tree representing the
-  page, including its type (in the metadata)
-- Output: a collection of HTML strings, one for
-  each view, possibly with some metadata
-#+end_comment
-
 #+begin_src python :tangle ../../render.py
+  <<Imports>>
+
+  <<Global constants>>
+
+  <<Public class definitions>>
+
   <<Public function definitions>>
 
   <<Private function definitions>>
+
+  <<Node rendering map>>
+
+  <<Initialize Jinja>>
+#+end_src
+
+#+begin_src python :noweb-ref Public class definitions
+  class Page:
+      def __init__(self, title, cdate, mdate, category, abstract):
+          self.title = title
+          self.cdate = cdate
+          self.mdate = mdate
+          self.category = category
+          self.abstract = abstract
+
+          self.views = []
+          self.default_view = None
+
+#+end_src
+
+**** DONE More robust ID generation                                :easy:mid:
+
+#+begin_src python :noweb-ref Public class definitions
+  class PageView:
+      def __init__(self, name):
+          self.id = util.html_slugify(name)
+          self.name = name
+
+#+end_src
+
+* Generating page content
+
+**** DONE Auto-insert page title element                           :easy:mid:
+**** DONE Replace pandoc.write() with custom writer for better output formatting and control
+
+Now that the Org file has been parsed into an AST, the AST can be
+converted to HTML representing the page content by visiting each node
+in the AST node list.
+
+**** TODO "Prettify" the HTML output (newlines & indentation)       :med:low:
+
+#+begin_src python :noweb-ref Public function definitions
+  def generate_page(ast, page_url):
+      title = ast.metadata['title']
+      cdate = ast.metadata['date']
+      mdate = ast.metadata['modified']
+      category = ast.metadata['category']
+      abstract = ast.metadata['abstract']
+      page = Page(title, cdate, mdate, category, abstract)
+
+      main_view = _generate_doc_view(ast)
+      main_view.url = util.path_join(page_url, 'doc')
+      page.views.append(main_view)
+
+      task_view = _generate_task_view(ast)
+      task_view.url = util.path_join(page_url, 'tasks')
+      page.views.append(task_view)
+
+      page.default_view = main_view
+
+      return page
+
+#+end_src
+
+When it comes time to actually render a page, we use the Jinja
+~Environment~ created earlier to load the template (AFAIK Jinja
+handles caching for us), then use the template to render the final
+output.
+
+#+begin_src python :noweb-ref Public function definitions
+  def render_page(template, *args, **kwargs):
+      jinja_template = jinja_env.get_template(template)
+      return jinja_template.render(*args, **kwargs)
+
 #+end_src
 
 #+begin_src python :noweb-ref Public function definitions
-  def render_doc_tree(ast):
-      views = []
+  def render_page_view(page, view):
+      jinja_template = jinja_env.get_template(f'view_{view.id}.html')
+      return jinja_template.render(page=page, view=view)
 
-      <<Render universal views>>
-
-      <<Render page type-specific views>>
-
-      return views
-
-#+end_src
-
-#+name: Render universal views
-#+begin_src python
-  for view_renderer in _global_views:
-      view = view_renderer(ast)
-      views.append(view)
-#+end_src
-
-#+name: Render page type-specific views
-#+begin_src python
-  page_type = ast['type']
-  for view_renderer in _view_map[page_type]:
-      view = view_renderer(ast)
-      views.append(view)
 #+end_src
 
 * Rendering views
 
-#+begin_src python :noweb-ref Private function definitions
-  <<View renderer functions>>
-
-  _global_views = [
-      _render_view_doc,
-      _render_view_task
-  ]
-
-  _view_map = {}
+#+begin_src python :noweb-ref Imports
+  import util
 #+end_src
 
 ** Doc view
 
-#+begin_src python :noweb-ref View renderer functions
-  def _render_view_doc(ast):
-      ...
-
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def generate_doc_view(ast):
+#+begin_src python :noweb-ref Private function definitions
+  def _generate_doc_view(ast):
       view = PageView('Doc')
       
       <<Generate doc view contents>>
@@ -82,160 +121,10 @@ own case, with support for recursively converting children.
   headings = []
   view.content = ''
   for node in ast.nodes:
-      node_html = render_node(node)
+      node_html = _render_node(node)
       if node.type == NodeType.HEADING:
           headings.append(node)
       view.content += node_html
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def render_nodes(nodes):
-      html = ''
-      for node in nodes:
-          html += render_node(node)
-      return html
-
-#+end_src
-
-The strategy for rendering the page's contents is similar to that for
-generating the AST - define a map from node type to its corresponding
-render function.
-
-**** TODO Get everything to use render_default                      :med:low:
-
-#+name: HTML render map
-#+begin_src python
-  html_render_map = {
-      NodeType.CODE: render_code,
-      NodeType.HEADING: render_heading,
-      NodeType.LINK: render_link,
-      NodeType.LIST: render_list,
-      NodeType.LIST_ITEM: lambda node: render_default(node, 'li'),
-      NodeType.META: None,
-      NodeType.PARAGRAPH: lambda node: render_default(node, 'p'),
-      NodeType.TABLE: lambda node: render_default(node, 'table'),
-      NodeType.TABLE_ROW: lambda node: render_default(node, 'tr'),
-      NodeType.TABLE_CELL: render_table_cell,
-      NodeType.TAG: None,
-      NodeType.TASK: None,
-      NodeType.TEXT: render_text,
-      NodeType.TOKEN: render_token,
-  }
-#+end_src
-
-**** DONE Add figcaption for named blocks                          :easy:mid:
-**** DONE Don't hard code language                                :easy:high:
-**** TODO Use Pandoc for build-time syntax highlighting             :med:mid:
-
-#+begin_src python :noweb-ref Function definitions
-  def render_code(node):
-      text = util.html_escape(node.rawtext).strip()
-
-      if node.inline:
-          html = f'<code class="code-inline">{text}</code>'
-      else:
-          html = '<figure class="code-block">'
-          if len(node.name) > 0:
-              html += f'<figcaption>{node.name}</figcaption>'
-          html += f'<pre><code class="language-{node.language}">'
-          html += text
-          html += '</code></pre></figure>'
-
-      return html
-
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def render_default(node, tag, **kwargs):
-      body = render_nodes(node.children)
-      attrs = ''.join([f' {k}="{v}"' for k,v in kwargs.items()])
-      return f'<{tag}{attrs}>{body}</{tag}>'
-
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def render_heading(node):
-      id_ = util.html_slugify(node.inner_text())
-      tag = f'h{node.level}'
-      return render_default(node, tag, id=id_)
-
-#+end_src
-
-**** DONE Detect links to other Org files and convert appropriately :med:mid:
-**** TODO More robust link conversion                               :med:mid:
-**** TODO Open external links in new tab & allow for separate styling :easy:low:
-
-#+begin_src python :noweb-ref Function definitions
-  def render_link(node):
-      target = node.target
-      if not node.external:
-          i = target.find('::')
-          if i >= 0:
-              fname = target[:i]
-              frag = target[i + 2:]
-          elif target[0] == '*' or target[0] == '#':
-              fname = ''
-              frag = target
-          else:
-              fname = target
-              frag = ''
-          fname = fname.replace('.org', '.html')
-          frag = '#' + util.html_slugify(frag[1:])
-          target = fname + frag
-      return render_default(node, 'a', href=target)
-
-#+end_src
-
-**** TODO Add support for start, style, & delim                     :med:low:
-
-#+begin_src python :noweb-ref Function definitions
-  def render_list(node):
-      tag = 'ol' if node.ordered else 'ul'
-      return render_default(node, tag)
-
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def render_table_cell(node):
-      tag = 'th' if node.is_header else 'td'
-      return render_default(node, tag)
-
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def render_text(node):
-      if node.strong:
-          return render_default(node, 'strong')
-      if node.emph:
-          return render_default(node, 'em')
-      return render_nodes(node.children)
-
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def render_token(node):
-      return util.html_escape(node.rawtext)
-
-#+end_src
-
-**** DONE Merge logic for parent tags
-**** DONE Use integer constants instead of strings
-**** DONE Remove soft breaks from AST entirely
-
-#+begin_src python :noweb-ref Function definitions
-  <<HTML render map>>
-
-  def render_node(node):
-      if node.type not in html_render_map:
-          raise TypeError(f'Unhandled node type: {node.type}')
-
-      renderer = html_render_map[node.type]
-      if renderer is None:
-          return ''
-      
-      html = renderer(node)
-      return html
-
 #+end_src
 
 #+name: Generate doc view table of contents
@@ -256,19 +145,171 @@ render function.
   view.toc += '</li></ul>' * prev_level
 #+end_src
 
+**** DONE Merge logic for parent tags
+**** DONE Use integer constants instead of strings
+**** DONE Remove soft breaks from AST entirely
+
+#+begin_src python :noweb-ref Private function definitions
+  def _render_node(node):
+      if node.type not in _html_render_map:
+          raise TypeError(f'Unhandled node type: {node.type}')
+
+      renderer = _html_render_map[node.type]
+      if renderer is None:
+          return ''
+      
+      html = renderer(node)
+      return html
+
+#+end_src
+
+#+begin_src python :noweb-ref Private function definitions
+  def _render_nodes(nodes):
+      html = ''
+      for node in nodes:
+          html += _render_node(node)
+      return html
+
+#+end_src
+
+The strategy for rendering the page's contents is similar to that for
+generating the AST - define a map from node type to its corresponding
+render function.
+
+#+begin_src python :noweb-ref Imports
+  from parse import NodeType
+#+end_src
+
+**** TODO Get everything to use render_default                      :med:low:
+
+#+name: Node rendering map
+#+begin_src python
+  _html_render_map = {
+      NodeType.CODE: _render_code,
+      NodeType.HEADING: _render_heading,
+      NodeType.LINK: _render_link,
+      NodeType.LIST: _render_list,
+      NodeType.LIST_ITEM: lambda node: _render_default(node, 'li'),
+      NodeType.META: None,
+      NodeType.PARAGRAPH: lambda node: _render_default(node, 'p'),
+      NodeType.TABLE: lambda node: _render_default(node, 'table'),
+      NodeType.TABLE_ROW: lambda node: _render_default(node, 'tr'),
+      NodeType.TABLE_CELL: _render_table_cell,
+      NodeType.TAG: None,
+      NodeType.TASK: None,
+      NodeType.TEXT: _render_text,
+      NodeType.TOKEN: _render_token,
+  }
+#+end_src
+
+**** DONE Add figcaption for named blocks                          :easy:mid:
+**** DONE Don't hard code language                                :easy:high:
+**** TODO Use Pandoc for build-time syntax highlighting             :med:mid:
+
+#+begin_src python :noweb-ref Private function definitions
+  def _render_code(node):
+      text = util.html_escape(node.rawtext).strip()
+
+      if node.inline:
+          html = f'<code class="code-inline">{text}</code>'
+      else:
+          html = '<figure class="code-block">'
+          if len(node.name) > 0:
+              html += f'<figcaption>{node.name}</figcaption>'
+          html += f'<pre><code class="language-{node.language}">'
+          html += text
+          html += '</code></pre></figure>'
+
+      return html
+
+#+end_src
+
+#+begin_src python :noweb-ref Private function definitions
+  def _render_default(node, tag, **kwargs):
+      body = _render_nodes(node.children)
+      attrs = ''.join([f' {k}="{v}"' for k,v in kwargs.items()])
+      return f'<{tag}{attrs}>{body}</{tag}>'
+
+#+end_src
+
+**** TODO Better handling of IDs (ensure unique)                  :easy:high:
+
+#+begin_src python :noweb-ref Private function definitions
+  def _render_heading(node):
+      id_ = util.html_slugify(node.inner_text())
+      tag = f'h{node.level}'
+      return _render_default(node, tag, id=id_)
+
+#+end_src
+
+**** DONE Detect links to other Org files and convert appropriately :med:mid:
+**** TODO More robust link conversion                               :med:mid:
+**** TODO Open external links in new tab & allow for separate styling :easy:low:
+
+#+begin_src python :noweb-ref Private function definitions
+  def _render_link(node):
+      target = node.target
+      if not node.external:
+          i = target.find('::')
+          if i >= 0:
+              fname = target[:i]
+              frag = target[i + 2:]
+          elif target[0] == '*' or target[0] == '#':
+              fname = ''
+              frag = target
+          else:
+              fname = target
+              frag = ''
+          fname = fname.replace('.org', '.html')
+          frag = '#' + util.html_slugify(frag[1:])
+          target = fname + frag
+      return _render_default(node, 'a', href=target)
+
+#+end_src
+
+**** TODO Add support for start, style, & delim                     :med:low:
+
+#+begin_src python :noweb-ref Private function definitions
+  def _render_list(node):
+      tag = 'ol' if node.ordered else 'ul'
+      return _render_default(node, tag)
+
+#+end_src
+
+#+begin_src python :noweb-ref Private function definitions
+  def _render_table_cell(node):
+      tag = 'th' if node.is_header else 'td'
+      return _render_default(node, tag)
+
+#+end_src
+
+#+begin_src python :noweb-ref Private function definitions
+  def _render_text(node):
+      if node.strong:
+          return _render_default(node, 'strong')
+      if node.emph:
+          return _render_default(node, 'em')
+      return _render_nodes(node.children)
+
+#+end_src
+
+#+begin_src python :noweb-ref Private function definitions
+  def _render_token(node):
+      return util.html_escape(node.rawtext)
+
+#+end_src
+
 ** Task view
 
-#+begin_src python :noweb-ref View renderer functions
-  def _render_view_task(ast):
-      ...
-
+#+begin_src python :noweb-ref Imports
+  from parse import DocNode
 #+end_src
 
 **** DONE Auto-detect two tags from same category                  :easy:mid:
 **** TODO Move duplicate tag detection to the parsing phase        :easy:low:
 
-#+begin_src python :noweb-ref Function definitions
-  def generate_task_view(ast):
+#+begin_src python :noweb-ref Private function definitions
+  def _generate_task_view(ast):
       view = PageView('Tasks')
       view.tasks = []
 
@@ -313,25 +354,6 @@ render function.
           view.tasks.append(task)
 
       return view
-
-#+end_src
-
-When it comes time to actually render a page, we use the Jinja
-~Environment~ created earlier to load the template (AFAIK Jinja
-handles caching for us), then use the template to render the final
-output.
-
-#+begin_src python :noweb-ref Function definitions
-  def render_page(template, *args, **kwargs):
-      jinja_template = jinja_env.get_template(template)
-      return jinja_template.render(*args, **kwargs)
-
-#+end_src
-
-#+begin_src python :noweb-ref Function definitions
-  def render_page_view(page, view):
-      jinja_template = jinja_env.get_template(f'view_{view.id}.html')
-      return jinja_template.render(page=page, view=view)
 
 #+end_src
 
