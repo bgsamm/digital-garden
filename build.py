@@ -1,6 +1,5 @@
 import render
 import parse
-from parse import NodeType, DocNode
 import util
 
 BUILD_DIR = 'build'

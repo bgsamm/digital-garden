@@ -222,7 +222,6 @@ build directory.
 
 #+begin_src python :noweb-ref Imports
   import parse
-  from parse import NodeType, DocNode
 #+end_src
 
 #+INCLUDE: "build_system/#parsing.org" :minlevel 2
