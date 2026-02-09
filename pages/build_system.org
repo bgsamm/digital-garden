@@ -45,13 +45,17 @@ The overall structure of the program is as follows:
 #+begin_src python :tangle ../build.py
   <<Definitions>>
 
-  <<Prepare build environment>>
+  def main():
+      <<Prepare build environment>>
 
-  <<Process Org files>>
+      <<Process Org files>>
 
-  <<Generate home page>>
+      <<Generate home page>>
 
-  <<Export static files>>
+      <<Export static files>>
+
+  if __name__ == '__main__':
+      main()
 #+end_src
 
 "Definitions" include imports, global constants, classes, and functions:

@@ -1,10 +1,8 @@
-import jinja2
 import parse
 from parse import NodeType, DocNode
 import util
 
 BUILD_DIR = 'build'
-TEMPLATES_DIR = 'templates'
 PAGES_DIR = 'pages'
 STYLES_DIR = 'styles'
 SCRIPTS_DIR = 'scripts'
@@ -224,39 +222,37 @@ def render_page_view(page, view):
     return jinja_template.render(page=page, view=view)
 
 
-util.dir_make(BUILD_DIR)
-util.dir_empty(BUILD_DIR)
+def main():
+    util.dir_make(BUILD_DIR)
+    util.dir_empty(BUILD_DIR)
 
-jinja_env = jinja2.Environment(
-    loader=jinja2.FileSystemLoader(TEMPLATES_DIR),
-    trim_blocks=True,
-    lstrip_blocks=True
-)
-
-pages = []
-for dirpath, fname, ext in util.dir_walk(PAGES_DIR):
-    if fname[0] == '.' or fname[0] == '#' or ext != '.org':
-        continue
-
-    fpath = util.path_join(dirpath, fname + ext)
-    ast = parse.parse_org_file(fpath)
+    pages = []
+    for dirpath, fname, ext in util.dir_walk(PAGES_DIR):
+        if fname[0] == '.' or fname[0] == '#' or ext != '.org':
+            continue
     
-    page_url = util.path_join(PAGES_DIR, fname)
-    page = generate_page(ast, page_url)
+        fpath = util.path_join(dirpath, fname + ext)
+        ast = parse.parse_org_file(fpath)
+        
+        page_url = util.path_join(PAGES_DIR, fname)
+        page = generate_page(ast, page_url)
+        
+        for view in page.views:
+            view_html = render_page_view(page, view)
+            outpath = util.path_join(BUILD_DIR, view.url, 'index.html')
+            util.file_write(outpath, view_html)
     
-    for view in page.views:
-        view_html = render_page_view(page, view)
-        outpath = util.path_join(BUILD_DIR, view.url, 'index.html')
-        util.file_write(outpath, view_html)
+        pages.append(page)
 
-    pages.append(page)
+    homepage_html = render_page('index.html', title='Home', pages=pages)
+    outpath = util.path_join(BUILD_DIR, 'index.html')
+    util.file_write(outpath, homepage_html)
 
-homepage_html = render_page('index.html', title='Home', pages=pages)
-outpath = util.path_join(BUILD_DIR, 'index.html')
-util.file_write(outpath, homepage_html)
+    outdir = util.path_join(BUILD_DIR, STYLES_DIR)
+    util.dir_copy(STYLES_DIR, outdir)
+    
+    outdir = util.path_join(BUILD_DIR, SCRIPTS_DIR)
+    util.dir_copy(SCRIPTS_DIR, outdir)
 
-outdir = util.path_join(BUILD_DIR, STYLES_DIR)
-util.dir_copy(STYLES_DIR, outdir)
-
-outdir = util.path_join(BUILD_DIR, SCRIPTS_DIR)
-util.dir_copy(SCRIPTS_DIR, outdir)
+if __name__ == '__main__':
+    main()
