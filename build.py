@@ -17,6 +17,8 @@ def main():
             continue
     
         fpath = util.path_join(dirpath, fname + ext)
+        print(fpath)
+    
         ast = parse.parse_org_file(fpath)
         
         page_url = util.path_join(PAGES_DIR, fname)

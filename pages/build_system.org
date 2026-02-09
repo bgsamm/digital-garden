@@ -123,6 +123,9 @@ page]].
       if fname[0] == '.' or fname[0] == '#' or ext != '.org':
           continue
 
+      fpath = util.path_join(dirpath, fname + ext)
+      print(fpath)
+
       <<Process individual Org file>>
 
       pages.append(page)
@@ -147,7 +150,6 @@ For details, see [[*Parsing an Org file][Parsing an Org file]].
 
 #+name: Parse Org file contents into AST
 #+begin_src python
-  fpath = util.path_join(dirpath, fname + ext)
   ast = parse.parse_org_file(fpath)
 #+end_src
 
