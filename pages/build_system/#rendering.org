@@ -10,6 +10,11 @@
   <<Initialize Jinja>>
 #+end_src
 
+#+begin_src python :noweb-ref Imports
+  import logging
+  logger = logging.getLogger(__name__)
+#+end_src
+
 #+name: Class definitions
 #+begin_src python
   <<DocView>>
@@ -180,10 +185,7 @@ own case, with support for recursively converting children.
 
 #+name: Generate doc view contents
 #+begin_src python
-  content = ''
-  for node in ast.walk():
-      node_html = self._render_node(node)
-      content += node_html
+  content = self._render_node(ast.root)
 #+end_src
 
 #+name: Generate doc view table of contents
@@ -360,7 +362,10 @@ render function.
 
 #+begin_src python :noweb-ref DocView/Render functions
   def _render_section(self, node):
-      return self._render_default(node, 'section')
+      html = '<section>'
+      html += self._render_nodes(node.children)
+      html += '</section>'
+      return html
 #+end_src
 
 #+begin_src python :noweb-ref DocView/Render functions

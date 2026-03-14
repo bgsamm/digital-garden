@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 import jinja2
 from parse import NodeType
 import util
@@ -8,10 +10,7 @@ class DocView:
     name = 'doc'
 
     def generate(self, ast):
-        content = ''
-        for node in ast.walk():
-            node_html = self._render_node(node)
-            content += node_html
+        content = self._render_node(ast.root)
 
         toc = ''
         prev_depth = 0
@@ -106,7 +105,10 @@ class DocView:
     def _render_root(self, node):
         return self._render_nodes(node.children)
     def _render_section(self, node):
-        return self._render_default(node, 'section')
+        html = '<section>'
+        html += self._render_nodes(node.children)
+        html += '</section>'
+        return html
     def _render_table(self, node):
         return self._render_default(node, 'table')
     

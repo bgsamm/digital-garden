@@ -60,6 +60,9 @@ def parse_args():
         type=Path,
         default=DEFAULT_BUILD_DIR)
     parser.add_argument(
+        '-f', '--force-all',
+        action='store_true')
+    parser.add_argument(
         '--console-log-level',
         type=str,
         default='INFO')
@@ -109,6 +112,7 @@ def main(args):
     styles_dir = args.styles_dir
     scripts_dir = args.scripts_dir
     output_dir = args.build_dir
+    rebuild_all = args.force_all
 
     pages = get_input_pages(input_dir)
     logger.debug(f'Pages: {pages}')
@@ -141,7 +145,7 @@ def main(args):
             do_build = do_build or (sub_mtime > last_mtime)
             subpages[subpage] = sub_mtime
 
-        if do_build:
+        if rebuild_all or do_build:
             logger.info(f'Rendering page')
             meta, ast = parse.parse_org_file(fpath)
             meta.setdefault('type', 'doc')
