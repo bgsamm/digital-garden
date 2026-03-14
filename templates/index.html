@@ -3,22 +3,33 @@
 {% block head %}
     {{ super() }}
     <link rel="stylesheet" href="/styles/index.css" />
+    <script src="/scripts/index.js"></script>
 {% endblock %}
 
 {% block content %}
-    <div id="channel-grid">
-    {% for page in pages %}
-        <div class="channel">
-            <div class="channel-category">// {{ page.category }}</div>
-            <div class="channel-title">{{ page.title }}</div>
-            <div class="channel-date">{{ page.cdate }} | {{ page.mdate }}</div>
-            <div class="channel-abstract">{{ page.abstract }}</div>
-            <a class="channel-link" href="/{{ page.default_view.url }}"></a>
+    <div class="channel-viewport">
+        <div class="channel-arrow left" onclick="prevChannelPage()"></div>
+        <div class="channel-arrow right" onclick="nextChannelPage()"></div>
+        <div class="channel-ribbon">
+        {% for i in range(0, pages|count, 12) %}
+            <div class="channel-grid">
+            {% for j in range(i, i + 12) %}
+                {% if j < pages|count %}
+                    {% set name, page = pages[j] %}
+                    <div class="channel">
+                        <div class="channel-category">// {{ page.category }}</div>
+                        <div class="channel-title">{{ page.title }}</div>
+                        <div class="channel-date">{{ page.date }} | {{ page.mtime|timestamp_to_date }}</div>
+                        <div class="channel-abstract">{{ page.abstract }}</div>
+                        <a class="channel-link" href="/pages/{{ name }}/{{ page.type }}"></a>
+                    </div>
+                {% else %}
+                    <div class="channel empty"></div>
+                {% endif %}
+            {% endfor %}
+            </div>
+        {% endfor %}
         </div>
-    {% endfor %}
-    {% for i in range(12 - pages|count) %}
-        <div class="channel empty"></div>
-    {% endfor %}
     </div>
 
     <div id="menu-bar">

@@ -1,0 +1,81 @@
+{% extends "page.html" %}
+
+{% block view %}
+    <div id="task-filters">
+        <h2>Filter</h2>
+        <div id="task-filters-container">
+            <fieldset>
+                <legend>State</legend>
+                <div>
+                    <input type="radio" id="state-filter-todo" name="state-filter" onchange="updateStateFilter()" value="todo" checked />
+                    <label for="state-filter-todo">Todo</label>
+                </div>
+                <div>
+                    <input type="radio" id="state-filter-done" name="state-filter" onchange="updateStateFilter()" value="done" />
+                    <label for="state-filter-done">Done</label>
+                </div>
+                <div>
+                    <input type="radio" id="state-filter-any" name="state-filter" onchange="updateStateFilter()" value="any" />
+                    <label for="state-filter-any">Any</label>
+                </div>
+            </fieldset>
+            <fieldset>
+                <legend>Difficulty</legend>
+                <div>
+                    <input type="radio" id="diff-filter-easy" name="diff-filter" onchange="updateDiffFilter()" value="easy" />
+                    <label for="diff-filter-easy">Easy</label>
+                </div>
+                <div>
+                    <input type="radio" id="diff-filter-med" name="diff-filter" onchange="updateDiffFilter()" value="med" />
+                    <label for="diff-filter-med">Medium</label>
+                </div>
+                <div>
+                    <input type="radio" id="diff-filter-hard" name="diff-filter" onchange="updateDiffFilter()" value="hard" />
+                    <label for="diff-filter-hard">Hard</label>
+                </div>
+                <div>
+                    <input type="radio" id="diff-filter-any" name="diff-filter" onchange="updateDiffFilter()" value="any" checked />
+                    <label for="diff-filter-any">Any</label>
+                </div>
+            </fieldset>
+            <fieldset>
+                <legend>Priority</legend>
+                <div>
+                    <input type="radio" id="prio-filter-low" name="prio-filter" onchange="updatePrioFilter()" value="low" />
+                    <label for="prio-filter-low">Low</label>
+                </div>
+                <div>
+                    <input type="radio" id="prio-filter-mid" name="prio-filter" onchange="updatePrioFilter()" value="mid" />
+                    <label for="prio-filter-mid">Middle</label>
+                </div>
+                <div>
+                    <input type="radio" id="prio-filter-high" name="prio-filter" onchange="updatePrioFilter()" value="high" />
+                    <label for="prio-filter-high">High</label>
+                </div>
+                <div>
+                    <input type="radio" id="prio-filter-any" name="prio-filter" onchange="updatePrioFilter()" value="any" checked />
+                    <label for="prio-filter-any">Any</label>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+    <div id="task-list" class="state-todo diff-any prio-any">
+    {% for task in view.tasks %}
+        <div class="task {{ task.state }} {{ task.tags|join(' ') }}">
+            <div class="task-header">
+                <div class="task-state">{{ task.state|upper }}</div>
+                <div class="task-tags">
+                {% if task.diff %}
+                    <span class="task-tag {{ task.diff }}">Diff: {{ task.diff|capitalize }}</span>
+                {% endif %}
+                {% if task.prio %}
+                    <span class="task-tag {{ task.prio }}">Prio: {{ task.prio|capitalize }}</span>
+                {% endif %}
+                </div>
+            </div>
+            <div class="task-section">{{ task.section }}</div>
+            <div class="task-desc">{{ task.description }}</div>
+        </div>
+    {% endfor %}
+    </div>
+{% endblock %}

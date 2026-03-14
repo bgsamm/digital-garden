@@ -6,5 +6,7 @@
 build/
 sandbox/
 temp/
+index.json
+log.txt
 
 *.pyc

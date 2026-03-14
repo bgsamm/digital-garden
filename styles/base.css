@@ -71,24 +71,17 @@ body {
 .ui-button {
     position: fixed;
     bottom: 40px;
-
     display: flex;
     justify-content: center;
     align-items: center;
-
     width: 100px;
     height: 100px;
-
     background-color: var(--theme-panel);
-
     border: 2px solid var(--theme-border);
     border-radius: 50px;
-
     box-shadow: 0px 0px 15px var(--theme-shadow);
     transition: var(--highlight-transition);
-
     font-size: 3.5rem;
-
     cursor: pointer;
 }
 

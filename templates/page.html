@@ -14,13 +14,13 @@
     <nav class="top-nav">
         <div class="nav-item title">{{ page.title }}</div>
         <div class="nav-item tabs">
-        {% for v in page.views %}
-            <a id="tab-{{ v.id }}" class="tab {{ 'active' if v == view }}" href="/{{ v.url }}">{{ v.name }}</a>
+        {% for v in views %}
+            <a id="tab-{{ v.id }}" class="tab {{ 'active' if v.name == view.name }}" href="/pages/{{ name }}/{{ v.name }}">{{ v.name|capitalize }}</a>
         {% endfor %}
         </div>
     </nav>
 
-    <div class="view">
+    <div id="{{ view.name }}-view" class="view">
         {% block view %}
         {% endblock %}
     </div>

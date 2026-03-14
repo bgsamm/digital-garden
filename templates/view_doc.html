@@ -1,13 +1,12 @@
 {% extends "page.html" %}
 
 {% block view %}
-    <div id="doc-view">
-        <div class="table-of-contents">
-            {{ view.toc }}
-        </div>
+    <div class="table-of-contents">
+        <h1>Table of Contents</h1>
+        {{ view.toc }}
+    </div>
 
-        <div class="content">
-            {{ view.content }}
-        </div>
+    <div class="content">
+        {{ view.content }}
     </div>
 {% endblock %}

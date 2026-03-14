@@ -18,15 +18,50 @@ body::before {
 
 /* Content panels */
 
-#channel-grid {
-    display: grid;
+.channel-arrow {
+    position: absolute;
+    top: 300px;
+    
+    width: 0;
+    height: 0;
+    
+    border-top: 25px solid transparent;
+    border-bottom: 25px solid transparent;
+    
+    z-index: 100;
+}
 
+.channel-arrow.left {
+    left: 7vw;
+    border-right: 20px solid var(--theme-highlight);
+}
+
+.channel-arrow.right {
+    right: 7vw;
+    border-left: 20px solid var(--theme-highlight);
+}
+
+.channel-viewport {
+    overflow: hidden;
+}
+
+.channel-ribbon {
+    display: flex;
+    margin-top: 15px;
+    padding-left: 10vw;
+    
+    transition: transform 0.5s ease-in-out;
+}
+
+.channel-grid {
+    display: grid;
+    flex-shrink: 0;
+    width: 80vw;
+    margin-right: 5vw;
+    
     grid-template-columns: repeat(4, minmax(260px, 1fr));
     grid-template-rows: repeat(3, 180px);
     gap: 15px;
-
-    padding: 0 100px;
-    margin-top: 15px;
 }
 
 .channel {

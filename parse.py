@@ -1,333 +1,403 @@
 import enum
-import util
+import logging
+logger = logging.getLogger(__name__)
+import json
+import subprocess
 
 class NodeType(enum.Enum):
-    CODE = enum.auto()
-    HEADING = enum.auto()
-    LINK = enum.auto()
-    LIST = enum.auto()
-    LIST_ITEM = enum.auto()
-    META = enum.auto()
-    PARAGRAPH = enum.auto()
-    TABLE = enum.auto()
-    TABLE_ROW = enum.auto()
+    CODE       = enum.auto()
+    DUMMY      = enum.auto()
+    HEADING    = enum.auto()
+    LINK       = enum.auto()
+    LIST       = enum.auto()
+    LIST_ITEM  = enum.auto()
+    META       = enum.auto()
+    PARAGRAPH  = enum.auto()
+    ROOT       = enum.auto()
+    SECTION    = enum.auto()
+    TABLE      = enum.auto()
+    TABLE_ROW  = enum.auto()
     TABLE_CELL = enum.auto()
-    TAG = enum.auto()
-    TASK = enum.auto()
-    TEXT = enum.auto()
-    TOKEN = enum.auto()
+    TAG        = enum.auto()
+    TASK       = enum.auto()
+    TEXT       = enum.auto()
+    TOKEN      = enum.auto()
 
 class DocTree:
-    def __init__(self, metadata, nodes):
-        self.metadata = metadata
-        self.nodes = nodes
+    def __init__(self):
+        self.root = DocNode(NodeType.ROOT)
+        self._type_map = {}
+
+    def insert_node(self, node, parent=None):
+        node.parent = parent
+        if parent is not None:
+            parent.children.append(node)
+            node.depth = parent.depth + 1
+
+        nodes = self._type_map.setdefault(node.type, [])
+        nodes.append(node)
+
+    def walk(self):
+        stack = [self.root]
+        while len(stack) > 0:
+            node = stack.pop()
+            yield node
+            for child in reversed(node.children):
+                stack.append(child)
+
+    def get_nodes_of_type(self, type):
+        if type in self._type_map:
+            yield from self._type_map[type]
 
 class DocNode:
     def __init__(self, type_):
         self.type = type_
+        self.depth = 0
+        self.parent = None
         self.rawtext = None
         self.children = []
+        self.inlines = []
+        self.attrs = {}
 
     def inner_text(self):
         if self.rawtext is not None:
             return self.rawtext
-        return ''.join([child.inner_text() for child in self.children])
+        return ''.join([inline.inner_text() for inline in self.inlines])
 
+    def walk_parents(self):
+        if self.parent is not None:
+            yield from self.parent.walk_parents()
+            yield self.parent
 
-def parse_org_file(fpath):
-    args = ['-f', 'org', '-t', 'json', fpath]
-    json = util.process_run('pandoc', args)
-    ast = util.json_parse(json)
+    def __str__(self):
+        return f'{self.type.name} {self.attrs} {repr(self.inner_text())}'
 
-    metadata = {}
-    for key, block in ast['meta'].items():
-        metadata[key] = _pandoc_unwrap_block(block).inner_text()
+class PandocConverter:
+    TASK_STATES = {'todo', 'done'}
+    TASK_DIFFS = {'easy', 'med', 'hard'}
+    TASK_PRIOS = {'low', 'mid', 'high'}
+    URI_SCHEMES = {'http': True, 'https': True, 'file': False}
+
+    def _get_block_type(self, block):
+        return block.get('t')
+
+    def _get_block_content(self, block):
+        return block.get('c')
+
+    def _unwrap_block_attr(self, attr):
+        return {
+            'id': attr[0],
+            'cls': attr[1],
+            'kvs': dict(attr[2])
+        }
+
+    def convert_metadata(self, pandoc_ast):
+        metadata = {}
     
-    mtime = util.file_get_mtime(fpath)
-    mdate = util.datetime_timestamp_to_date(mtime)
-    metadata['modified'] = mdate
+        for key, block in pandoc_ast['meta'].items():
+            t = self._get_block_type(block)
+            c = self._get_block_content(block)
+    
+            if t != 'MetaString':
+                logger.warning(f'Unexpected type "{t}" encountered while parsing metadata')
+    
+            metadata[key] = c
+    
+        return metadata
 
-    nodes = _pandoc_unwrap_blocks(ast['blocks'])
+    def convert_ast(self, pandoc_ast):
+        ast = DocTree()
+    
+        sections = [ast.root]
+        for block in pandoc_ast['blocks']:
+            node = self._convert_block(block)
+    
+            if node.type == NodeType.HEADING:
+                name = node.inner_text()
+                level = node.attrs['level']
+                
+                if level < len(sections):
+                    sections = sections[:level]
+                elif level > len(sections):
+                    logger.warning(f'Inconsistent heading level at "{name}"')
+                
+                section = DocNode(NodeType.SECTION)
+                section.rawtext = name
+                
+                ast.insert_node(section, parent=sections[-1])
+                sections.append(section)
+    
+            ast.insert_node(node, parent=sections[-1])
+    
+        return ast
 
-    return DocTree(metadata, nodes)
+    def _convert_blocks(self, blocks):
+      return [self._convert_block(block) for block in blocks]
 
+    def _convert_block(self, block):
+        t = self._get_block_type(block)
+        c = self._get_block_content(block)
+    
+        if t not in self._conversion_map:
+            logger.warning(f'Unhandled block type: {t}')
+            logger.debug(f'Block content: {c}')
+            node = DocNode(NodeType.DUMMY)
+        else:
+            node = self._conversion_map[t](self, t, c)
+    
+        return node
 
-def _pandoc_unwrap_block(block):
-    t = _pandoc_get_type(block)
-    c = _pandoc_get_content(block)
+    def _convert_code(self, type_, content):
+        node = DocNode(NodeType.CODE)
+    
+        attr, text = content
+        attr = self._unwrap_block_attr(attr)
+    
+        node.rawtext = text
+        node.attrs['name'] = attr['id']
+        node.attrs['inline'] = (type_ == 'Code')
+    
+        classes = attr['cls']
+        if len(classes) > 0:
+            assert(len(classes) == 1)
+            node.attrs['language'] = classes[0]
+    
+        return node
+    
+    def _convert_head_or_para(self, type_, content):
+        if type_ == 'Header':
+            node = DocNode(NodeType.HEADING)
+    
+            level, attr, inlines = content
+            attr = self._unwrap_block_attr(attr)
+    
+            node.attrs['level'] = level
+        else:
+            node = DocNode(NodeType.PARAGRAPH)
+            inlines = content
+    
+        node.inlines = inlines = self._convert_blocks(inlines)
+    
+        if len(inlines) > 0 and inlines[0].type == NodeType.TASK:
+            tnode = inlines[0]
+    
+            tags = [inline for inline in inlines
+                    if inline.type == NodeType.TAG]
+            
+            for node in tags:
+                tag = node.rawtext
+                if tag in self.TASK_DIFFS:
+                    if 'diff' not in tnode.attrs:
+                        tnode.attrs['diff'] = tag
+                    else:
+                        logger.warning(f'Multiple difficult tags')
+                elif tag in self.TASK_PRIOS:
+                    if 'prio' not in tnode.attrs:
+                        tnode.attrs['prio'] = tag
+                    else:
+                        logger.warning(f'Multiple priority tags')
+                else:
+                    logger.warning(f'Unknown tag "{tag}"')
+            
+            # Strip task keyword + following space, and all tags + preceding space
+            stop = (inlines.index(tags[0]) - 1) if len(tags) > 0 else None
+            tnode.inlines = inlines[2:stop]
+    
+            return tnode
+    
+        return node
+    
+    def _convert_link(self, type_, content):
+        node = DocNode(NodeType.LINK)
+    
+        attr, inlines, target = content
+        attr = self._unwrap_block_attr(attr)
+    
+        target, title = target
+        node.attrs['title'] = title
+        node.attrs['target'] = target
+    
+        i = target.find(':')
+        if i >= 0 and i < len(target) - 1 and target[i + 1] != ':':
+            scheme = target[:i]
+            if scheme not in self.URI_SCHEMES:
+                logger.warning(f'Unknown link scheme "{scheme}"')
+            node.attrs['external'] = self.URI_SCHEMES.get(scheme, False)
+        else:
+            node.attrs['external'] = False
+    
+        node.inlines = self._convert_blocks(inlines)
+    
+        return node
+    
+    def _convert_list(self, type_, content):
+        node = DocNode(NodeType.LIST)
+    
+        node.attrs['ordered'] = ordered = (type_ == 'OrderedList')
+    
+        if ordered:
+            listattrs, items = content
+            start, style, delim = listattrs
+            node.attrs['start'] = start
+            node.attrs['style'] = self._get_block_type(style)
+            node.attrs['delim'] = self._get_block_type(delim)
+        else:
+            items = content
+    
+        for block_list in items:
+            item = DocNode(NodeType.LIST_ITEM)
+            item.inlines = self._convert_blocks(block_list)
+            node.inlines.append(item)
+    
+        return node
+    
+    def _convert_span(self, type_, content):
+        attr, inlines = content
+        attr = self._unwrap_block_attr(attr)
+    
+        if 'spurious-link' in attr['cls']:
+            node = DocNode(NodeType.LINK)
+            
+            node.attrs['target'] = attr['kvs']['target']
+            node.attrs['external'] = False
+            
+            if len(inlines) > 1:
+                logger.warning(f'Spurious link with more than 1 inline')
+            
+            # Spurious links get wrapped in an undesired 'Emph' block
+            node.inlines = self._convert_blocks(inlines)[0].inlines
+            return node
+    
+        if 'tag' in attr['cls']:
+            node = DocNode(NodeType.TAG)
+            node.rawtext = attr['kvs']['tag-name']
+            return node
+    
+        state = None
+        for cls in attr['cls']:
+            if cls in self.TASK_STATES:
+                state = cls
+                break
+    
+        if state is not None:
+            node = DocNode(NodeType.TASK)
+            node.attrs['state'] = state
+            return node
+    
+        logger.error(f'Unhandled span: {content}')
+        return DocNode(NodeType.DUMMY)
+    
+    def _convert_table(self, type_, content):
+        def unwrap_cell(cell, is_header=False):
+            attr, align, rowspan, colspan, children = cell
+            attr = self._unwrap_block_attr(attr)
+    
+            node = DocNode(NodeType.TABLE_CELL)
+            node.attrs['is_header'] = is_header
+            node.attrs['rowspan'] = rowspan
+            node.attrs['colspan'] = colspan
+            node.inlines = self._convert_blocks(children)
+    
+            return node
+    
+        def unwrap_row(row, is_header=False):
+            attr, cells = row
+            attr = self._unwrap_block_attr(attr)
+    
+            node = DocNode(NodeType.TABLE_ROW)
+            node.inlines = [unwrap_cell(cell, is_header) for cell in cells]
+    
+            return node
+    
+        def unwrap_head(head):
+            attr, rows = head
+            attr = self._unwrap_block_attr(attr)
+    
+            if len(rows) == 0:
+                return None
+    
+            if len(rows) > 1:
+                logger.warning(f'Table with multi-row header encountered')
+    
+            return unwrap_row(rows[0], is_header=True)
+    
+        def unwrap_body(body):
+            if len(body) > 1:
+                logger.warning(f'Table with multiple bodies encountered')
+    
+            attr, rowheadcols, head, rows = body[0]
+            attr = self._unwrap_block_attr(attr)
+    
+            if len(head) > 0:
+                logger.warning(f'Table body with non-empty head encountered')
+    
+            return [unwrap_row(row) for row in rows]
+    
+        node = DocNode(NodeType.TABLE)
+    
+        attr, caption, colspecs, tablehead, tablebody, tablefoot = content
+        attr = self._unwrap_block_attr(attr)
+    
+        header = unwrap_head(tablehead)
+        if header is not None:
+            node.inlines.append(header)
+    
+        node.inlines += unwrap_body(tablebody)
+    
+        return node
+    
+    def _convert_styled_text(self, type_, content):
+        node = DocNode(NodeType.TEXT)
+        node.inlines = self._convert_blocks(content)
+    
+        node.attrs['strong'] = (type_ == 'Strong')
+        node.attrs['emph'] = (type_ == 'Emph')
+    
+        return node
+    
+    def _convert_token(self, type_, content):
+        node = DocNode(NodeType.TOKEN)
+        node.rawtext = content if content is not None else ' '
+        return node
 
-    if t not in _pandoc_unwrapper_map:
-        raise TypeError(f'Unhandled block type: {t} ({c})')
-
-    node = _pandoc_unwrapper_map[t](t, c)
-
-    return node
-
-def _pandoc_unwrap_blocks(blocks):
-    return [_pandoc_unwrap_block(block) for block in blocks]
-
-def _pandoc_get_type(block):
-    """Returns the type string of a Pandoc block."""
-    return block.get('t')
-
-def _pandoc_get_content(block):
-    """Returns the content field of a Pandoc block."""
-    return block.get('c')
-
-def _pandoc_unwrap_attr(attr):
-    """Unpacks a Pandoc Attr tuple: (identifier, classes, key-value pairs)."""
-    # Pandoc Schema: [id, [class1, class2], [[key, val], ...]]
-    return {
-        'id': attr[0],
-        'cls': attr[1],
-        'kvs': dict(attr[2])
+    _conversion_map = {
+        'Code':        _convert_code,
+        'CodeBlock':   _convert_code,
+        'BulletList':  _convert_list,
+        'Emph':        _convert_styled_text,
+        'Header':      _convert_head_or_para,
+        'Link':        _convert_link,
+        #'MetaString':  _convert_meta,
+        'OrderedList': _convert_list,
+        'Para':        _convert_head_or_para,
+        'Plain':       _convert_styled_text,
+        #'RawBlock':    _convert_rawblock,
+        'SoftBreak':   _convert_token,
+        'Space':       _convert_token,
+        'Span':        _convert_span,
+        'Str':         _convert_token,
+        'Strong':      _convert_styled_text,
+        'Table':       _convert_table,
     }
 
+def parse_org_file(fpath):
+    pandoc_ast = _run_pandoc(fpath)
 
-def _pandoc_unwrap_code(type_, content):
-    node = DocNode(NodeType.CODE)
+    converter = PandocConverter()
+    metadata = converter.convert_metadata(pandoc_ast)
+    ast = converter.convert_ast(pandoc_ast)
 
-    attr, text = content
-    attr = _pandoc_unwrap_attr(attr)
+    logger.debug(f'Metadata: {metadata}')
+    for node in ast.walk():
+        logger.debug('>' * node.depth + str(node))
 
-    node.rawtext = text
-    node.name = attr['id']
-    node.inline = (type_ == 'Code')
+    return metadata, ast
 
-    classes = attr['cls']
-    if len(classes) > 0:
-        assert(len(classes) == 1)
-        node.language = classes[0]
+def _run_pandoc(fpath):
+    process = subprocess.run(
+        ['pandoc', '-t', 'json', fpath],
+        capture_output=True,
+        check=True,
+        encoding='utf-8')
 
-    return node
-
-def _pandoc_unwrap_header_or_para(type_, content):
-    def convert_to_task(node):
-        is_todo = (node.children[0].rawtext == 'todo')
-        is_done = (node.children[0].rawtext == 'done')
-        assert(is_todo or is_done)
-        node.type = NodeType.TASK
-        node.done = is_done
-        # Strip task keyword and first space
-        node.children = node.children[2:]
-
-    def apply_tags(node):
-        # Tags occur at the end of a line, separated by non-breaking spaces
-        first_tag_idx = -1
-        for i, child in enumerate(node.children):
-            if child.type == NodeType.TAG:
-                first_tag_idx = i
-                break
-        if first_tag_idx >= 0:
-            node.tags = [node.rawtext for node in node.children[first_tag_idx:]
-                         if node.type == NodeType.TAG]
-            node.children = node.children[:first_tag_idx]
-        else:
-            node.tags = []
-
-    if type_ == 'Header':
-        node = DocNode(NodeType.HEADING)
-
-        level, attr, inlines = content
-        attr = _pandoc_unwrap_attr(attr)
-
-        node.level = level
-    else:
-        assert(type_ == 'Para')
-        node = DocNode(NodeType.PARAGRAPH)
-        inlines = content
-
-    node.children = _pandoc_unwrap_blocks(inlines)
-
-    if node.children[0].type == NodeType.TAG:
-        convert_to_task(node)
-
-    # Must be done after task conversion, since tasks are tags
-    apply_tags(node)
-
-    return node
-
-def _pandoc_unwrap_link(type_, content):
-    node = DocNode(NodeType.LINK)
-
-    attr, inlines, target = content
-    attr = _pandoc_unwrap_attr(attr)
-
-    target, title = target
-    node.title = title
-    node.target = target
-
-    i = target.find(':')
-    if i >= 0 and i < len(target) - 1 and target[i + 1] != ':':
-        scheme = target[:i]
-        if scheme == 'http' or scheme == 'https':
-            node.external = True
-        elif scheme == 'file':
-            node.external = False
-        else:
-            raise ValueError(f'Unhandled link scheme: {scheme}')
-    else:
-        node.external = False
-
-    node.children = _pandoc_unwrap_blocks(inlines)
-
-    return node
-
-def _pandoc_unwrap_list(type_, content):
-    node = DocNode(NodeType.LIST)
-
-    node.ordered = (type_ == 'OrderedList')
-
-    if node.ordered:
-        listattrs, items = content
-        start, style, delim = listattrs
-        node.start = start
-        node.style = _pandoc_get_type(style)
-        node.delim = _pandoc_get_type(delim)
-    else:
-        items = content
-
-    for block in items:
-        item = DocNode(NodeType.LIST_ITEM)
-        item.children = _pandoc_unwrap_blocks(block)
-        node.children.append(item)
-
-    return node
-
-def _pandoc_unwrap_meta(type_, content):
-    node = DocNode(NodeType.META)
-    node.rawtext = content
-    return node
-
-def _pandoc_unwrap_rawblock(type_, content):
-    fmt, text = content
-    assert(fmt == 'org')
-
-    matches = util.regex_match(r'#\+(\w+):\s+(.+)', text)
-    assert(matches is not None)
-
-    node = DocNode(NodeType.META)
-    node.key = matches[0].lower()
-    node.value = matches[1]
-
-    return node
-
-def _pandoc_unwrap_span(type_, content):
-    attr, inlines = content
-    attr = _pandoc_unwrap_attr(attr)
-
-    if 'spurious-link' in attr['cls']:
-        node = DocNode(NodeType.LINK)
-
-        node.target = attr['kvs']['target']
-        node.external = False
-
-        # Spurious links get wrapped in an 'Emph' block
-        assert(len(inlines) == 1)
-        node.children = _pandoc_unwrap_blocks(inlines)[0].children
-    else:
-        node = DocNode(NodeType.TAG)
-
-        if 'tag' in attr['cls']:
-            tag = attr['kvs']['tag-name']
-        else:
-            tag = attr['cls'][0]
-
-        node.rawtext = tag
-
-    return node
-
-def _pandoc_unwrap_table(type_, content):
-    def unwrap_cell(cell, is_header=False):
-        attr, align, rowspan, colspan, children = cell
-        attr = _pandoc_unwrap_attr(attr)
-
-        node = DocNode(NodeType.TABLE_CELL)
-        node.is_header = is_header
-        node.rowspan = rowspan
-        node.colspan = colspan
-        node.children = _pandoc_unwrap_blocks(children)
-
-        return node
-
-    def unwrap_row(row, is_header=False):
-        attr, cells = row
-        attr = _pandoc_unwrap_attr(attr)
-
-        node = DocNode(NodeType.TABLE_ROW)
-        node.children = [unwrap_cell(cell, is_header) for cell in cells]
-
-        return node
-
-    def unwrap_head(head):
-        attr, rows = head
-        attr = _pandoc_unwrap_attr(attr)
-
-        assert(len(rows) <= 1)
-
-        if len(rows) == 0:
-            return None
-        return unwrap_row(rows[0], is_header=True)
-
-    def unwrap_body(body):
-        assert(len(body) == 1)
-
-        attr, rowheadcols, head, rows = body[0]
-        attr = _pandoc_unwrap_attr(attr)
-
-        assert(len(head) == 0)
-
-        return [unwrap_row(row) for row in rows]
-
-    node = DocNode(NodeType.TABLE)
-
-    attr, caption, colspecs, tablehead, tablebody, tablefoot = content
-    attr = _pandoc_unwrap_attr(attr)
-
-    header = unwrap_head(tablehead)
-    if header is not None:
-        node.children.append(header)
-
-    node.children += unwrap_body(tablebody)
-
-    return node
-
-def _pandoc_unwrap_textblock(type_, content):
-    node = DocNode(NodeType.TEXT)
-    node.children = _pandoc_unwrap_blocks(content)
-
-    node.strong = (type_ == 'Strong')
-    node.emph = (type_ == 'Emph')
-
-    return node
-
-def _pandoc_unwrap_token(type_, content):
-    node = DocNode(NodeType.TOKEN)
-
-    if content is not None:
-        node.rawtext = content
-    else:
-        node.rawtext = ' '
-
-    return node
-
-
-_pandoc_unwrapper_map = {
-    'Code': _pandoc_unwrap_code,
-    'CodeBlock': _pandoc_unwrap_code,
-    'BulletList': _pandoc_unwrap_list,
-    'Emph': _pandoc_unwrap_textblock,
-    'Header': _pandoc_unwrap_header_or_para,
-    'Link': _pandoc_unwrap_link,
-    'MetaString': _pandoc_unwrap_meta,
-    'OrderedList': _pandoc_unwrap_list,
-    'Para': _pandoc_unwrap_header_or_para,
-    'Plain': _pandoc_unwrap_textblock,
-    'RawBlock': _pandoc_unwrap_rawblock,
-    'SoftBreak': _pandoc_unwrap_token,
-    'Space': _pandoc_unwrap_token,
-    'Span': _pandoc_unwrap_span,
-    'Str': _pandoc_unwrap_token,
-    'Strong': _pandoc_unwrap_textblock,
-    'Table': _pandoc_unwrap_table,
-}
+    return json.loads(process.stdout)
