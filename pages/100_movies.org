@@ -9,111 +9,112 @@
 
 #+INCLUDE: "../global_options.org"
 
+#+PROPERTY: link_prefix https://beta.icheckmovies.com/movies/
 #+PROPERTY: image_prefix  https://beta.icheckmovies.com/assets/img/posters/medium/
 
 #+NAME: dex
-| Title                                                                | Year | Checked | Image            |
-|----------------------------------------------------------------------+------+---------+------------------|
-| The Cabinet of Dr. Caligari                                          | 1920 | y       | 0/490.jpg        |
-| Sherlock Jr.                                                         | 1924 | n       | 0/646.jpg        |
-| Battleship Potemkin                                                  | 1925 | n       | 1/1277.jpg       |
-| The Gold Rush                                                        | 1925 | n       | 0/163.jpg        |
-| The General                                                          | 1926 | n       | 0/126.jpg        |
-| Sunrise: A Song of Two Humans                                        | 1927 | y       | 0/179.jpg        |
-| Metropolis                                                           | 1927 | y       | 0/80.jpg         |
-| The Passion of Joan of Arc                                           | 1928 | y       | 0/305.jpg        |
-| Man with a Movie Camera                                              | 1929 | n       | 0/385.jpg        |
-| City Lights                                                          | 1931 | n       | 0/67.jpg         |
-| M                                                                    | 1931 | n       | 0/45.jpg         |
-| L'Atalante                                                           | 1934 | n       | 1/1875.jpg       |
-| Modern Times                                                         | 1936 | n       | 0/76.jpg         |
-| The Grand Illusion                                                   | 1937 | n       | 0/860.jpg        |
-| The Rules of the Game                                                | 1939 | n       | 0/871.jpg        |
-| The Wizard of Oz                                                     | 1939 | y       | 0/124.jpg        |
-| Gone with the Wind                                                   | 1939 | y       | 0/166.jpg        |
-| Citizen Kane                                                         | 1941 | y       | 0/31.jpg         |
-| Casablanca                                                           | 1942 | y       | 0/11.jpg         |
-| Meshes of the Afternoon                                              | 1943 | n       | 1/1354.jpg       |
-| Double Indemnity                                                     | 1944 | y       | 0/46.jpg         |
-| It's a Wonderful Life                                                | 1946 | y       | 0/30.jpg         |
-| Bicycle Thieves                                                      | 1948 | y       | 0/98.jpg         |
-| The Third Man                                                        | 1949 | y       | 0/55.jpg         |
-| Late Spring                                                          | 1949 | n       | 1/1329.jpg       |
-| Sunset Boulevard                                                     | 1950 | n       | 0/25.jpg         |
-| Rashomon                                                             | 1950 | y       | 0/71.jpg         |
-| Singin' in the Rain                                                  | 1952 | y       | 0/78.jpg         |
-| Tokyo Story                                                          | 1953 | y       | 1/1291.jpg       |
-| Ugetsu                                                               | 1953 | n       | 0/442.jpg        |
-| Seven Samurai                                                        | 1954 | n       | 0/13.jpg         |
-| On the Waterfront                                                    | 1954 | n       | 0/99.jpg         |
-| Rear Window                                                          | 1954 | y       | 0/16.jpg         |
-| The Night of the Hunter                                              | 1955 | n       | 0/158.jpg        |
-| Ordet                                                                | 1955 | n       | 1/1293.jpg       |
-| Pather Panchali                                                      | 1955 | n       | 1/1295.jpg       |
-| The Searchers                                                        | 1956 | y       | 0/726.jpg        |
-| The Bridge on the River Kwai                                         | 1957 | y       | 0/68.jpg         |
-| 12 Angry Men                                                         | 1957 | y       | 0/9.jpg          |
-| Vertigo                                                              | 1958 | y       | 0/40.jpg         |
-| Touch of Evil                                                        | 1958 | n       | 0/97.jpg         |
-| The 400 Blows                                                        | 1959 | y       | 0/248.jpg        |
-| Some Like It Hot                                                     | 1959 | y       | 0/82.jpg         |
-| North by Northwest                                                   | 1959 | y       | 0/28.jpg         |
-| Breathless                                                           | 1960 | y       | 0/527.jpg        |
-| Psycho                                                               | 1960 | y       | 0/23.jpg         |
-| La Dolce Vita                                                        | 1960 | n       | 0/240.jpg        |
-| L'Avventura                                                          | 1960 | n       | 1/1281.jpg       |
-| The Apartment                                                        | 1960 | y       | 0/88.jpg         |
-| Lawrence of Arabia                                                   | 1962 | y       | 0/39.jpg         |
-| Cleo from 5 to 7                                                     | 1962 | n       | 1/1872.jpg       |
-| 8½                                                                   | 1963 | y       | 0/150.jpg        |
-| Contempt                                                             | 1963 | n       | 1/1294.jpg       |
-| Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb | 1964 | n       | 0/26.jpg         |
-| Persona                                                              | 1966 | n       | 0/611.jpg        |
-| Au hasard Balthazar                                                  | 1966 | n       | 1/1296.jpg       |
-| Daisies                                                              | 1966 | n       | 1/1894.jpg       |
-| Andrei Rublev                                                        | 1966 | n       | 0/905.jpg        |
-| The Battle of Algiers                                                | 1966 | n       | 0/186.jpg        |
-| Playtime                                                             | 1967 | n       | 1/1304.jpg       |
-| Bonnie and Clyde                                                     | 1967 | n       | 0/213.jpg        |
-| The Graduate                                                         | 1967 | y       | 0/157.jpg        |
-| 2001: A Space Odyssey                                                | 1968 | y       | 0/86.jpg         |
-| Once Upon a Time in the West                                         | 1968 | n       | 0/19.jpg         |
-| Wanda                                                                | 1970 | n       | 3/3067.jpg       |
-| A Clockwork Orange                                                   | 1971 | y       | 0/50.jpg         |
-| The Godfather                                                        | 1972 | y       | 0/2.jpg          |
-| The Godfather Part II                                                | 1974 | n       | 0/3.jpg          |
-| Chinatown                                                            | 1974 | n       | 0/57.jpg         |
-| Ali: Fear Eats the Soul                                              | 1974 | y       | 1/1328.jpg       |
-| Jeanne Dielman, 23, quai du commerce, 1080 Bruxelles                 | 1975 | n       | 1/1312.jpg       |
-| One Flew Over the Cuckoo's Nest                                      | 1975 | y       | 0/8.jpg          |
-| Mirror                                                               | 1975 | n       | 0/311.jpg        |
-| Barry Lyndon                                                         | 1975 | n       | 0/245.jpg        |
-| Taxi Driver                                                          | 1976 | y       | 0/37.jpg         |
-| News from Home                                                       | 1976 | n       | 73/73482.jpg     |
-| Star Wars                                                            | 1977 | y       | 0/12.jpg         |
-| Annie Hall                                                           | 1977 | y       | 0/133.jpg        |
-| Killer of Sheep                                                      | 1978 | n       | 1/1395.jpg       |
-| Apocalypse Now                                                       | 1979 | y       | 0/35.jpg         |
-| Stalker                                                              | 1979 | n       | 0/447.jpg        |
-| Raging Bull                                                          | 1980 | y       | 0/72.jpg         |
-| Blade Runner                                                         | 1982 | y       | 0/109.jpg        |
-| Sans Soleil                                                          | 1983 | n       | 1/1345.jpg       |
-| Shoah                                                                | 1985 | n       | 1/1315.jpg       |
-| Do the Right Thing                                                   | 1989 | y       | 1/1021.jpg       |
-| Close-Up                                                             | 1990 | n       | 1/1330.jpg       |
-| Goodfellas                                                           | 1990 | n       | 0/15.jpg         |
-| The Silence of the Lambs                                             | 1991 | y       | 0/24.jpg         |
-| Schindler's List                                                     | 1993 | y       | 0/7.jpg          |
-| The Piano                                                            | 1993 | n       | 1/1357.jpg       |
-| Pulp Fiction                                                         | 1994 | y       | 0/5.jpg          |
-| Beau travail                                                         | 1999 | n       | 1/1641.jpg       |
-| In the Mood for Love                                                 | 2000 | n       | 1/1390.jpg       |
-| Crouching Tiger, Hidden Dragon                                       | 2000 | n       | 0/226.jpg        |
-| Mulholland Drive                                                     | 2001 | y       | 0/454.jpg        |
-| Spirited Away                                                        | 2001 | y       | 0/60.jpg         |
-| Oldboy                                                               | 2003 | n       | 0/117.jpg        |
-| Pan's Labyrinth                                                      | 2006 | n       | 0/70.jpg         |
-| Portrait of a Lady on Fire                                           | 2019 | n       | 3482/3482498.jpg |
+| Title                                                                | Year | Checked | Link                                                                                                        | Image            |
+|----------------------------------------------------------------------+------+---------+-------------------------------------------------------------------------------------------------------------+------------------|
+| The Cabinet of Dr. Caligari                                          | 1920 | y       | 490-das+cabinet+des+dr.+caligari                                       | 0/490.jpg        |
+| Sherlock Jr.                                                         | 1924 | n       | 646-sherlock+jr.                                                       | 0/646.jpg        |
+| Battleship Potemkin                                                  | 1925 | n       | 1277-bronenosets+potyomkin                                             | 1/1277.jpg       |
+| The Gold Rush                                                        | 1925 | n       | 163-the+gold+rush                                                      | 0/163.jpg        |
+| The General                                                          | 1926 | n       | 126-the+general                                                        | 0/126.jpg        |
+| Sunrise: A Song of Two Humans                                        | 1927 | y       | 179-sunrise+a+song+of+two+humans                                       | 0/179.jpg        |
+| Metropolis                                                           | 1927 | y       | 80-metropolis                                                          | 0/80.jpg         |
+| The Passion of Joan of Arc                                           | 1928 | y       | 305-la+passion+de+jeanne+darc                                          | 0/305.jpg        |
+| Man with a Movie Camera                                              | 1929 | n       | 385-chelovek+s+kino-apparatom                                          | 0/385.jpg        |
+| City Lights                                                          | 1931 | n       | 67-city+lights                                                         | 0/67.jpg         |
+| M                                                                    | 1931 | n       | 45-m+-+eine+stadt+sucht+einen+morder                                   | 0/45.jpg         |
+| L'Atalante                                                           | 1934 | n       | 1875-latalante                                                         | 1/1875.jpg       |
+| Modern Times                                                         | 1936 | n       | 76-modern+times                                                        | 0/76.jpg         |
+| The Grand Illusion                                                   | 1937 | n       | 860-la+grande+illusion                                                 | 0/860.jpg        |
+| The Rules of the Game                                                | 1939 | n       | 871-la+regle+du+jeu                                                    | 0/871.jpg        |
+| The Wizard of Oz                                                     | 1939 | y       | 124-the+wizard+of+oz                                                   | 0/124.jpg        |
+| Gone with the Wind                                                   | 1939 | y       | 166-gone+with+the+wind                                                 | 0/166.jpg        |
+| Citizen Kane                                                         | 1941 | y       | 31-citizen+kane                                                        | 0/31.jpg         |
+| Casablanca                                                           | 1942 | y       | 11-casablanca                                                          | 0/11.jpg         |
+| Meshes of the Afternoon                                              | 1943 | n       | 1354-meshes+of+the+afternoon                                           | 1/1354.jpg       |
+| Double Indemnity                                                     | 1944 | y       | 46-double+indemnity                                                    | 0/46.jpg         |
+| It's a Wonderful Life                                                | 1946 | y       | 30-its+a+wonderful+life                                                | 0/30.jpg         |
+| Bicycle Thieves                                                      | 1948 | y       | 98-ladri+di+biciclette                                                 | 0/98.jpg         |
+| The Third Man                                                        | 1949 | y       | 55-the+third+man                                                       | 0/55.jpg         |
+| Late Spring                                                          | 1949 | n       | 1329-banshun                                                           | 1/1329.jpg       |
+| Sunset Boulevard                                                     | 1950 | n       | 25-sunset+blvd.                                                        | 0/25.jpg         |
+| Rashomon                                                             | 1950 | y       | 71-rashomon                                                            | 0/71.jpg         |
+| Singin' in the Rain                                                  | 1952 | y       | 78-singin+in+the+rain                                                  | 0/78.jpg         |
+| Tokyo Story                                                          | 1953 | y       | 1291-tokyo+monogatari                                                  | 1/1291.jpg       |
+| Ugetsu                                                               | 1953 | n       | 442-ugetsu+monogatari                                                  | 0/442.jpg        |
+| Seven Samurai                                                        | 1954 | n       | 13-shichinin+no+samurai                                                | 0/13.jpg         |
+| On the Waterfront                                                    | 1954 | n       | 99-on+the+waterfront                                                   | 0/99.jpg         |
+| Rear Window                                                          | 1954 | y       | 16-rear+window                                                         | 0/16.jpg         |
+| The Night of the Hunter                                              | 1955 | n       | 158-the+night+of+the+hunter                                            | 0/158.jpg        |
+| Ordet                                                                | 1955 | n       | 1293-ordet                                                             | 1/1293.jpg       |
+| Pather Panchali                                                      | 1955 | n       | 1295-pather+panchali                                                   | 1/1295.jpg       |
+| The Searchers                                                        | 1956 | y       | 726-the+searchers                                                      | 0/726.jpg        |
+| The Bridge on the River Kwai                                         | 1957 | y       | 68-the+bridge+on+the+river+kwai                                        | 0/68.jpg         |
+| 12 Angry Men                                                         | 1957 | y       | 9-12+angry+men                                                         | 0/9.jpg          |
+| Vertigo                                                              | 1958 | y       | 40-vertigo                                                             | 0/40.jpg         |
+| Touch of Evil                                                        | 1958 | n       | 97-touch+of+evil                                                       | 0/97.jpg         |
+| The 400 Blows                                                        | 1959 | y       | 248-les+quatre+cents+coups                                             | 0/248.jpg        |
+| Some Like It Hot                                                     | 1959 | y       | 82-some+like+it+hot                                                    | 0/82.jpg         |
+| North by Northwest                                                   | 1959 | y       | 28-north+by+northwest                                                  | 0/28.jpg         |
+| Breathless                                                           | 1960 | y       | 527-a+bout+de+souffle                                                  | 0/527.jpg        |
+| Psycho                                                               | 1960 | y       | 23-psycho                                                              | 0/23.jpg         |
+| La Dolce Vita                                                        | 1960 | n       | 240-la+dolce+vita                                                      | 0/240.jpg        |
+| L'Avventura                                                          | 1960 | n       | 1281-lavventura                                                        | 1/1281.jpg       |
+| The Apartment                                                        | 1960 | y       | 88-the+apartment                                                       | 0/88.jpg         |
+| Lawrence of Arabia                                                   | 1962 | y       | 39-lawrence+of+arabia                                                  | 0/39.jpg         |
+| Cleo from 5 to 7                                                     | 1962 | n       | 1872-cleo+de+5+a+7                                                     | 1/1872.jpg       |
+| 8½                                                                   | 1963 | y       | 150-8half                                                              | 0/150.jpg        |
+| Contempt                                                             | 1963 | n       | 1294-le+mepris                                                         | 1/1294.jpg       |
+| Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb | 1964 | n       | 26-dr.+strangelove+or+how+i+learned+to+stop+worrying+and+love+the+bomb | 0/26.jpg         |
+| Persona                                                              | 1966 | n       | 611-persona                                                            | 0/611.jpg        |
+| Au hasard Balthazar                                                  | 1966 | n       | 1296-au+hasard+balthazar                                               | 1/1296.jpg       |
+| Daisies                                                              | 1966 | n       | 1894-sedmikrasky                                                       | 1/1894.jpg       |
+| Andrei Rublev                                                        | 1966 | n       | 905-andrey+rublyov                                                     | 0/905.jpg        |
+| The Battle of Algiers                                                | 1966 | n       | 186-la+battaglia+di+algeri                                             | 0/186.jpg        |
+| Playtime                                                             | 1967 | n       | 1304-playtime-1967                                                     | 1/1304.jpg       |
+| Bonnie and Clyde                                                     | 1967 | n       | 213-bonnie+and+clyde                                                   | 0/213.jpg        |
+| The Graduate                                                         | 1967 | y       | 157-the+graduate                                                       | 0/157.jpg        |
+| 2001: A Space Odyssey                                                | 1968 | y       | 86-2001+a+space+odyssey                                                | 0/86.jpg         |
+| Once Upon a Time in the West                                         | 1968 | n       | 19-cera+una+volta+il+west                                              | 0/19.jpg         |
+| Wanda                                                                | 1970 | n       | 3067-wanda                                                             | 3/3067.jpg       |
+| A Clockwork Orange                                                   | 1971 | y       | 50-a+clockwork+orange                                                  | 0/50.jpg         |
+| The Godfather                                                        | 1972 | y       | 2-the+godfather                                                        | 0/2.jpg          |
+| The Godfather Part II                                                | 1974 | n       | 3-the+godfather+part+ii                                                | 0/3.jpg          |
+| Chinatown                                                            | 1974 | n       | 57-chinatown                                                           | 0/57.jpg         |
+| Ali: Fear Eats the Soul                                              | 1974 | y       | 1328-angst+essen+seele+auf                                             | 1/1328.jpg       |
+| Jeanne Dielman, 23, quai du commerce, 1080 Bruxelles                 | 1975 | n       | 1312-jeanne+dielman+23+quai+du+commerce+1080+bruxelles                 | 1/1312.jpg       |
+| One Flew Over the Cuckoo's Nest                                      | 1975 | y       | 8-one+flew+over+the+cuckoos+nest                                       | 0/8.jpg          |
+| Mirror                                                               | 1975 | n       | 311-zerkalo                                                            | 0/311.jpg        |
+| Barry Lyndon                                                         | 1975 | n       | 245-barry+lyndon                                                       | 0/245.jpg        |
+| Taxi Driver                                                          | 1976 | y       | 37-taxi+driver                                                         | 0/37.jpg         |
+| News from Home                                                       | 1976 | n       | 73482-news+from+home                                                   | 73/73482.jpg     |
+| Star Wars                                                            | 1977 | y       | 12-star+wars                                                           | 0/12.jpg         |
+| Annie Hall                                                           | 1977 | y       | 133-annie+hall                                                         | 0/133.jpg        |
+| Killer of Sheep                                                      | 1978 | n       | 1395-killer+of+sheep                                                   | 1/1395.jpg       |
+| Apocalypse Now                                                       | 1979 | y       | 35-apocalypse+now                                                      | 0/35.jpg         |
+| Stalker                                                              | 1979 | n       | 447-stalker                                                            | 0/447.jpg        |
+| Raging Bull                                                          | 1980 | y       | 72-raging+bull                                                         | 0/72.jpg         |
+| Blade Runner                                                         | 1982 | y       | 109-blade+runner                                                       | 0/109.jpg        |
+| Sans Soleil                                                          | 1983 | n       | 1345-sans+soleil                                                       | 1/1345.jpg       |
+| Shoah                                                                | 1985 | n       | 1315-shoah                                                             | 1/1315.jpg       |
+| Do the Right Thing                                                   | 1989 | y       | 1021-do+the+right+thing                                                | 1/1021.jpg       |
+| Close-Up                                                             | 1990 | n       | 1330-nema-ye+nazdik                                                    | 1/1330.jpg       |
+| Goodfellas                                                           | 1990 | n       | 15-goodfellas                                                          | 0/15.jpg         |
+| The Silence of the Lambs                                             | 1991 | y       | 24-the+silence+of+the+lambs                                            | 0/24.jpg         |
+| Schindler's List                                                     | 1993 | y       | 7-schindlers+list                                                      | 0/7.jpg          |
+| The Piano                                                            | 1993 | n       | 1357-the+piano                                                         | 1/1357.jpg       |
+| Pulp Fiction                                                         | 1994 | y       | 5-pulp+fiction                                                         | 0/5.jpg          |
+| Beau travail                                                         | 1999 | n       | 1641-beau+travail                                                      | 1/1641.jpg       |
+| In the Mood for Love                                                 | 2000 | n       | 1390-fa+yeung+nin+wah                                                  | 1/1390.jpg       |
+| Crouching Tiger, Hidden Dragon                                       | 2000 | n       | 226-wo+hu+cang+long                                                    | 0/226.jpg        |
+| Mulholland Drive                                                     | 2001 | y       | 454-mulholland+dr.                                                     | 0/454.jpg        |
+| Spirited Away                                                        | 2001 | y       | 60-sen+to+chihiro+no+kamikakushi                                       | 0/60.jpg         |
+| Oldboy                                                               | 2003 | n       | 117-oldeuboi                                                           | 0/117.jpg        |
+| Pan's Labyrinth                                                      | 2006 | n       | 70-el+laberinto+del+fauno                                              | 0/70.jpg         |
+| Portrait of a Lady on Fire                                           | 2019 | n       | 3482498-portrait+de+la+jeune+fille+en+feu                              | 3482/3482498.jpg |
 
 **** TODO Add links to movie pages on a movie database             :easy:low:
 **** TODO Incorporate movie posters                                 :med:low:
