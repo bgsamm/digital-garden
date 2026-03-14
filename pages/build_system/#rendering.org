@@ -481,7 +481,7 @@ render function.
           values = [cell.inner_text() for cell in row.inlines]
           item = dict(zip(dex_attrs, values))
 
-          item['checked'] = (item['checked'].lower() in ['true', 'y'])
+          item['checked'] = (item['checked'].lower() == 'y')
           if item['image']:
               item['image'] = image_prefix + item['image']
 

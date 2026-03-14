@@ -14,106 +14,103 @@
 #+NAME: dex
 | Title                                    | Year | Checked | Image      |
 |------------------------------------------+------+---------+------------|
-| Super Mario Bros.                        | 1985 | True    | co6pib.jpg |
-| Tetris                                   | 1985 | False   | co6n9j.jpg |
-| The Legend of Zelda                      | 1986 | True    | co1uii.jpg |
-| Super Mario Bros. 3                      | 1988 | True    | co7ozx.jpg |
-| Super Mario World                        | 1990 | True    | co8lo8.jpg |
-| The Secret of Monkey Island              | 1990 | True    | co28bp.jpg |
-| Street Fighter II                        | 1991 | False   | co55et.jpg |
-| The Legend of Zelda: A Link to the Past  | 1991 | True    | co3vzn.jpg |
-| Doom                                     | 1993 | False   | co5rav.jpg |
-| EarthBound                               | 1994 | False   | co6v07.jpg |
-| Super Metroid                            | 1994 | False   | co5osy.jpg |
-| Chrono Trigger                           | 1995 | False   | co3plw.jpg |
-| Resident Evil                            | 1996 | False   | co20bp.jpg |
-| Super Mario 64                           | 1996 | True    | co721v.jpg |
-| Castlevania: Symphony of the Night       | 1997 | False   | co53m8.jpg |
-| Final Fantasy VII                        | 1997 | True    | co2kx2.jpg |
-| GoldenEye 007                            | 1997 | False   | coa0y2.jpg |
-| Moon: Remix RPG Adventure                | 1997 | False   | co5ycb.jpg |
-| Half-Life                                | 1998 | False   |            |
-| Metal Gear Solid                         | 1998 | False   |            |
-| Resident Evil 2                          | 1998 | False   |            |
-| The Legend of Zelda: Ocarina of Time     | 1998 | True    |            |
-| Planescape: Torment                      | 1999 | False   |            |
-| Silent Hill                              | 1999 | False   |            |
-| Silver Jiken                             | 1999 | False   |            |
-| Baldur's Gate II: Shadows of Amn         | 2000 | False   |            |
-| Deus Ex                                  | 2000 | False   |            |
-| The Legend of Zelda: Majora's Mask       | 2000 | True    |            |
-| Halo: Combat Evolved                     | 2001 | False   |            |
-| Metal Gear Solid 2: Sons of Liberty      | 2001 | False   |            |
-| Silent Hill 2                            | 2001 | False   |            |
-| Higurashi When They Cry                  | 2002 | False   |            |
-| The Elder Scrolls III: Morrowind         | 2002 | False   |            |
-| The Legend of Zelda: The Wind Waker      | 2002 | True    |            |
-| Utawarerumono                            | 2002 | False   |            |
-| Warcraft III: Reign of Chaos             | 2002 | False   |            |
-| Grand Theft Auto: San Andreas            | 2004 | False   |            |
-| Half-Life 2                              | 2004 | False   |            |
-| Katamari Damacy                          | 2004 | False   |            |
-| Metal Gear Solid 3: Snake Eater          | 2004 | False   |            |
-| The Legend of Heroes: Trails in the Sky  | 2004 | False   |            |
-| Killer7                                  | 2005 | False   |            |
-| Phoenix Wright: Ace Attorney             | 2005 | True    |            |
-| Shadow of the Colossus                   | 2005 | False   |            |
-| We Love Katamari                         | 2005 | False   |            |
-| BioShock                                 | 2007 | False   |            |
-| Call of Duty 4: Modern Warfare           | 2007 | False   |            |
-| Hotel Dusk: Room 215                     | 2007 | True    |            |
-| Mass Effect                              | 2007 | False   |            |
-| Portal                                   | 2007 | True    |            |
-| Professor Layton and the Curious Village | 2007 | True    |            |
-| Grand Theft Auto IV                      | 2008 | False   |            |
-| Metal Gear Solid 4: Guns of the Patriots | 2008 | False   |            |
-| Nine Hours, Nine Persons, Nine Doors     | 2009 | True    |            |
-| Picross 3D                               | 2009 | True    |            |
-| Uncharted 2: Among Thieves               | 2009 | False   |            |
-| Alan Wake                                | 2010 | False   |            |
-| Ghost Trick: Phantom Detective           | 2010 | True    |            |
-| Red Dead Redemption                      | 2010 | True    |            |
-| Dark Souls                               | 2011 | False   |            |
-| Portal 2                                 | 2011 | True    |            |
-| Super Mario 3D World                     | 2013 | False   |            |
-| The Last of Us                           | 2013 | False   |            |
-| P.T.                                     | 2014 | False   |            |
-| Bloodborne                               | 2015 | False   |            |
-| Journey                                  | 2015 | False   |            |
-| The Great Ace Attorney: Adventures       | 2015 | False   |            |
-| The Witcher III: Wild Hunt               | 2015 | False   |            |
-| Undertale                                | 2015 | True    |            |
-| Yakuza 0                                 | 2015 | False   |            |
-| The House in Fata Morgana                | 2016 | False   |            |
-| Uncharted 4: A Thief's End               | 2016 | False   |            |
-| Divinity: Original Sin II                | 2017 | False   |            |
-| Hollow Knight                            | 2017 | False   |            |
-| Persona 5                                | 2017 | False   |            |
-| The Legend of Zelda: Breath of the Wild  | 2017 | False   |            |
-| God of War                               | 2018 | False   |            |
-| Kingdom Come: Deliverance                | 2018 | False   |            |
-| Lobotomy Corporation                     | 2018 | False   |            |
-| Red Dead Redemption II                   | 2018 | False   |            |
-| Return of the Obra Dinn                  | 2018 | False   |            |
-| Death Stranding                          | 2019 | False   |            |
-| Disco Elysium                            | 2019 | False   |            |
-| Outer Wilds                              | 2019 | True    |            |
-| Sekiro: Shadows Die Twice                | 2019 | False   |            |
-| Hades                                    | 2020 | False   |            |
-| Half-Life: Alyx                          | 2020 | False   |            |
-| The Last of Us Part II                   | 2020 | False   |            |
-| Elden Ring                               | 2022 | False   |            |
-| Pentiment                                | 2022 | True    |            |
-| 1000xResist                              | 2024 | False   |            |
-| Astro Bot                                | 2024 | False   |            |
-| Enigma of Fear                           | 2024 | False   |            |
-| Lorelei and the Laser Eyes               | 2024 | False   |            |
-| Metaphor: ReFantazio                     | 2024 | False   |            |
-| Clair Obscur: Expedition 33              | 2025 | False   |            |
-| Hades II                                 | 2025 | False   |            |
-| Hollow Knight: Silksong                  | 2025 | False   |            |
-| Of the Devil                             | 2025 | False   |            |
-| Split Fiction                            | 2025 | False   |            |
-
-
-
+| Super Mario Bros.                        | 1985 | y       | co6pib.jpg |
+| Tetris                                   | 1985 | n       | co6n9j.jpg |
+| The Legend of Zelda                      | 1986 | y       | co1uii.jpg |
+| Super Mario Bros. 3                      | 1988 | y       | co7ozx.jpg |
+| Super Mario World                        | 1990 | y       | co8lo8.jpg |
+| The Secret of Monkey Island              | 1990 | y       | co28bp.jpg |
+| Street Fighter II                        | 1991 | n       | co55et.jpg |
+| The Legend of Zelda: A Link to the Past  | 1991 | y       | co3vzn.jpg |
+| Doom                                     | 1993 | n       | co5rav.jpg |
+| EarthBound                               | 1994 | n       | co6v07.jpg |
+| Super Metroid                            | 1994 | n       | co5osy.jpg |
+| Chrono Trigger                           | 1995 | n       | co3plw.jpg |
+| Resident Evil                            | 1996 | n       | co20bp.jpg |
+| Super Mario 64                           | 1996 | y       | co721v.jpg |
+| Castlevania: Symphony of the Night       | 1997 | n       | co53m8.jpg |
+| Final Fantasy VII                        | 1997 | y       | co2kx2.jpg |
+| GoldenEye 007                            | 1997 | n       | coa0y2.jpg |
+| Moon: Remix RPG Adventure                | 1997 | n       | co5ycb.jpg |
+| Half-Life                                | 1998 | n       | coag8n.jpg |
+| Metal Gear Solid                         | 1998 | n       | cobpak.jpg |
+| Resident Evil 2                          | 1998 | n       | co2vz0.jpg |
+| The Legend of Zelda: Ocarina of Time     | 1998 | y       | co3nnx.jpg |
+| Planescape: Torment                      | 1999 | n       | co3ggb.jpg |
+| Silent Hill                              | 1999 | n       | co2vye.jpg |
+| Silver Jiken                             | 1999 | n       | coacz8.jpg |
+| Baldur's Gate II: Shadows of Amn         | 2000 | n       | co71yr.jpg |
+| Deus Ex                                  | 2000 | n       | co86dk.jpg |
+| The Legend of Zelda: Majora's Mask       | 2000 | y       | co3pah.jpg |
+| Halo: Combat Evolved                     | 2001 | n       | co2r2r.jpg |
+| Metal Gear Solid 2: Sons of Liberty      | 2001 | n       | co5e1c.jpg |
+| Silent Hill 2                            | 2001 | n       | co2vyg.jpg |
+| Higurashi When They Cry                  | 2002 | n       | coaa3j.jpg |
+| The Elder Scrolls III: Morrowind         | 2002 | n       | co2knd.jpg |
+| The Legend of Zelda: The Wind Waker      | 2002 | y       | co3ohz.jpg |
+| Utawarerumono                            | 2002 | n       | co4hgg.jpg |
+| Warcraft III: Reign of Chaos             | 2002 | n       | co1xuq.jpg |
+| Grand Theft Auto: San Andreas            | 2004 | n       | co2lb9.jpg |
+| Half-Life 2                              | 2004 | n       | co1nmw.jpg |
+| Katamari Damacy                          | 2004 | n       | co67mq.jpg |
+| Metal Gear Solid 3: Snake Eater          | 2004 | n       | co5ei5.jpg |
+| The Legend of Heroes: Trails in the Sky  | 2004 | n       | co7ybm.jpg |
+| Killer7                                  | 2005 | n       | co1owa.jpg |
+| Phoenix Wright: Ace Attorney             | 2005 | y       | co5z8s.jpg |
+| Shadow of the Colossus                   | 2005 | n       | co1ozz.jpg |
+| We Love Katamari                         | 2005 | n       | co4af9.jpg |
+| BioShock                                 | 2007 | n       | co2mli.jpg |
+| Call of Duty 4: Modern Warfare           | 2007 | n       | co1wko.jpg |
+| Hotel Dusk: Room 215                     | 2007 | y       | co9f5i.jpg |
+| Mass Effect                              | 2007 | n       | co1x7o.jpg |
+| Portal                                   | 2007 | y       | coay61.jpg |
+| Professor Layton and the Curious Village | 2007 | y       | cob8lr.jpg |
+| Grand Theft Auto IV                      | 2008 | n       | co2lbv.jpg |
+| Metal Gear Solid 4: Guns of the Patriots | 2008 | n       | co5eju.jpg |
+| Nine Hours, Nine Persons, Nine Doors     | 2009 | y       | co4hsz.jpg |
+| Picross 3D                               | 2009 | y       | co2dzy.jpg |
+| Uncharted 2: Among Thieves               | 2009 | n       | co1tnb.jpg |
+| Alan Wake                                | 2010 | n       | co2dft.jpg |
+| Ghost Trick: Phantom Detective           | 2010 | y       | co2yj9.jpg |
+| Red Dead Redemption                      | 2010 | y       | co2lcv.jpg |
+| Dark Souls                               | 2011 | n       | co1x78.jpg |
+| Portal 2                                 | 2011 | y       | co1rs4.jpg |
+| Super Mario 3D World                     | 2013 | n       | cob8wi.jpg |
+| The Last of Us                           | 2013 | n       | co1r7f.jpg |
+| P.T.                                     | 2014 | n       | co2vyw.jpg |
+| Bloodborne                               | 2015 | n       | cob99l.jpg |
+| Journey                                  | 2015 | n       | cob9lk.jpg |
+| The Great Ace Attorney: Adventures       | 2015 | n       | cob9st.jpg |
+| The Witcher III: Wild Hunt               | 2015 | n       | coaarl.jpg |
+| Undertale                                | 2015 | y       | cob1t2.jpg |
+| Yakuza 0                                 | 2015 | n       | co252x.jpg |
+| The House in Fata Morgana                | 2016 | n       | co23cn.jpg |
+| Uncharted 4: A Thief's End               | 2016 | n       | co1r7h.jpg |
+| Divinity: Original Sin II                | 2017 | n       | co1y5v.jpg |
+| Hollow Knight                            | 2017 | n       | cobfzp.jpg |
+| Persona 5                                | 2017 | n       | co1r76.jpg |
+| The Legend of Zelda: Breath of the Wild  | 2017 | n       | co3p2d.jpg |
+| God of War                               | 2018 | n       | cobkt6.jpg |
+| Kingdom Come: Deliverance                | 2018 | n       | co4aqi.jpg |
+| Lobotomy Corporation                     | 2018 | n       | co26qi.jpg |
+| Red Dead Redemption II                   | 2018 | n       | co1q1f.jpg |
+| Return of the Obra Dinn                  | 2018 | n       | co27j9.jpg |
+| Death Stranding                          | 2019 | n       | cobksf.jpg |
+| Disco Elysium                            | 2019 | n       | co1sfj.jpg |
+| Outer Wilds                              | 2019 | y       | co65ac.jpg |
+| Sekiro: Shadows Die Twice                | 2019 | n       | co2a23.jpg |
+| Hades                                    | 2020 | n       | cob9kr.jpg |
+| Half-Life: Alyx                          | 2020 | n       | co87vg.jpg |
+| The Last of Us Part II                   | 2020 | n       | co5ziw.jpg |
+| Elden Ring                               | 2022 | n       | co4jni.jpg |
+| Pentiment                                | 2022 | y       | co4v1e.jpg |
+| 1000xResist                              | 2024 | n       | co87zq.jpg |
+| Astro Bot                                | 2024 | n       | coba3k.jpg |
+| Enigma of Fear                           | 2024 | n       | co93ft.jpg |
+| Lorelei and the Laser Eyes               | 2024 | n       | co4x7e.jpg |
+| Metaphor: ReFantazio                     | 2024 | n       | co8d9t.jpg |
+| Clair Obscur: Expedition 33              | 2025 | n       | co9gam.jpg |
+| Hades II                                 | 2025 | n       | coaknx.jpg |
+| Hollow Knight: Silksong                  | 2025 | n       | cobebu.jpg |
+| Of the Devil                             | 2025 | n       | coaq5t.jpg |
+| Split Fiction                            | 2025 | n       | co95gf.jpg |
