@@ -3,6 +3,7 @@ import logging
 logger = logging.getLogger(__name__)
 import json
 import subprocess
+import re
 
 class NodeType(enum.Enum):
     CODE       = enum.auto()
@@ -251,6 +252,28 @@ class PandocConverter:
     
         return node
     
+    def _convert_rawblock(self, type_, content):
+        fmt, text = content
+    
+        if fmt != 'org':
+            logger.error(f'Unhandled raw block format: {fmt}')
+            return DocNode(NodeType.DUMMY)
+    
+        matches = re.match(r'#\+(\w+):\s+(.+)', text)
+        if matches is None or matches[1].upper() != 'PROPERTY':
+            logger.error(f'Unhandled raw block: {text}')
+            return DocNode(NodeType.DUMMY)
+    
+        tokens = matches[2].split()
+        key = tokens[0]
+        value = tokens[1] if len(tokens) == 2 else tokens[1:]
+    
+        node = DocNode(NodeType.META)
+        node.attrs['key'] = key
+        node.attrs['value'] = value
+    
+        return node
+    
     def _convert_span(self, type_, content):
         attr, inlines = content
         attr = self._unwrap_block_attr(attr)
@@ -337,10 +360,12 @@ class PandocConverter:
     
         attr, caption, colspecs, tablehead, tablebody, tablefoot = content
         attr = self._unwrap_block_attr(attr)
+        node.attrs['name'] = attr['id']
     
         header = unwrap_head(tablehead)
         if header is not None:
             node.inlines.append(header)
+            node.attrs['cols'] = tuple(cell.inner_text() for cell in header.inlines)
     
         node.inlines += unwrap_body(tablebody)
     
@@ -371,7 +396,7 @@ class PandocConverter:
         'OrderedList': _convert_list,
         'Para':        _convert_head_or_para,
         'Plain':       _convert_styled_text,
-        #'RawBlock':    _convert_rawblock,
+        'RawBlock':    _convert_rawblock,
         'SoftBreak':   _convert_token,
         'Space':       _convert_token,
         'Span':        _convert_span,

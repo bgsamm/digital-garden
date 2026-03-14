@@ -148,6 +148,40 @@ class DocView:
         NodeType.TOKEN: _render_token,
     }
 
+class DexView:
+    name = 'dex'
+
+    def generate(self, ast):
+        props = {}
+        for node in ast.get_nodes_of_type(NodeType.META):
+            props[node.attrs['key']] = node.attrs['value']
+        image_prefix = props.get('image_prefix', '')
+    
+        tables = {}
+        for node in ast.get_nodes_of_type(NodeType.TABLE):
+            name = node.attrs['name']
+            tables[name] = node
+    
+        if 'dex' not in tables:
+            logger.error('No dex table found!')
+            return {}
+    
+        dex_table = tables['dex']
+        dex_attrs = [col.lower() for col in dex_table.attrs['cols']]
+    
+        dex = []
+        for row in dex_table.inlines[1:]:
+            values = [cell.inner_text() for cell in row.inlines]
+            item = dict(zip(dex_attrs, values))
+    
+            item['checked'] = (item['checked'].lower() in ['true', 'y'])
+            if item['image']:
+                item['image'] = image_prefix + item['image']
+    
+            dex.append(item)
+    
+        return { 'dex': dex }
+
 class TaskView:
     name = 'task'
 
@@ -194,6 +228,7 @@ def render_page(name, meta, ast):
 
 _view_map = {
     'doc': [DocView, TaskView],
+    'dex': [DexView, TaskView],
 }
 
 def _apply_jinja_template(template, *args, **kwargs):

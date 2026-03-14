@@ -2,114 +2,118 @@
 :Title:    100 video games
 :Author:   pjsamm
 :Date:     2026-02-08
+:Type:     dex
 :Category: 100 x challenge
 :Abstract: Progress tracking toward beating 100 acclaimed video games.
 :END:
 
 #+INCLUDE: "../global_options.org"
 
-| Title                                    | Year | Played |
-|------------------------------------------+------+--------|
-| Super Mario Bros.                        | 1985 | True   |
-| Tetris                                   | 1985 | False  |
-| The Legend of Zelda                      | 1986 | True   |
-| Super Mario Bros. 3                      | 1988 | True   |
-| Super Mario World                        | 1990 | True   |
-| The Secret of Monkey Island              | 1990 | True   |
-| Street Fighter II                        | 1991 | False  |
-| The Legend of Zelda: A Link to the Past  | 1991 | True   |
-| Doom                                     | 1993 | False  |
-| EarthBound                               | 1994 | False  |
-| Super Metroid                            | 1994 | False  |
-| Chrono Trigger                           | 1995 | False  |
-| Resident Evil                            | 1996 | False  |
-| Super Mario 64                           | 1996 | True   |
-| Castlevania: Symphony of the Night       | 1997 | False  |
-| Final Fantasy VII                        | 1997 | True   |
-| GoldenEye 007                            | 1997 | False  |
-| Moon: Remix RPG Adventure                | 1997 | False  |
-| Half-Life                                | 1998 | False  |
-| Metal Gear Solid                         | 1998 | False  |
-| Resident Evil 2                          | 1998 | False  |
-| The Legend of Zelda: Ocarina of Time     | 1998 | True   |
-| Planescape: Torment                      | 1999 | False  |
-| Silent Hill                              | 1999 | False  |
-| Silver Jiken                             | 1999 | False  |
-| Baldur's Gate II: Shadows of Amn         | 2000 | False  |
-| Deus Ex                                  | 2000 | False  |
-| The Legend of Zelda: Majora's Mask       | 2000 | True   |
-| Halo: Combat Evolved                     | 2001 | False  |
-| Metal Gear Solid 2: Sons of Liberty      | 2001 | False  |
-| Silent Hill 2                            | 2001 | False  |
-| Higurashi When They Cry                  | 2002 | False  |
-| The Elder Scrolls III: Morrowind         | 2002 | False  |
-| The Legend of Zelda: The Wind Waker      | 2002 | True   |
-| Utawarerumono                            | 2002 | False  |
-| Warcraft III: Reign of Chaos             | 2002 | False  |
-| Grand Theft Auto: San Andreas            | 2004 | False  |
-| Half-Life 2                              | 2004 | False  |
-| Katamari Damacy                          | 2004 | False  |
-| Metal Gear Solid 3: Snake Eater          | 2004 | False  |
-| The Legend of Heroes: Trails in the Sky  | 2004 | False  |
-| Killer7                                  | 2005 | False  |
-| Phoenix Wright: Ace Attorney             | 2005 | True   |
-| Shadow of the Colossus                   | 2005 | False  |
-| We Love Katamari                         | 2005 | False  |
-| BioShock                                 | 2007 | False  |
-| Call of Duty 4: Modern Warfare           | 2007 | False  |
-| Hotel Dusk: Room 215                     | 2007 | True   |
-| Mass Effect                              | 2007 | False  |
-| Portal                                   | 2007 | True   |
-| Professor Layton and the Curious Village | 2007 | True   |
-| Grand Theft Auto IV                      | 2008 | False  |
-| Metal Gear Solid 4: Guns of the Patriots | 2008 | False  |
-| Nine Hours, Nine Persons, Nine Doors     | 2009 | True   |
-| Picross 3D                               | 2009 | True   |
-| Uncharted 2: Among Thieves               | 2009 | False  |
-| Alan Wake                                | 2010 | False  |
-| Ghost Trick: Phantom Detective           | 2010 | True   |
-| Red Dead Redemption                      | 2010 | True   |
-| Dark Souls                               | 2011 | False  |
-| Portal 2                                 | 2011 | True   |
-| Super Mario 3D World                     | 2013 | False  |
-| The Last of Us                           | 2013 | False  |
-| P.T.                                     | 2014 | False  |
-| Bloodborne                               | 2015 | False  |
-| Journey                                  | 2015 | False  |
-| The Great Ace Attorney: Adventures       | 2015 | False  |
-| The Witcher III: Wild Hunt               | 2015 | False  |
-| Undertale                                | 2015 | True   |
-| Yakuza 0                                 | 2015 | False  |
-| The House in Fata Morgana                | 2016 | False  |
-| Uncharted 4: A Thief's End               | 2016 | False  |
-| Divinity: Original Sin II                | 2017 | False  |
-| Hollow Knight                            | 2017 | False  |
-| Persona 5                                | 2017 | False  |
-| The Legend of Zelda: Breath of the Wild  | 2017 | False  |
-| God of War                               | 2018 | False  |
-| Kingdom Come: Deliverance                | 2018 | False  |
-| Lobotomy Corporation                     | 2018 | False  |
-| Red Dead Redemption II                   | 2018 | False  |
-| Return of the Obra Dinn                  | 2018 | False  |
-| Death Stranding                          | 2019 | False  |
-| Disco Elysium                            | 2019 | False  |
-| Outer Wilds                              | 2019 | True   |
-| Sekiro: Shadows Die Twice                | 2019 | False  |
-| Hades                                    | 2020 | False  |
-| Half-Life: Alyx                          | 2020 | False  |
-| The Last of Us Part II                   | 2020 | False  |
-| Elden Ring                               | 2022 | False  |
-| Pentiment                                | 2022 | True   |
-| 1000xResist                              | 2024 | False  |
-| Astro Bot                                | 2024 | False  |
-| Enigma of Fear                           | 2024 | False  |
-| Lorelei and the Laser Eyes               | 2024 | False  |
-| Metaphor: ReFantazio                     | 2024 | False  |
-| Clair Obscur: Expedition 33              | 2025 | False  |
-| Hades II                                 | 2025 | False  |
-| Hollow Knight: Silksong                  | 2025 | False  |
-| Of the Devil                             | 2025 | False  |
-| Split Fiction                            | 2025 | False  |
+#+PROPERTY: image_prefix https://images.igdb.com/igdb/image/upload/t_cover_big_2x/
+
+#+NAME: dex
+| Title                                    | Year | Checked | Image      |
+|------------------------------------------+------+---------+------------|
+| Super Mario Bros.                        | 1985 | True    | co6pib.jpg |
+| Tetris                                   | 1985 | False   | co6n9j.jpg |
+| The Legend of Zelda                      | 1986 | True    | co1uii.jpg |
+| Super Mario Bros. 3                      | 1988 | True    | co7ozx.jpg |
+| Super Mario World                        | 1990 | True    | co8lo8.jpg |
+| The Secret of Monkey Island              | 1990 | True    | co28bp.jpg |
+| Street Fighter II                        | 1991 | False   | co55et.jpg |
+| The Legend of Zelda: A Link to the Past  | 1991 | True    | co3vzn.jpg |
+| Doom                                     | 1993 | False   | co5rav.jpg |
+| EarthBound                               | 1994 | False   | co6v07.jpg |
+| Super Metroid                            | 1994 | False   | co5osy.jpg |
+| Chrono Trigger                           | 1995 | False   | co3plw.jpg |
+| Resident Evil                            | 1996 | False   | co20bp.jpg |
+| Super Mario 64                           | 1996 | True    | co721v.jpg |
+| Castlevania: Symphony of the Night       | 1997 | False   | co53m8.jpg |
+| Final Fantasy VII                        | 1997 | True    | co2kx2.jpg |
+| GoldenEye 007                            | 1997 | False   | coa0y2.jpg |
+| Moon: Remix RPG Adventure                | 1997 | False   | co5ycb.jpg |
+| Half-Life                                | 1998 | False   |            |
+| Metal Gear Solid                         | 1998 | False   |            |
+| Resident Evil 2                          | 1998 | False   |            |
+| The Legend of Zelda: Ocarina of Time     | 1998 | True    |            |
+| Planescape: Torment                      | 1999 | False   |            |
+| Silent Hill                              | 1999 | False   |            |
+| Silver Jiken                             | 1999 | False   |            |
+| Baldur's Gate II: Shadows of Amn         | 2000 | False   |            |
+| Deus Ex                                  | 2000 | False   |            |
+| The Legend of Zelda: Majora's Mask       | 2000 | True    |            |
+| Halo: Combat Evolved                     | 2001 | False   |            |
+| Metal Gear Solid 2: Sons of Liberty      | 2001 | False   |            |
+| Silent Hill 2                            | 2001 | False   |            |
+| Higurashi When They Cry                  | 2002 | False   |            |
+| The Elder Scrolls III: Morrowind         | 2002 | False   |            |
+| The Legend of Zelda: The Wind Waker      | 2002 | True    |            |
+| Utawarerumono                            | 2002 | False   |            |
+| Warcraft III: Reign of Chaos             | 2002 | False   |            |
+| Grand Theft Auto: San Andreas            | 2004 | False   |            |
+| Half-Life 2                              | 2004 | False   |            |
+| Katamari Damacy                          | 2004 | False   |            |
+| Metal Gear Solid 3: Snake Eater          | 2004 | False   |            |
+| The Legend of Heroes: Trails in the Sky  | 2004 | False   |            |
+| Killer7                                  | 2005 | False   |            |
+| Phoenix Wright: Ace Attorney             | 2005 | True    |            |
+| Shadow of the Colossus                   | 2005 | False   |            |
+| We Love Katamari                         | 2005 | False   |            |
+| BioShock                                 | 2007 | False   |            |
+| Call of Duty 4: Modern Warfare           | 2007 | False   |            |
+| Hotel Dusk: Room 215                     | 2007 | True    |            |
+| Mass Effect                              | 2007 | False   |            |
+| Portal                                   | 2007 | True    |            |
+| Professor Layton and the Curious Village | 2007 | True    |            |
+| Grand Theft Auto IV                      | 2008 | False   |            |
+| Metal Gear Solid 4: Guns of the Patriots | 2008 | False   |            |
+| Nine Hours, Nine Persons, Nine Doors     | 2009 | True    |            |
+| Picross 3D                               | 2009 | True    |            |
+| Uncharted 2: Among Thieves               | 2009 | False   |            |
+| Alan Wake                                | 2010 | False   |            |
+| Ghost Trick: Phantom Detective           | 2010 | True    |            |
+| Red Dead Redemption                      | 2010 | True    |            |
+| Dark Souls                               | 2011 | False   |            |
+| Portal 2                                 | 2011 | True    |            |
+| Super Mario 3D World                     | 2013 | False   |            |
+| The Last of Us                           | 2013 | False   |            |
+| P.T.                                     | 2014 | False   |            |
+| Bloodborne                               | 2015 | False   |            |
+| Journey                                  | 2015 | False   |            |
+| The Great Ace Attorney: Adventures       | 2015 | False   |            |
+| The Witcher III: Wild Hunt               | 2015 | False   |            |
+| Undertale                                | 2015 | True    |            |
+| Yakuza 0                                 | 2015 | False   |            |
+| The House in Fata Morgana                | 2016 | False   |            |
+| Uncharted 4: A Thief's End               | 2016 | False   |            |
+| Divinity: Original Sin II                | 2017 | False   |            |
+| Hollow Knight                            | 2017 | False   |            |
+| Persona 5                                | 2017 | False   |            |
+| The Legend of Zelda: Breath of the Wild  | 2017 | False   |            |
+| God of War                               | 2018 | False   |            |
+| Kingdom Come: Deliverance                | 2018 | False   |            |
+| Lobotomy Corporation                     | 2018 | False   |            |
+| Red Dead Redemption II                   | 2018 | False   |            |
+| Return of the Obra Dinn                  | 2018 | False   |            |
+| Death Stranding                          | 2019 | False   |            |
+| Disco Elysium                            | 2019 | False   |            |
+| Outer Wilds                              | 2019 | True    |            |
+| Sekiro: Shadows Die Twice                | 2019 | False   |            |
+| Hades                                    | 2020 | False   |            |
+| Half-Life: Alyx                          | 2020 | False   |            |
+| The Last of Us Part II                   | 2020 | False   |            |
+| Elden Ring                               | 2022 | False   |            |
+| Pentiment                                | 2022 | True    |            |
+| 1000xResist                              | 2024 | False   |            |
+| Astro Bot                                | 2024 | False   |            |
+| Enigma of Fear                           | 2024 | False   |            |
+| Lorelei and the Laser Eyes               | 2024 | False   |            |
+| Metaphor: ReFantazio                     | 2024 | False   |            |
+| Clair Obscur: Expedition 33              | 2025 | False   |            |
+| Hades II                                 | 2025 | False   |            |
+| Hollow Knight: Silksong                  | 2025 | False   |            |
+| Of the Devil                             | 2025 | False   |            |
+| Split Fiction                            | 2025 | False   |            |
 
 
 

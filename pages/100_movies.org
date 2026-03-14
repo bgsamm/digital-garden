@@ -1,16 +1,124 @@
 :PROPERTIES:
-:Title: 100 movies
-:Author: pjsamm
-:Date: 2026-01-06
+:Title:    100 movies
+:Author:   pjsamm
+:Date:     2026-01-06
+:Type:     dex
 :Category: 100x challenge
 :Abstract: Progress tracking toward my goal of watching 100 new movies.
 :END:
 
 #+INCLUDE: "global_options.org"
 
-**** TODO Add links to movie pages on a movie database :easy:low:
-**** TODO Incorporate movie posters :med:low:
+#+PROPERTY: image_prefix  https://beta.icheckmovies.com/assets/img/posters/medium/
 
+**** TODO Add links to movie pages on a movie database             :easy:low:
+**** DONE Incorporate movie posters                                 :med:low:
+
+#+NAME: dex
+| Title                                                                | Year | Checked | Image            |
+|----------------------------------------------------------------------+------+---------+------------------|
+| 2001: A Space Odyssey                                                | 1968 | y       | 0/86.jpg         |
+| Jeanne Dielman, 23, quai du commerce, 1080 Bruxelles                 | 1975 | n       | 1/1312.jpg       |
+| Citizen Kane                                                         | 1941 | y       | 0/31.jpg         |
+| The Godfather                                                        | 1972 | y       | 0/2.jpg          |
+| Vertigo                                                              | 1958 | y       | 0/40.jpg         |
+| Tokyo Story                                                          | 1953 | y       | 1/1291.jpg       |
+| Bicycle Thieves                                                      | 1948 | y       | 0/98.jpg         |
+| In the Mood for Love                                                 | 2000 | n       | 1/1390.jpg       |
+| The Rules of the Game                                                | 1939 | n       | 0/871.jpg        |
+| Lawrence of Arabia                                                   | 1962 | y       | 0/39.jpg         |
+| Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb | 1964 | n       | 0/26.jpg         |
+| Beau travail                                                         | 1999 | n       | 1/1641.jpg       |
+| 8½                                                                   | 1963 | y       | 0/150.jpg        |
+| Sunrise: A Song of Two Humans                                        | 1927 | y       | 0/179.jpg        |
+| Mulholland Drive                                                     | 2001 | y       | 0/454.jpg        |
+| Star Wars                                                            | 1977 | y       | 0/12.jpg         |
+| Man with a Movie Camera                                              | 1929 | n       | 0/385.jpg        |
+| The Searchers                                                        | 1956 | y       | 0/726.jpg        |
+| Singin' in the Rain                                                  | 1952 | y       | 0/78.jpg         |
+| Seven Samurai                                                        | 1954 | n       | 0/13.jpg         |
+| Metropolis                                                           | 1927 | y       | 0/80.jpg         |
+| Casablanca                                                           | 1942 | y       | 0/11.jpg         |
+| Apocalypse Now                                                       | 1979 | y       | 0/35.jpg         |
+| The Third Man                                                        | 1949 | y       | 0/55.jpg         |
+| Cleo from 5 to 7                                                     | 1962 | n       | 1/1872.jpg       |
+| Taxi Driver                                                          | 1976 | y       | 0/37.jpg         |
+| Annie Hall                                                           | 1977 | y       | 0/133.jpg        |
+| Meshes of the Afternoon                                              | 1943 | n       | 1/1354.jpg       |
+| Persona                                                              | 1966 | n       | 0/611.jpg        |
+| Spirited Away                                                        | 2001 | y       | 0/60.jpg         |
+| Close-Up                                                             | 1990 | n       | 1/1330.jpg       |
+| The Wizard of Oz                                                     | 1939 | y       | 0/124.jpg        |
+| Breathless                                                           | 1960 | y       | 0/527.jpg        |
+| One Flew Over the Cuckoo's Nest                                      | 1975 | y       | 0/8.jpg          |
+| The Passion of Joan of Arc                                           | 1928 | y       | 0/305.jpg        |
+| The Night of the Hunter                                              | 1955 | n       | 0/158.jpg        |
+| Battleship Potemkin                                                  | 1925 | n       | 1/1277.jpg       |
+| Raging Bull                                                          | 1980 | y       | 0/72.jpg         |
+| Late Spring                                                          | 1949 | n       | 1/1329.jpg       |
+| L'Atalante                                                           | 1934 | n       | 1/1875.jpg       |
+| Sunset Boulevard                                                     | 1950 | n       | 0/25.jpg         |
+| Rashomon                                                             | 1950 | y       | 0/71.jpg         |
+| Playtime                                                             | 1967 | n       | 1/1304.jpg       |
+| Mirror                                                               | 1975 | n       | 0/311.jpg        |
+| Psycho                                                               | 1960 | y       | 0/23.jpg         |
+| Do the Right Thing                                                   | 1989 | y       | 1/1021.jpg       |
+| Pulp Fiction                                                         | 1994 | y       | 0/5.jpg          |
+| Au hasard Balthazar                                                  | 1966 | n       | 1/1296.jpg       |
+| City Lights                                                          | 1931 | n       | 0/67.jpg         |
+| A Clockwork Orange                                                   | 1971 | y       | 0/50.jpg         |
+| Shoah                                                                | 1985 | n       | 1/1315.jpg       |
+| The 400 Blows                                                        | 1959 | y       | 0/248.jpg        |
+| Double Indemnity                                                     | 1944 | y       | 0/46.jpg         |
+| Daisies                                                              | 1966 | n       | 1/1894.jpg       |
+| Andrei Rublev                                                        | 1966 | n       | 0/905.jpg        |
+| Some Like It Hot                                                     | 1959 | y       | 0/82.jpg         |
+| The General                                                          | 1926 | n       | 0/126.jpg        |
+| Portrait of a Lady on Fire                                           | 2019 | n       | 3482/3482498.jpg |
+| The Godfather Part II                                                | 1974 | n       | 0/3.jpg          |
+| The Bridge on the River Kwai                                         | 1957 | y       | 0/68.jpg         |
+| On the Waterfront                                                    | 1954 | n       | 0/99.jpg         |
+| Blade Runner                                                         | 1982 | y       | 0/109.jpg        |
+| La Dolce Vita                                                        | 1960 | n       | 0/240.jpg        |
+| M                                                                    | 1931 | n       | 0/45.jpg         |
+| Ordet                                                                | 1955 | n       | 1/1293.jpg       |
+| Pather Panchali                                                      | 1955 | n       | 1/1295.jpg       |
+| The Silence of the Lambs                                             | 1991 | y       | 0/24.jpg         |
+| Schindler's List                                                     | 1993 | y       | 0/7.jpg          |
+| Rear Window                                                          | 1954 | y       | 0/16.jpg         |
+| L'Avventura                                                          | 1960 | n       | 1/1281.jpg       |
+| Pan's Labyrinth                                                      | 2006 | n       | 0/70.jpg         |
+| Touch of Evil                                                        | 1958 | n       | 0/97.jpg         |
+| Oldboy                                                               | 2003 | n       | 0/117.jpg        |
+| Chinatown                                                            | 1974 | n       | 0/57.jpg         |
+| The Battle of Algiers                                                | 1966 | n       | 0/186.jpg        |
+| Stalker                                                              | 1979 | n       | 0/447.jpg        |
+| Barry Lyndon                                                         | 1975 | n       | 0/245.jpg        |
+| The Grand Illusion                                                   | 1937 | n       | 0/860.jpg        |
+| Killer of Sheep                                                      | 1978 | n       | 1/1395.jpg       |
+| Contempt                                                             | 1963 | n       | 1/1294.jpg       |
+| North by Northwest                                                   | 1959 | y       | 0/28.jpg         |
+| Bonnie and Clyde                                                     | 1967 | n       | 0/213.jpg        |
+| It's a Wonderful Life                                                | 1946 | y       | 0/30.jpg         |
+| Wanda                                                                | 1970 | n       | 3/3067.jpg       |
+| Goodfellas                                                           | 1990 | n       | 0/15.jpg         |
+| The Piano                                                            | 1993 | n       | 1/1357.jpg       |
+| 12 Angry Men                                                         | 1957 | y       | 0/9.jpg          |
+| Modern Times                                                         | 1936 | n       | 0/76.jpg         |
+| The Gold Rush                                                        | 1925 | n       | 0/163.jpg        |
+| News from Home                                                       | 1976 | n       | 73/73482.jpg     |
+| Gone with the Wind                                                   | 1939 | y       | 0/166.jpg        |
+| Ali: Fear Eats the Soul                                              | 1974 | y       | 1/1328.jpg       |
+| Once Upon a Time in the West                                         | 1968 | n       | 0/19.jpg         |
+| The Apartment                                                        | 1960 | y       | 0/88.jpg         |
+| Sherlock Jr.                                                         | 1924 | n       | 0/646.jpg        |
+| The Graduate                                                         | 1967 | y       | 0/157.jpg        |
+| Ugetsu                                                               | 1953 | n       | 0/442.jpg        |
+| Crouching Tiger, Hidden Dragon                                       | 2000 | n       | 0/226.jpg        |
+| Sans Soleil                                                          | 1983 | n       | 1/1345.jpg       |
+| The Cabinet of Dr. Caligari                                          | 1920 | y       | 0/490.jpg        |
+
+#+NAME: log
 | # | Title                                     | Director        | Year | Date Watched |
 |---+-------------------------------------------+-----------------+------+--------------|
 | 1 | À bout de souffle                         | Jean-Luc Godard | 1960 |   2025-11-22 |

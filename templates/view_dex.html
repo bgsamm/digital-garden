@@ -1,5 +1,15 @@
 {% extends "page.html" %}
 
 {% block view %}
-    
+    <div class="dex-grid">
+    {% for item in view.dex %}
+        <div class="dex-item {{ 'checked' if item.checked }}">
+        {% if item.image %}
+            <img src="{{ item.image }}">
+        {% else %}
+            <div>{{ item.title }}</div>
+        {% endif %}
+        </div>
+    {% endfor %}
+    </div>
 {% endblock %}

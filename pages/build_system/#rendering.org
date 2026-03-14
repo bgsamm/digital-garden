@@ -1,3 +1,5 @@
+**** TODO Add logging                                               :med:mid:
+
 #+begin_src python :tangle ../../render.py
   <<Imports>>
 
@@ -18,6 +20,8 @@
 #+name: Class definitions
 #+begin_src python
   <<DocView>>
+
+  <<DexView>>
 
   <<TaskView>>
 #+end_src
@@ -100,6 +104,7 @@
 #+begin_src python
   _view_map = {
       'doc': [DocView, TaskView],
+      'dex': [DexView, TaskView],
   }
 #+end_src
 
@@ -437,3 +442,48 @@ render function.
       return {'tasks': tasks}
 #+end_src
 
+** Dex view
+
+#+name: DexView
+#+begin_src python
+  class DexView:
+      name = 'dex'
+
+      <<DexView.generate>>
+#+end_src
+
+**** TODO Move table parsing into parse.py                         :easy:mid:
+
+#+name: DexView.generate
+#+begin_src python
+  def generate(self, ast):
+      props = {}
+      for node in ast.get_nodes_of_type(NodeType.META):
+          props[node.attrs['key']] = node.attrs['value']
+      image_prefix = props.get('image_prefix', '')
+
+      tables = {}
+      for node in ast.get_nodes_of_type(NodeType.TABLE):
+          name = node.attrs['name']
+          tables[name] = node
+
+      if 'dex' not in tables:
+          logger.error('No dex table found!')
+          return {}
+
+      dex_table = tables['dex']
+      dex_attrs = [col.lower() for col in dex_table.attrs['cols']]
+
+      dex = []
+      for row in dex_table.inlines[1:]:
+          values = [cell.inner_text() for cell in row.inlines]
+          item = dict(zip(dex_attrs, values))
+
+          item['checked'] = (item['checked'].lower() in ['true', 'y'])
+          if item['image']:
+              item['image'] = image_prefix + item['image']
+
+          dex.append(item)
+
+      return { 'dex': dex }
+#+end_src

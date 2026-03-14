@@ -173,6 +173,22 @@ code {
     border-top: 2px solid var(--theme-border);;
 }
 
+/* UI buttons */
+
+#home-button {
+    right: 55px;
+}
+
+#home-button a {
+    content: "";
+
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+}
+
 /* Article view */
 
 #doc-view {
@@ -226,6 +242,32 @@ code {
     
     background-color: var(--theme-panel);
     border-radius: 10px;
+}
+
+/* Dex view */
+
+#dex-view {
+    padding: 20px 5%;
+}
+
+#dex-view .dex-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    grid-gap: 15px;
+}
+
+#dex-view .dex-item.checked {
+    opacity: 0.4;
+}
+
+#dex-view .dex-item img {
+    height: 100%;
+    border: 2px solid var(--theme-accent);
+    border-radius: 5px;
+}
+
+#dex-view .dex-item.checked img {
+    border: 2px solid var(--theme-highlight);
 }
 
 /* Task view */
@@ -406,19 +448,4 @@ code {
 
 #task-view .task-section {
     color: var(--theme-text2);
-}
-/* UI buttons */
-
-#home-button {
-    right: 55px;
-}
-
-#home-button a {
-    content: "";
-
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
 }
