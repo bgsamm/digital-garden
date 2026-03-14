@@ -1,23 +1,136 @@
 :PROPERTIES:
-:Title: 100 albums
-:Author: pjsamm
-:Date: 2026-01-06
+:Title:    100 albums
+:Author:   pjsamm
+:Date:     2026-01-06
+:Type:     dex
 :Category: 100x challenge
 :Abstract: Progress tracking toward my goal of listening to 100 new albums.
 :END:
 
-#+INCLUDE: "global_options.org"
+#+INCLUDE: "../global_options.org"
+
+#+PROPERTY: image_prefix https://e.snmc.io/i/600/s/
+
+#+NAME: dex
+| Title                                                         | Year | Checked | Image                                                                                                                                                      |
+|---------------------------------------------------------------+------+---------+------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Kind of Blue                                                  | 1959 | y       | f159114579886f39a2c91aeb0a4721ed/13182128/miles-davis-kind-of-blue-Cover-Art.jpg                                                 |
+| The Black Saint and the Sinner Lady                           | 1963 | n       | 8279b8874bcaef3cfb58b1d6f4497b46/8024579/mingus-the-black-saint-and-the-sinner-lady-Cover-Art.png                                |
+| 'Live' at the Apollo                                          | 1963 | n       | 988df8e0da62f21412e0e4792a35da0d/7463653/james-brown-live-at-the-apollo-Cover-Art.jpg                                            |
+| Highway 61 Revisited                                          | 1965 | y       | 7d5488ab54ad144e0bd971441235f404/3677487/bob-dylan-highway-61-revisited-Cover-Art.jpg                                            |
+| A Love Supreme                                                | 1965 | y       | 8ffd73c4565ae41a21b49632c53b521c/12119724/john-coltrane-a-love-supreme-Cover-Art.jpg                                             |
+| Rubber Soul                                                   | 1965 | y       | 4d5694502220ad9d94a8564b7c93f71f/12176961/the-beatles-rubber-soul-Cover-Art.jpg                                                  |
+| Pet Sounds                                                    | 1966 | y       | a788ff1dabc977b82cf1bb2353bb57d8/3633017/the-beach-boys-pet-sounds-Cover-Art.jpg                                                 |
+| Revolver                                                      | 1966 | y       | 551a5210bed27d76046ec4788b5b754c/12121976/the-beatles-revolver-Cover-Art.jpg                                                     |
+| Blonde on Blonde                                              | 1966 | y       | 42e2ff998021864f355b344db36c5f5f/13907589/bob-dylan-blonde-on-blonde-Cover-Art.png                                               |
+| The Velvet Underground & Nico                                 | 1967 | y       | 82eab011e8337b724c4aa6eb6a588276/14191308/the-velvet-underground-and-nico-the-velvet-underground-and-nico-Cover-Art.jpg          |
+| Sgt. Pepper's Lonely Hearts Club Band                         | 1967 | y       | bcd8e3842e6e6eb7c09c96a3ac80dc9d/10941490/the-beatles-sgt-peppers-lonely-hearts-club-band-Cover-Art.jpg                          |
+| Are You Experienced                                           | 1967 | y       | 772b3b17d7b5cdaf788666b3fbce6bf3/14073075/the-jimi-hendrix-experience-are-you-experienced-Cover-Art.png                          |
+| The Doors                                                     | 1967 | y       | 82ec0119cd8fd0edeaa1f0cfbb824868/13926134/the-doors-the-doors-Cover-Art.png                                                      |
+| The Beatles [White Album]                                     | 1968 | y       | 7c77f4fb76c6552767f02475f899d6bf/14213589/the-beatles-the-beatles-white-album-Cover-Art.jpg                                      |
+| Astral Weeks                                                  | 1968 | y       | 4626564fc9dac5b8da817f4969867eb7/11705903/van-morrison-astral-weeks-Cover-Art.jpg                                                |
+| Electric Ladyland                                             | 1968 | y       | 2bf211a3236710831768576c5d49d1bf/3646702/the-jimi-hendrix-experience-electric-ladyland-Cover-Art.jpg                             |
+| Beggars Banquet                                               | 1968 | n       | 8f8bdb9067f562cad9d50da30ed74b00/2576317/the-rolling-stones-beggars-banquet-Cover-Art.jpg                                        |
+| Abbey Road                                                    | 1969 | y       | b7d49832f4958688cd82b6dbb9f4dd31/12188855/the-beatles-abbey-road-Cover-Art.jpg                                                   |
+| In the Court of the Crimson King                              | 1969 | y       | 3cd976bf3380626a9001dc2f1499037b/11859497/king-crimson-in-the-court-of-the-crimson-king-Cover-Art.jpg                            |
+| Led Zeppelin II                                               | 1969 | y       | c04f960ac555bb956a3023cbca7d7bf9/10431623/led-zeppelin-led-zeppelin-ii-Cover-Art.jpg                                             |
+| Let It Bleed                                                  | 1969 | y       | a13ab7cefb60bde8dbf3867eecfbcad5/1369028/rolling-stones-let-it-bleed-Cover-Art.jpg                                               |
+| In a Silent Way                                               | 1969 | n       | 56d9c0492c90156ff322ddb8abf21ee3/9687885/miles-davis-in-a-silent-way-Cover-Art.png                                               |
+| Paranoid                                                      | 1970 | y       | 4faa6da86d46287052ff8873933f9931/12295447/black-sabbath-paranoid-Cover-Art.jpg                                                   |
+| What's Going On                                               | 1971 | y       | 120430e5d98adbf2d6cd8652aedc9d30/12365918/marvin-gaye-whats-going-on-Cover-Art.jpg                                               |
+| Untitled [Led Zeppelin IV]                                    | 1971 | y       | 533117ae93c212eb50f35ed7d654786b/5707164/led-zeppelin-led-zeppelin-iv-Cover-Art.jpg                                              |
+| Who's Next                                                    | 1971 | y       | 8e67ed3c36952680fe86e2767480c94f/10434801/the-who-whos-next-Cover-Art.jpg                                                        |
+| Hunky Dory                                                    | 1971 | y       | da3903d594157f4e7908d4e112fa34c3/8053232/david-bowie-hunky-dory-Cover-Art.jpg                                                    |
+| Blue                                                          | 1971 | y       | e3b5e620ec9e2aa1dede89fd3a889cd2/12397385/joni-mitchell-blue-Cover-Art.jpg                                                       |
+| Sticky Fingers                                                | 1971 | y       | 819849c01524b8e44068c668a6401be5/2748008/the-rolling-stones-sticky-fingers-Cover-Art.jpg                                         |
+| The Rise and Fall of Ziggy Stardust and the Spiders from Mars | 1972 | y       | 5286b64a7026f2aa94e663215d2a95f6/8542182/david-bowie-the-rise-and-fall-of-ziggy-stardust-and-the-spiders-from-mars-Cover-Art.png |
+| Exile on Main St.                                             | 1972 | y       | 589a15c1fd78588a8f68a668cbd42e8f/1208059/the-rolling-stones-exile-on-main-st-Cover-Art.jpg                                       |
+| Pink Moon                                                     | 1972 | y       | bb6cb34aad3dca77ebd12235ea36e2db/11448668/nick-drake-pink-moon-Cover-Art.jpg                                                     |
+| The Dark Side of the Moon                                     | 1973 | y       | b87ea178beaaaf0e0e4a39aaf9d1b834/12206378/pink-floyd-the-dark-side-of-the-moon-Cover-Art.jpg                                     |
+| Innervisions                                                  | 1973 | y       | ecf172a17420de0b418f108371b967fd/5749587/stevie-wonder-innervisions-Cover-Art.jpg                                                |
+| Red                                                           | 1974 | y       | 8340dbdb07093199f38d7a61df74e0d0/10733413/king-crimson-red-Cover-Art.png                                                         |
+| Wish You Were Here                                            | 1975 | y       | 439b9503e9599050fda01d8eef4f8097/4184635/pink-floyd-wish-you-were-here-Cover-Art.png                                             |
+| Born to Run                                                   | 1975 | y       | d20523d066ffe80eeb3fba0e3798b215/12431872/bruce-springsteen-born-to-run-Cover-Art.jpg                                            |
+| Blood on the Tracks                                           | 1975 | y       | 5c6d71baa940d7e41899cc2423cb0e2d/12127324/bob-dylan-blood-on-the-tracks-Cover-Art.jpg                                            |
+| Horses                                                        | 1975 | n       | b8f32f75bb9a187eb0ab1c3c899cfbc0/8224054/patti-smith-horses-Cover-Art.jpg                                                        |
+| Songs in the Key of Life                                      | 1976 | y       | a64840577bdc1c19c23152bb77a4d054/7228470/stevie-wonder-songs-in-the-key-of-life-Cover-Art.jpg                                    |
+| Ramones                                                       | 1976 | n       | c24e8fa1f3134cd943c566fca2b380d8/1587566/ramones-ramones-Cover-Art.jpg                                                           |
+| Never Mind the Bollocks Here's the Sex Pistols                | 1977 | y       | c02b8cc8ccb58bb82479c7e52793e04c/2898532/sex-pistols-never-mind-the-bollocks-heres-the-sex-pistols-Cover-Art.jpg                 |
+| Rumours                                                       | 1977 | y       | 92a30064c9a49d64c2885fac0bbbbeea/11613626/fleetwood-mac-rumours-Cover-Art.jpg                                                    |
+| Animals                                                       | 1977 | y       | e3c3e7de5e4b0dcb773319b423e64df8/4175208/pink-floyd-animals-Cover-Art.png                                                        |
+| Marquee Moon                                                  | 1977 | y       | 692c17be71ef707b2cf284803d3f2255/7659700/television-marquee-moon-Cover-Art.jpg                                                   |
+| London Calling                                                | 1979 | y       | 1261e39e189940ce7345ec31d203d2ef/10010379/the-clash-london-calling-Cover-Art.jpg                                                 |
+| The Wall                                                      | 1979 | y       | 49e195fb7c63c079d3cd4e1bd7c1fbcd/11169029/pink-floyd-the-wall-Cover-Art.png                                                      |
+| Unknown Pleasures                                             | 1979 | y       | 5e91c96b5c1519cadb6ae90d3a5eaa60/10154759/joy-division-unknown-pleasures-Cover-Art.jpg                                           |
+| Remain in Light                                               | 1980 | y       | a76d8d436ab1f9c3a0478cf40e2cad83/5627825/talking-heads-remain-in-light-Cover-Art.jpg                                             |
+| Thriller                                                      | 1982 | y       | 20403814ee1f8c4644a94e0e7e5cf47f/11486295/michael-jackson-thriller-Cover-Art.jpg                                                 |
+| Purple Rain                                                   | 1984 | y       | 1a3f0d72ba40bce54f38a6c38ae5235b/10977705/prince-and-the-revolution-purple-rain-Cover-Art.jpg                                    |
+| Hounds of Love                                                | 1985 | y       | b5bad9c16ff94f58ea5d566fb18121e3/12177980/kate-bush-hounds-of-love-Cover-Art.jpg                                                 |
+| The Queen is Dead                                             | 1986 | y       | 1ad2a0a107ca70771091b6dca876f11b/12056415/the-smiths-the-queen-is-dead-Cover-Art.png                                             |
+| Sign o' the Times                                             | 1987 | n       | 13de15ad43b18e5972ca8c6433768956/5233509/prince-sign-%E2%98%AE%EF%B8%8E-the-times-Cover-Art.jpg                                  |
+| The Joshua Tree                                               | 1987 | y       | 80ae412a438de14d38b13a6e9b197fe0/7628416/u2-the-joshua-tree-Cover-Art.jpg                                                        |
+| It Takes a Nation of Millions to Hold Us Back                 | 1988 | n       | b0df96e0dd262eb400b2712aeb9b0c98/12368941/public-enemy-it-takes-a-nation-of-millions-to-hold-us-back-Cover-Art.jpg               |
+| Doolittle                                                     | 1989 | y       | eb151aeb75140bf3f5e6ef23a96b576e/9267576/pixies-doolittle-Cover-Art.png                                                          |
+| Disintegration                                                | 1989 | y       | b56a070ad027b23dace9e24102ae5da9/7272164/the-cure-disintegration-Cover-Art.jpg                                                   |
+| The Stone Roses                                               | 1989 | y       | 5d24bb318c25e542d5666e4b86feb044/10835125/the-stone-roses-the-stone-roses-Cover-Art.jpg                                          |
+| Heaven or Las Vegas                                           | 1990 | y       | d688c2e2d37251698dbbc1355018340a/11766199/cocteau-twins-heaven-or-las-vegas-Cover-Art.jpg                                        |
+| Nevermind                                                     | 1991 | y       | 77b0087587cfff17d35de0fb200379a3/12369917/nirvana-nevermind-Cover-Art.jpg                                                        |
+| Loveless                                                      | 1991 | y       | 47da1d4284997ca321af967068f34d7b/11569981/my-bloody-valentine-loveless-Cover-Art.jpg                                             |
+| Spiderland                                                    | 1991 | y       | bd09421e69e4bc489eec86329627f9c5/12423124/slint-spiderland-Cover-Art.jpg                                                         |
+| Blue Lines                                                    | 1991 | n       | 9633173dc415c6ba8bafd2eafd59e4f4/8966714/massive-attack-blue-lines-Cover-Art.jpg                                                 |
+| The Low End Theory                                            | 1991 | y       | fb4b3bfbb03ed7d97cc040aa7634cd0c/12239888/a-tribe-called-quest-the-low-end-theory-Cover-Art.jpg                                  |
+| Ten                                                           | 1991 | y       | 4ecc5650bc8e135386a83699d029f64f/6451534/pearl-jam-ten-Cover-Art.jpg                                                             |
+| Automatic for the People                                      | 1992 | y       | bfbf78ae188aa2ec29dac8317f3734dc/12024380/r_e_m-automatic-for-the-people-Cover-Art.jpg                                           |
+| Enter the Wu-Tang (36 Chambers)                               | 1993 | y       | 35ad1c37ec1e1930616df000788e0c13/6558603/wu-tang-clan-enter-the-wu-tang-36-chambers-Cover-Art.jpg                                |
+| Souvlaki                                                      | 1993 | y       | a2e4397e6cf4c838c838338c5d6f39ac/8055860/slowdive-souvlaki-Cover-Art.jpg                                                         |
+| Illmatic                                                      | 1994 | y       | 4d7fde928681113f61e2a7779f7cb224/12424339/nas-illmatic-Cover-Art.jpg                                                             |
+| Dummy                                                         | 1994 | y       | e9720fb52f95796fcc00ae56aff09d41/10069850/portishead-dummy-Cover-Art.png                                                         |
+| Grace                                                         | 1994 | y       | 7409d01a8c0cdf51e8b22fd5d055196a/7027387/jeff-buckley-grace-Cover-Art.jpg                                                        |
+| The Bends                                                     | 1995 | y       | f8ce969cdd392f8edecccfef1e0609c5/14043991/radiohead-the-bends-Cover-Art.jpg                                                      |
+| Long Season                                                   | 1996 | n       | a5f3848fe30834a9f67abae16821da4a/10504082/fishmans-long-season-Cover-Art.jpg                                                     |
+| Odelay                                                        | 1996 | n       | bd9c569544793192abb4072885b9d769/12112009/beck-odelay-Cover-Art.jpg                                                              |
+| OK Computer                                                   | 1997 | y       | 91f41d53d83f36ac3bb0cee7d6dffca3/11993756/radiohead-ok-computer-Cover-Art.jpg                                                    |
+| Homogenic                                                     | 1997 | y       | ea7e6ede092286dcc1c8d127bf01fbaf/8697079/bjork-homogenic-Cover-Art.jpg                                                           |
+| Either / Or                                                   | 1997 | y       | 055df1bde7ea4fc45cf695f9d5810b3c/12928022/elliott-smith-either-or-Cover-Art.png                                                  |
+| F♯A♯∞                                                         | 1997 | n       | 3b4306752e6a0273dc2ac5624459c3c3/11681270/godspeed-you-black-emperor-f%E2%99%AFa%E2%99%AF%E2%88%9E-Cover-Art.png                 |
+| In the Aeroplane Over the Sea                                 | 1998 | y       | af5ad66b801e468ac3e6e988d1fc3b1b/12274753/neutral-milk-hotel-in-the-aeroplane-over-the-sea-Cover-Art.jpg                         |
+| 98.12.28 Otokotachi no wakare                                 | 1999 | n       | d900de15762312c3996b7746ac7af871/12728579/fishmans-98_12_28-%E7%94%B7%E9%81%94%E3%81%AE%E5%88%A5%E3%82%8C-Cover-Art.png          |
+| Kid A                                                         | 2000 | y       | 076215c80b1810341e978bbdbf47af69/12580450/radiohead-kid-a-Cover-Art.jpg                                                          |
+| Lift Yr. Skinny Fists Like Antennas to Heaven!                | 2000 | y       | 6f600382625979469fb340eeb3c9ac8a/5662600/godspeed-you-black-emperor-lift-yr-skinny-fists-like-antennas-to-heaven-Cover-Art.jpg   |
+| Vespertine                                                    | 2001 | n       | 00414ea8831b305e7c1a87e62453a0f0/9935583/bjork-vespertine-Cover-Art.jpg                                                          |
+| Is This It                                                    | 2001 | y       | 31f4c2aa9f2dbfda57b2b71d81189310/12096953/the-strokes-is-this-it-Cover-Art.jpg                                                   |
+| The Glow Pt. 2                                                | 2001 | y       | 23bd0d059b997ee91d81bd85bb9cfbcb/8964258/the-microphones-the-glow-pt-2-Cover-Art.jpg                                             |
+| Discovery                                                     | 2001 | y       | f257109d44300506428e21138338e884/13215963/daft-punk-discovery-Cover-Art.jpg                                                      |
+| Madvillainy                                                   | 2004 | y       | 9c52ece824b06220dd56f69119aa5739/13200445/madvillain-madvillainy-Cover-Art.jpg                                                   |
+| Funeral                                                       | 2004 | y       | 1f8429a54089f12e06c3050d31e11cbd/11866170/arcade-fire-funeral-Cover-Art.jpg                                                      |
+| The College Dropout                                           | 2004 | n       | 1810a1c00bfd7c2d4093a501067e79a8/4096884/kanye-west-the-college-dropout-Cover-Art.jpg                                            |
+| Illinois                                                      | 2005 | y       | 12475212f6cab2b7771e7213c395e663/6845564/sufjan-stevens-illinois-Cover-Art.jpg                                                   |
+| In Rainbows                                                   | 2007 | y       | fadce3351784e528a8257b7c78f0b55a/14126517/radiohead-in-rainbows-Cover-Art.jpg                                                    |
+| My Beautiful Dark Twisted Fantasy                             | 2010 | y       | d24ec02f97afc662d25c395303eb2f7b/6045065/kanye-west-my-beautiful-dark-twisted-fantasy-Cover-Art.jpg                              |
+| The Suburbs                                                   | 2010 | y       | cde090ebbc92eaf39e355824fe699c84/11623094/arcade-fire-the-suburbs-Cover-Art.jpg                                                  |
+| Good Kid, M.A.A.D City                                        | 2012 | y       | 396ac90b321caf0d18875f140e782ae4/11410589/kendrick-lamar-good-kid-m_a_a_d-city-Cover-Art.jpg                                     |
+| The Money Store                                               | 2012 | n       | fe0e7934952dc2bfc96db3a0e2e2c813/13648238/death-grips-the-money-store-Cover-Art.jpg                                              |
+| To Pimp a Butterfly                                           | 2015 | y       | a47f7eef08776272f5525d5a1f7c9c6a/8121875/kendrick-lamar-to-pimp-a-butterfly-Cover-Art.jpg                                        |
+| Blonde                                                        | 2016 | y       | 3bc698315ea2ed723fe714b7dd1f84af/8060362/frank-ocean-blonde-Cover-Art.jpg                                                        |
+| Atrocity Exhibition                                           | 2016 | y       | e2a36e87b94f7eb88d808a6963eaea61/10533488/danny-brown-atrocity-exhibition-Cover-Art.jpg                                          |
+| Igor                                                          | 2019 | n       | 47500e0f64ec50b69a3b021a8d64557f/7574908/tyler-the-creator-igor-Cover-Art.jpg                                                    |
 
 **** TODO Add links to album pages on a music database             :easy:low:
 **** TODO Incorporate album covers                                  :med:low:
 
-| # | Title                 | Artist        | Year | Date Listened |
-|---+-----------------------+---------------+------+---------------|
-| 1 | Pornography           | The Cure      | 1982 |    2025-11-22 |
-| 2 | Painkiller            | Judas Priest  | 1990 |    2025-11-26 |
-| 3 | Giant Steps           | John Coltrane | 1960 |    2025-12-01 |
-| 4 | Welcome to Sky Valley | Kyuss         | 1994 |    2025-12-07 |
-| 5 | When the Pawn…        | Fiona Apple   | 1999 |    2025-12-12 |
-| 6 | Atrocity Exhibition   | Danny Brown   | 2016 |    2025-12-20 |
-| 7 | Future Days           | Can           | 1973 |    2026-01-07 |
-| 8 | Post                  | Björk         | 1995 |    2026-01-18 |
+#+NAME: log
+|  # | Title                       | Artist                    | Year | Date Listened |
+|----+-----------------------------+---------------------------+------+---------------|
+|  1 | Pornography                 | The Cure                  | 1982 |    2025-11-22 |
+|  2 | Painkiller                  | Judas Priest              | 1990 |    2025-11-26 |
+|  3 | Giant Steps                 | John Coltrane             | 1960 |    2025-12-01 |
+|  4 | Welcome to Sky Valley       | Kyuss                     | 1994 |    2025-12-07 |
+|  5 | When the Pawn…              | Fiona Apple               | 1999 |    2025-12-12 |
+|  6 | Atrocity Exhibition         | Danny Brown               | 2016 |    2025-12-20 |
+|  7 | Future Days                 | Can                       | 1973 |    2026-01-07 |
+|  8 | Post                        | Björk                     | 1995 |    2026-01-18 |
+|  9 | Teens of Denial             | Car Seat Headrest         | 2016 |    2026-02-19 |
+| 10 | Skeleton Tree               | Nick Cave & The Bad Seeds | 2016 |    2026-02-21 |
+| 11 | For the First Time          | Black Country, New Road   | 2021 |    2026-02-27 |
+| 12 | Twin Fantasy (Face to Face) | Car Seat Headrest         | 2018 |    2026-03-10 |
+
