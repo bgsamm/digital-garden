@@ -1,0 +1,18 @@
+{% extends "page.html" %}
+
+{% block view %}
+    <table class="log-table">
+        <tr>
+        {% for col in view.log.cols %}
+            <th>{{ col }}</th>
+        {% endfor %}
+        </tr>
+    {% for row in view.log.rows %}
+        <tr>
+        {% for value in row %}
+            <td>{{ value }}</td>
+        {% endfor %}
+        </tr>
+    {% endfor %}
+    </div>
+{% endblock %}

@@ -152,21 +152,21 @@ class DexView:
     name = 'dex'
 
     def generate(self, ast):
-        props = {}
+        image_prefix = ''
         for node in ast.get_nodes_of_type(NodeType.META):
-            props[node.attrs['key']] = node.attrs['value']
-        image_prefix = props.get('image_prefix', '')
+            if node.attrs['key'] == 'image_prefix':
+                image_prefix = node.attrs['value']
     
-        tables = {}
+        dex_table = None
         for node in ast.get_nodes_of_type(NodeType.TABLE):
-            name = node.attrs['name']
-            tables[name] = node
+            if node.attrs['name'] == 'dex':
+                dex_table = node
+                break
     
-        if 'dex' not in tables:
+        if dex_table is None:
             logger.error('No dex table found!')
             return {}
     
-        dex_table = tables['dex']
         dex_attrs = [col.lower() for col in dex_table.attrs['cols']]
     
         dex = []
@@ -181,6 +181,28 @@ class DexView:
             dex.append(item)
     
         return { 'dex': dex }
+
+class LogView:
+    name = 'log'
+
+    def generate(self, ast):
+        log_table = None
+        for node in ast.get_nodes_of_type(NodeType.TABLE):
+            if node.attrs['name'] == 'log':
+                log_table = node
+                break
+    
+        log = { 'cols': [], 'rows': [] }
+        if log_table is not None:
+            log['cols'] = log_table.attrs['cols']
+    
+            for row in log_table.inlines[1:]:
+                values = [cell.inner_text() for cell in row.inlines]
+                log['rows'].append(values)
+        else:
+            logger.warning('No log table found!')
+    
+        return { 'log': log }
 
 class TaskView:
     name = 'task'
@@ -228,7 +250,7 @@ def render_page(name, meta, ast):
 
 _view_map = {
     'doc': [DocView, TaskView],
-    'dex': [DexView, TaskView],
+    'dex': [DexView, LogView, TaskView],
 }
 
 def _apply_jinja_template(template, *args, **kwargs):

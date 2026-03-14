@@ -160,7 +160,7 @@ def main(args):
                 with open(view_path, 'w+', encoding='utf-8') as f:
                     f.write(view_html)
         else:
-            logger.info(f'Page up-to-date; skipping render')
+            logger.debug(f'Page up-to-date; skipping render')
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
