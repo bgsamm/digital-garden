@@ -170,6 +170,7 @@ class DexView:
         dex_attrs = [col.lower() for col in dex_table.attrs['cols']]
     
         dex = []
+        progress = 0
         for row in dex_table.inlines[1:]:
             values = [cell.inner_text() for cell in row.inlines]
             item = dict(zip(dex_attrs, values))
@@ -178,9 +179,12 @@ class DexView:
             if item['image']:
                 item['image'] = image_prefix + item['image']
     
+            if item['checked']:
+                progress += 1
+    
             dex.append(item)
     
-        return { 'dex': dex }
+        return { 'dex': dex, 'progress': progress }
 
 class LogView:
     name = 'log'

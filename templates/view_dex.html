@@ -1,6 +1,12 @@
 {% extends "page.html" %}
 
 {% block view %}
+    <div class="dex-progress">
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: {{ view.progress / view.dex|count * 100 }}%;"></div>
+            <span class="progress-text">{{ view.progress }} / {{ view.dex|count }}</span>
+        </div>
+    </div>
     <div class="dex-grid">
     {% for item in view.dex %}
         <div class="dex-item {{ 'checked' if item.checked }}">
