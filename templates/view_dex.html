@@ -11,7 +11,9 @@
     {% for item in view.dex %}
         <div class="dex-item {{ 'checked' if item.checked }}">
         {% if item.image %}
-            <img src="{{ item.image }}">
+            <a href="{{ item.link }}" target="_blank">
+                <img src="{{ item.image }}">
+            </a>
         {% else %}
             <div>{{ item.title }}</div>
         {% endif %}

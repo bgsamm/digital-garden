@@ -79,12 +79,12 @@ a:hover {
 table {
     table-layout: fixed;
     border-spacing: 0;
-    
+
     margin: 0 auto 1rem;
-    
+
     border: 2px solid var(--theme-border);
     border-radius: 10px;
-    
+
     box-shadow: 0 0 15px var(--theme-shadow);
     transition: var(--highlight-transition);
 }
@@ -98,10 +98,10 @@ th,
 td {
     min-width: 50px;
     padding: 5px;
-    
+
     border-bottom: 2px solid var(--theme-border);
     border-right: 2px solid var(--theme-border);
-    
+
     text-align: center;
 }
 
@@ -195,51 +195,51 @@ code {
     display: grid;
     grid-template-columns: 25% 1fr 25%;
     grid-gap: 20px;
-    
+
     padding: 20px 20px;
 }
 
 #doc-view .table-of-contents {
     display: flex;
     flex-direction: column;
-    
+
     height: min-content;
     max-height: calc(100vh - 2 * 20px);
     position: sticky;
     top: 20px;
-    
+
     margin: 0 10px;
     padding: 20px;
-    
+
     border: 2px solid var(--theme-border);
     border-radius: 10px;
-    
+
     background-color: var(--theme-panel);
     box-shadow: 0 0 15px var(--theme-shadow);
-    
+
     transition: var(--highlight-transition);
 }
 
 #doc-view .table-of-contents:hover {
     border: 2px solid var(--theme-highlight);
     box-shadow: 0 0 15px var(--theme-glow);
-    
+
     transition: var(--highlight-transition);
 }
 
 #doc-view .table-of-contents ul {
     padding-left: 20px;
-    
+
     list-style: none;
-    
+
     line-height: 1.6;
-    
+
     overflow-y: auto;
 }
 
 #doc-view .content {
     padding: 20px 30px;
-    
+
     background-color: var(--theme-panel);
     border-radius: 10px;
 }
@@ -276,7 +276,7 @@ code {
 
 #dex-view .progress-bar {
     position: relative;
-    
+
     width: 100%;
     height: 25px;
 
@@ -286,10 +286,10 @@ code {
 
 #dex-view .progress-fill {
     height: 100%;
-    
+
     background-color: var(--theme-highlight);
     border-radius: 5px;
-    
+
     text-align: center;
 }
 
@@ -312,26 +312,26 @@ code {
     display: grid;
     grid-template-columns: 25% 1fr 25%;
     grid-gap: 20px;
-    
+
     padding: 20px;
 }
 
 #task-view #task-filters {
-    
+
     height: min-content;
     max-height: calc(100vh - 2 * 20px);
     position: sticky;
     top: 20px;
-    
+
     margin: 0 10px;
     padding: 20px;
-    
+
     border: 2px solid var(--theme-border);
     border-radius: 10px;
-    
+
     background-color: var(--theme-panel);
     box-shadow: 0 0 15px var(--theme-shadow);
-    
+
     transition: var(--highlight-transition);
 }
 
@@ -348,18 +348,18 @@ code {
 
 #task-view #task-filters-container input {
     appearance: none;
-    
+
     position: relative;
     top: 3px;
-    
+
     width: 16px;
     height: 16px;
-    
+
     margin-right: 5px;
-    
+
     border: 2px solid var(--theme-border);
     border-radius: 50%;
-    
+
     transition: 0.2s border linear;
 }
 
@@ -370,7 +370,7 @@ code {
 #task-view #task-filters:hover {
     border: 2px solid var(--theme-highlight);
     box-shadow: 0 0 15px var(--theme-glow);
-    
+
     transition: var(--highlight-transition);
 }
 
@@ -408,23 +408,23 @@ code {
 
 #task-view .task {
     display: block;
-    
+
     padding: 10px;
     margin: 15px 0;
-    
+
     background-color: var(--theme-panel);
     box-shadow: 0 0 10px var(--theme-shadow);
-    
+
     border: 2px solid var(--theme-border);
     border-radius: 10px;
-    
+
     transition: var(--highlight-transition);
 }
 
 #task-view .task:hover {
     box-shadow: 0 0 10px var(--theme-glow);
     border: 2px solid var(--theme-highlight);
-    
+
     transition: var(--highlight-transition);
 }
 
@@ -456,10 +456,10 @@ code {
 
 #task-view .task-tag {
     padding: 0 5px;
-    
+
     border: 1px solid var(--theme-border);
     border-radius: 4px;
-    
+
     font-family: "Monaco", monospace;
     font-size: 0.9rem;
 }

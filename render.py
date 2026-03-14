@@ -152,10 +152,13 @@ class DexView:
     name = 'dex'
 
     def generate(self, ast):
+        link_prefix = ''
         image_prefix = ''
         for node in ast.get_nodes_of_type(NodeType.META):
             if node.attrs['key'] == 'image_prefix':
                 image_prefix = node.attrs['value']
+            elif node.attrs['key'] == 'link_prefix':
+                link_prefix = node.attrs['value']
     
         dex_table = None
         for node in ast.get_nodes_of_type(NodeType.TABLE):
@@ -176,8 +179,10 @@ class DexView:
             item = dict(zip(dex_attrs, values))
     
             item['checked'] = (item['checked'].lower() == 'y')
-            if item['image']:
+            if 'image' in item and item['image']:
                 item['image'] = image_prefix + item['image']
+            if 'link' in item and item['link']:
+                item['link'] = link_prefix + item['link']
     
             if item['checked']:
                 progress += 1
