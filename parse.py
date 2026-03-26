@@ -405,7 +405,7 @@ class PandocConverter:
         'Table':       _convert_table,
     }
 
-def parse_org_file(fpath):
+def parse_input_file(fpath):
     pandoc_ast = _run_pandoc(fpath)
 
     converter = PandocConverter()

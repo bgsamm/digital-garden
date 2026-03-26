@@ -1,84 +1,20 @@
 from datetime import datetime
-import shutil
-import os
-import json
-import argparse
 from pathlib import Path
-import sys
-import io
+from typing import Iterator
+import json
 import logging
-logger = logging.getLogger(__name__)
-import render
 import parse
-import util
+import shutil
+
+logger = logging.getLogger(__name__)
+
 
 INDEX_FILE_PATH = Path('index.json')
-DEFAULT_PAGES_DIR = Path('pages')
-DEFAULT_STYLES_DIR = Path('styles')
-DEFAULT_SCRIPTS_DIR = Path('scripts')
-DEFAULT_BUILD_DIR = Path('build')
-DEFAULT_LOGFILE_PATH = Path('log.txt')
 
-def init_logging(console_level=logging.NOTSET, 
-                 logfile_level=logging.NOTSET,
-                 logfile_path=None):
-    root_logger = logging.getLogger()
-    root_logger.setLevel(logging.NOTSET)
-
-    formatter = logging.Formatter('[%(module)s:%(levelname)s] %(message)s')
-
-    if console_level != logging.NOTSET:
-        utf8_stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
-        console_handler = logging.StreamHandler(utf8_stdout)
-        console_handler.setLevel(console_level)
-        console_handler.setFormatter(formatter)
-        root_logger.addHandler(console_handler)
-
-    if logfile_level != logging.NOTSET and logfile_path is not None:
-        logfile_handler = logging.FileHandler(logfile_path, encoding='utf-8', mode='w')
-        logfile_handler.setLevel(logfile_level)
-        logfile_handler.setFormatter(formatter)
-        root_logger.addHandler(logfile_handler)
-
-def parse_args():
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument(
-        '-i', '--pages-dir',
-        type=Path,
-        default=DEFAULT_PAGES_DIR)
-    parser.add_argument(
-        '--styles-dir',
-        type=Path,
-        default=DEFAULT_STYLES_DIR)
-    parser.add_argument(
-        '--scripts-dir',
-        type=Path,
-        default=DEFAULT_SCRIPTS_DIR)
-    parser.add_argument(
-        '-o', '--build-dir',
-        type=Path,
-        default=DEFAULT_BUILD_DIR)
-    parser.add_argument(
-        '-f', '--force-all',
-        action='store_true')
-    parser.add_argument(
-        '--console-log-level',
-        type=str,
-        default='INFO')
-    parser.add_argument(
-        '--logfile-log-level',
-        type=str,
-        default='DEBUG')
-    parser.add_argument(
-        '--logfile-path',
-        type=Path,
-        default=DEFAULT_LOGFILE_PATH)
-
-    return parser.parse_args()
+index: dict = {}
 
 def load_page_index():
-    index = {}
+    global index
 
     try:
         with open(INDEX_FILE_PATH, 'r') as fp:
@@ -88,102 +24,156 @@ def load_page_index():
     except json.JSONDecodeError:
         logger.warning(f'Index file empty')
 
-    return index
 
-def dump_page_index(index):
+def dump_page_index():
+    global index
+
     with open(INDEX_FILE_PATH, 'w+') as fp:
         json.dump(index, fp)
 
-def get_input_pages(input_dir):
-    input_walker = input_dir.walk(top_down=True)
 
-    # Get page list from root directory
-    dirpath, _, filenames = next(input_walker)
-    pages = {os.path.splitext(fname)[0]:[] for fname in filenames}
+def get_page_index_entry(page: str) -> dict:
+    global index
 
-    # Subdirectories contain subpages
-    for dirpath, _, filenames in input_walker:
-        pages[dirpath.name] = filenames
+    return index.setdefault(page, {})
 
-    return pages
 
-def main(args):
-    input_dir = args.pages_dir
-    styles_dir = args.styles_dir
-    scripts_dir = args.scripts_dir
-    output_dir = args.build_dir
-    rebuild_all = args.force_all
+def get_page_metadata(page: str) -> dict:
+    entry = get_page_index_entry(page)
+    return entry.setdefault('metadata', {})
 
-    pages = get_input_pages(input_dir)
-    logger.debug(f'Pages: {pages}')
 
-    index = load_page_index()
-    logger.debug(f'Index: {index}')
+def set_page_metadata(page: str, metadata: dict):
+    entry = get_page_index_entry(page)
+    entry['metadata'] = metadata
 
-    for fname in pages:
-        metadata = index.setdefault(fname, {})
 
-        fpath = input_dir / (fname + '.org')
-        mtime = fpath.stat().st_mtime
+def get_page_last_mtime(page: str) -> float:
+    entry = get_page_index_entry(page)
+    return entry.setdefault('mtime', 0)
 
-        logger.info(f'Page: {fname}')
-        logger.debug(f'Last modified: {datetime.fromtimestamp(mtime)}')
 
-        last_mtime = metadata.get('mtime', 0)
-        do_build = (mtime > last_mtime)
-        metadata['mtime'] = mtime
+def set_page_last_mtime(page: str, mtime: float):
+    entry = get_page_index_entry(page)
+    entry['mtime'] = mtime
 
-        subpages = metadata.setdefault('subpages', {})
-        for subpage in pages[fname]:
-            subpath = input_dir / fname / subpage
-            sub_mtime = subpath.stat().st_mtime
 
-            logger.debug(f'> Subpage: "{subpath}"')
-            logger.debug(f'> Last modified: {datetime.fromtimestamp(sub_mtime)}')
+def get_subpage_last_mtime(page: str, subpage: str) -> float:
+    entry = get_page_index_entry(page)
+    subpages: dict = entry.setdefault('subpages', {})
+    return subpages.setdefault(subpage, 0)
 
-            last_mtime = subpages.get(subpage, 0)
-            do_build = do_build or (sub_mtime > last_mtime)
-            subpages[subpage] = sub_mtime
 
-        if rebuild_all or do_build:
-            logger.info(f'Rendering page')
-            meta, ast = parse.parse_org_file(fpath)
-            meta.setdefault('type', 'doc')
-            metadata |= meta
+def set_subpage_last_mtime(page: str, subpage: str, mtime: float):
+    entry = get_page_index_entry(page)
+    subpages: dict = entry.setdefault('subpages', {})
+    subpages[subpage] = mtime
 
-            views = render.render_page(fname, metadata, ast)
 
-            page_dir = output_dir / 'pages' / fname
-            for view_name, view_html in views:
-                view_path = page_dir / view_name / 'index.html'
-                view_path.parent.mkdir(parents=True, exist_ok=True)
-                with open(view_path, 'w+', encoding='utf-8') as f:
-                    f.write(view_html)
-        else:
-            logger.debug(f'Page up-to-date; skipping render')
+def iter_input_files(dirpath: Path) -> Iterator[Path]:
+    yield from dirpath.glob('*.org')
 
-    output_dir.mkdir(parents=True, exist_ok=True)
 
-    home_html = render.render_home_page(index)
-    outpath = Path(output_dir, 'index.html')
-    with open(outpath, 'w+', encoding='utf-8') as f:
-        f.write(home_html)
+def iter_input_file_subfiles(path: Path) -> Iterator[Path]:
+    dirpath = path.parent / path.stem
+    yield from dirpath.glob('*.org')
 
-    styles_out = output_dir / 'styles'
-    shutil.copytree(styles_dir, styles_out, dirs_exist_ok=True)
 
-    scripts_out = output_dir / 'scripts'
-    shutil.copytree(scripts_dir, scripts_out, dirs_exist_ok=True)
+def file_needs_build(path: Path):
+    page = path.stem
 
-    # TODO: Delete orphaned pages
+    mtime = path.stat().st_mtime
+    last_mtime = get_page_last_mtime(page)
+    needs_build = (mtime > last_mtime)
 
-    dump_page_index(index)
+    set_page_last_mtime(page, mtime)
 
-if __name__ == '__main__':
-    args = parse_args()
+    logger.debug(f'Last modified: {datetime.fromtimestamp(mtime)}')
 
-    init_logging(console_level=args.console_log_level,
-                 logfile_level=args.logfile_log_level,
-                 logfile_path=args.logfile_path)
+    for subpath in iter_input_file_subfiles(path):
+        subpage = subpath.stem
 
-    main(args)
+        mtime = subpath.stat().st_mtime
+        last_mtime = get_subpage_last_mtime(page, subpage)
+        needs_build = needs_build or (mtime > last_mtime)
+
+        set_subpage_last_mtime(page, subpage, mtime)
+
+        logger.debug(f'> Subpage: "{subpage}"')
+        logger.debug(f'> Last modified: {datetime.fromtimestamp(mtime)}')
+    
+    return needs_build
+
+
+def build_input_file(path: Path):
+    metadata, ast = parse.parse_input_file(path)
+
+    metadata.setdefault('type', 'doc')
+    set_page_metadata(metadata)
+
+    # TODO Finish rewrite
+    # views = render.render_page(fname, metadata, ast)
+
+    # page_dir = output_dir / 'pages' / fname
+    # for view_name, view_html in views:
+    #     view_path = page_dir / view_name / 'index.html'
+    #     view_path.parent.mkdir(parents=True, exist_ok=True)
+    #     with open(view_path, 'w+', encoding='utf-8') as f:
+    #         f.write(view_html)
+
+
+def process_input_file(path: Path, force_rebuild=False):
+    page = path.stem
+    
+    logger.info(f'Page: {page}')
+
+    if force_rebuild or file_needs_build(path):
+        logger.info(f'Building page')
+
+        build_input_file(path)
+    else:
+        logger.debug(f'Page up-to-date; skipping build')
+
+
+def process_input_dir(dirpath: Path, rebuild_all=False):
+    for path in iter_input_files(dirpath):
+        process_input_file(path, force_rebuild=rebuild_all)
+
+
+def build_home_page(pages):
+    # TODO Finish rewrite
+    # home_html = render.render_home_page(index)
+    # outpath = Path(output_dir, 'index.html')
+    # with open(outpath, 'w+', encoding='utf-8') as f:
+    #     f.write(home_html)
+    ...
+
+
+def make_output_dir(dirpath: Path, clean=False):
+    if clean and dirpath.is_dir():
+        shutil.rmtree(dirpath)
+    dirpath.mkdir(parents=True, exist_ok=True)
+
+
+def copy_resource_dirs(resource_dirs: list[Path], dest: Path):
+    for dirpath in resource_dirs:
+        shutil.copytree(dirpath, dest / dirpath.name, dirs_exist_ok=True)
+
+
+def build(indir: Path,
+          outdir: Path,
+          resource_dirs: list[Path] | None = None,
+          clean=False):
+    load_page_index()
+
+    pages = process_input_dir(indir, rebuild_all=clean)
+
+    home = build_home_page(pages)
+
+    make_output_dir(outdir, clean)
+
+    # TODO Write pages
+
+    copy_resource_dirs(resource_dirs, outdir)
+
+    dump_page_index()
