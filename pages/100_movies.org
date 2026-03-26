@@ -13,8 +13,8 @@
 #+PROPERTY: image_prefix  https://beta.icheckmovies.com/assets/img/posters/medium/
 
 #+NAME: dex
-| Title                                                                | Year | Checked | Link                                                                                                        | Image            |
-|----------------------------------------------------------------------+------+---------+-------------------------------------------------------------------------------------------------------------+------------------|
+| Title                                                                | Year | Checked | Link                                                                   | Image            |
+|----------------------------------------------------------------------+------+---------+------------------------------------------------------------------------+------------------|
 | The Cabinet of Dr. Caligari                                          | 1920 | y       | 490-das+cabinet+des+dr.+caligari                                       | 0/490.jpg        |
 | Sherlock Jr.                                                         | 1924 | n       | 646-sherlock+jr.                                                       | 0/646.jpg        |
 | Battleship Potemkin                                                  | 1925 | n       | 1277-bronenosets+potyomkin                                             | 1/1277.jpg       |
@@ -85,7 +85,7 @@
 | The Godfather Part II                                                | 1974 | n       | 3-the+godfather+part+ii                                                | 0/3.jpg          |
 | Chinatown                                                            | 1974 | n       | 57-chinatown                                                           | 0/57.jpg         |
 | Ali: Fear Eats the Soul                                              | 1974 | y       | 1328-angst+essen+seele+auf                                             | 1/1328.jpg       |
-| Jeanne Dielman, 23, quai du commerce, 1080 Bruxelles                 | 1975 | n       | 1312-jeanne+dielman+23+quai+du+commerce+1080+bruxelles                 | 1/1312.jpg       |
+| Jeanne Dielman, 23, quai du commerce, 1080 Bruxelles                 | 1975 | y       | 1312-jeanne+dielman+23+quai+du+commerce+1080+bruxelles                 | 1/1312.jpg       |
 | One Flew Over the Cuckoo's Nest                                      | 1975 | y       | 8-one+flew+over+the+cuckoos+nest                                       | 0/8.jpg          |
 | Mirror                                                               | 1975 | n       | 311-zerkalo                                                            | 0/311.jpg        |
 | Barry Lyndon                                                         | 1975 | n       | 245-barry+lyndon                                                       | 0/245.jpg        |
@@ -120,19 +120,21 @@
 **** TODO Incorporate movie posters                                 :med:low:
 
 #+NAME: log
-|  # | Title                                     | Director         | Year | Date Watched |
-|----+-------------------------------------------+------------------+------+--------------|
-|  1 | Breathless                                | Jean-Luc Godard  | 1960 |   2025-11-22 |
-|  2 | Do the Right Thing                        | Spike Lee        | 1989 |   2025-11-24 |
-|  3 | Titanic                                   | James Cameron    | 1997 |   2025-11-28 |
-|  4 | Snow White and the Seven Dwarfs           | David Hand       | 1937 |   2025-11-30 |
-|  5 | The Searchers                             | John Ford        | 1956 |   2025-12-06 |
-|  6 | Three Billboards Outside Ebbing, Missouri | Martin McDonagh  | 2017 |   2025-12-15 |
-|  7 | Lost in Translation                       | Sofia Coppola    | 2003 |   2025-12-26 |
-|  8 | The Triplets of Belleville                | Sylvain Chomet   | 2003 |   2026-01-05 |
-|  9 | The Host                                  | Bong Joon Ho     | 2006 |   2026-02-12 |
-| 10 | Rosemary's Baby                           | Roman Polanski   | 1968 |   2026-02-20 |
-| 11 | Arrival                                   | Denis Villeneuve | 2016 |   2026-02-27 |
-| 12 | Let the Right One In                      | Tomas Alfredson  | 2008 |   2026-03-02 |
-| 13 | Mystic River                              | Clint Eastwood   | 2003 |   2026-03-11 |
-| 14 | Blue Velvet                               | David Lynch      | 1986 |   2026-03-12 |
+|  # | Title                                                | Director         | Year | Date Watched |
+|----+------------------------------------------------------+------------------+------+--------------|
+|  1 | Breathless                                           | Jean-Luc Godard  | 1960 |   2025-11-22 |
+|  2 | Do the Right Thing                                   | Spike Lee        | 1989 |   2025-11-24 |
+|  3 | Titanic                                              | James Cameron    | 1997 |   2025-11-28 |
+|  4 | Snow White and the Seven Dwarfs                      | David Hand       | 1937 |   2025-11-30 |
+|  5 | The Searchers                                        | John Ford        | 1956 |   2025-12-06 |
+|  6 | Three Billboards Outside Ebbing, Missouri            | Martin McDonagh  | 2017 |   2025-12-15 |
+|  7 | Lost in Translation                                  | Sofia Coppola    | 2003 |   2025-12-26 |
+|  8 | The Triplets of Belleville                           | Sylvain Chomet   | 2003 |   2026-01-05 |
+|  9 | The Host                                             | Bong Joon Ho     | 2006 |   2026-02-12 |
+| 10 | Rosemary's Baby                                      | Roman Polanski   | 1968 |   2026-02-20 |
+| 11 | Arrival                                              | Denis Villeneuve | 2016 |   2026-02-27 |
+| 12 | Let the Right One In                                 | Tomas Alfredson  | 2008 |   2026-03-02 |
+| 13 | Mystic River                                         | Clint Eastwood   | 2003 |   2026-03-11 |
+| 14 | Blue Velvet                                          | David Lynch      | 1986 |   2026-03-12 |
+| 15 | A.I. Artificial Intelligence                         | Steven Spielberg | 2001 |   2026-03-18 |
+| 16 | Jeanne Dielman, 23, quai du commerce, 1080 Bruxelles | Chantal Akerman  | 1975 |   2026-03-20 |

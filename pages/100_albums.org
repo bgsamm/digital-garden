@@ -16,7 +16,7 @@
 | Title                                                         | Year | Checked | Link                                                                       | Image                                                                                                                            |
 |---------------------------------------------------------------+------+---------+----------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------|
 | Kind of Blue                                                  | 1959 | y       | miles-davis/kind-of-blue/                                                  | f159114579886f39a2c91aeb0a4721ed/13182128/miles-davis-kind-of-blue-Cover-Art.jpg                                                 |
-| The Black Saint and the Sinner Lady                           | 1963 | n       | mingus/the-black-saint-and-the-sinner-lady/                                | 8279b8874bcaef3cfb58b1d6f4497b46/8024579/mingus-the-black-saint-and-the-sinner-lady-Cover-Art.png                                |
+| The Black Saint and the Sinner Lady                           | 1963 | y       | mingus/the-black-saint-and-the-sinner-lady/                                | 8279b8874bcaef3cfb58b1d6f4497b46/8024579/mingus-the-black-saint-and-the-sinner-lady-Cover-Art.png                                |
 | 'Live' at the Apollo                                          | 1963 | n       | james-brown/live-at-the-apollo/                                            | 988df8e0da62f21412e0e4792a35da0d/7463653/james-brown-live-at-the-apollo-Cover-Art.jpg                                            |
 | Highway 61 Revisited                                          | 1965 | y       | bob-dylan/highway-61-revisited/                                            | 7d5488ab54ad144e0bd971441235f404/3677487/bob-dylan-highway-61-revisited-Cover-Art.jpg                                            |
 | A Love Supreme                                                | 1965 | y       | john-coltrane/a-love-supreme/                                              | 8ffd73c4565ae41a21b49632c53b521c/12119724/john-coltrane-a-love-supreme-Cover-Art.jpg                                             |
@@ -98,7 +98,7 @@
 | 98.12.28 Otokotachi no wakare                                 | 1999 | n       | fishmans/98_12_28-%E7%94%B7%E9%81%94%E3%81%AE%E5%88%A5%E3%82%8C/           | d900de15762312c3996b7746ac7af871/12728579/fishmans-98_12_28-%E7%94%B7%E9%81%94%E3%81%AE%E5%88%A5%E3%82%8C-Cover-Art.png          |
 | Kid A                                                         | 2000 | y       | radiohead/kid-a/                                                           | 076215c80b1810341e978bbdbf47af69/12580450/radiohead-kid-a-Cover-Art.jpg                                                          |
 | Lift Your Skinny Fists Like Antennas to Heaven                | 2000 | y       | godspeed-you-black-emperor/lift-yr-skinny-fists-like-antennas-to-heaven/   | 6f600382625979469fb340eeb3c9ac8a/5662600/godspeed-you-black-emperor-lift-yr-skinny-fists-like-antennas-to-heaven-Cover-Art.jpg   |
-| Vespertine                                                    | 2001 | n       | bjork/vespertine/                                                          | 00414ea8831b305e7c1a87e62453a0f0/9935583/bjork-vespertine-Cover-Art.jpg                                                          |
+| Vespertine                                                    | 2001 | y       | bjork/vespertine/                                                          | 00414ea8831b305e7c1a87e62453a0f0/9935583/bjork-vespertine-Cover-Art.jpg                                                          |
 | Is This It                                                    | 2001 | y       | the-strokes/is-this-it-9/                                                  | 31f4c2aa9f2dbfda57b2b71d81189310/12096953/the-strokes-is-this-it-Cover-Art.jpg                                                   |
 | The Glow Pt. 2                                                | 2001 | y       | the-microphones/the-glow-pt-2/                                             | 23bd0d059b997ee91d81bd85bb9cfbcb/8964258/the-microphones-the-glow-pt-2-Cover-Art.jpg                                             |
 | Discovery                                                     | 2001 | y       | daft-punk/discovery/                                                       | f257109d44300506428e21138338e884/13215963/daft-punk-discovery-Cover-Art.jpg                                                      |
@@ -120,18 +120,21 @@
 **** TODO Incorporate album covers                                  :med:low:
 
 #+NAME: log
-|  # | Title                       | Artist                    | Year | Date Listened |
-|----+-----------------------------+---------------------------+------+---------------|
-|  1 | Pornography                 | The Cure                  | 1982 |    2025-11-22 |
-|  2 | Painkiller                  | Judas Priest              | 1990 |    2025-11-26 |
-|  3 | Giant Steps                 | John Coltrane             | 1960 |    2025-12-01 |
-|  4 | Welcome to Sky Valley       | Kyuss                     | 1994 |    2025-12-07 |
-|  5 | When the Pawn…              | Fiona Apple               | 1999 |    2025-12-12 |
-|  6 | Atrocity Exhibition         | Danny Brown               | 2016 |    2025-12-20 |
-|  7 | Future Days                 | Can                       | 1973 |    2026-01-07 |
-|  8 | Post                        | Björk                     | 1995 |    2026-01-18 |
-|  9 | Teens of Denial             | Car Seat Headrest         | 2016 |    2026-02-19 |
-| 10 | Skeleton Tree               | Nick Cave & The Bad Seeds | 2016 |    2026-02-21 |
-| 11 | For the First Time          | Black Country, New Road   | 2021 |    2026-02-27 |
-| 12 | Twin Fantasy (Face to Face) | Car Seat Headrest         | 2018 |    2026-03-10 |
+|  # | Title                               | Artist                    | Year | Date Listened |
+|----+-------------------------------------+---------------------------+------+---------------|
+|  1 | Pornography                         | The Cure                  | 1982 |    2025-11-22 |
+|  2 | Painkiller                          | Judas Priest              | 1990 |    2025-11-26 |
+|  3 | Giant Steps                         | John Coltrane             | 1960 |    2025-12-01 |
+|  4 | Welcome to Sky Valley               | Kyuss                     | 1994 |    2025-12-07 |
+|  5 | When the Pawn…                      | Fiona Apple               | 1999 |    2025-12-12 |
+|  6 | Atrocity Exhibition                 | Danny Brown               | 2016 |    2025-12-20 |
+|  7 | Future Days                         | Can                       | 1973 |    2026-01-07 |
+|  8 | Post                                | Björk                     | 1995 |    2026-01-18 |
+|  9 | Teens of Denial                     | Car Seat Headrest         | 2016 |    2026-02-19 |
+| 10 | Skeleton Tree                       | Nick Cave & The Bad Seeds | 2016 |    2026-02-21 |
+| 11 | For the First Time                  | Black Country, New Road   | 2021 |    2026-02-27 |
+| 12 | Twin Fantasy (Face to Face)         | Car Seat Headrest         | 2018 |    2026-03-10 |
+| 13 | Ants from Up There                  | Black Country, New Road   | 2022 |    2026-03-19 |
+| 14 | The Black Saint and the Sinner Lady | Charles Mingus            | 1963 |    2026-03-20 |
+| 15 | Vespertine                          | Björk                     | 2001 |    2026-03-24 |
 
