@@ -36,7 +36,6 @@ class NodeType(enum.Enum):
 
 class DocTree:
     def __init__(self):
-        self.metadata = {}
         self.root = DocNode(NodeType.ROOT)
 
     def walk(self, filter_type=None):
@@ -413,8 +412,6 @@ def convert_metadata(pandoc_ast: dict) -> dict:
 def convert_ast(pandoc_ast: dict) -> DocTree:
     ast = DocTree()
 
-    ast.metadata = convert_metadata(pandoc_ast)
-
     sections = [ast.root]
     for block in pandoc_ast['blocks']:
         node = convert_block(block)
@@ -456,10 +453,12 @@ def run_pandoc(path: Path) -> dict:
 def parse(path: Path) -> DocTree:
     pandoc_ast = run_pandoc(path)
 
+    metadata = convert_metadata(pandoc_ast)
     ast = convert_ast(pandoc_ast)
 
-    logger.debug(f'Metadata: {ast.metadata}')
+    logger.debug(f'Parsed metadata: {metadata}')
+    logger.debug(f'Parsed doc tree:')
     for node in ast.walk():
         logger.debug('>' * node.depth + str(node))
 
-    return ast
+    return metadata, ast

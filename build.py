@@ -1,4 +1,5 @@
 from datetime import datetime
+from page import Page
 from pathlib import Path
 from typing import Iterator
 import json
@@ -10,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 INDEX_FILE_PATH = Path('index.json')
+
 
 index: dict = {}
 
@@ -32,42 +34,48 @@ def dump_page_index():
         json.dump(index, fp)
 
 
-def get_page_index_entry(page: str) -> dict:
+def get_page_index_entry(name: str) -> dict:
     global index
 
-    return index.setdefault(page, {})
+    return index.setdefault(name, {})
 
 
-def get_page_metadata(page: str) -> dict:
-    entry = get_page_index_entry(page)
+def get_page_metadata(name: str) -> dict:
+    entry = get_page_index_entry(name)
     return entry.setdefault('metadata', {})
 
 
-def set_page_metadata(page: str, metadata: dict):
-    entry = get_page_index_entry(page)
+def set_page_metadata(name: str, metadata: dict):
+    entry = get_page_index_entry(name)
     entry['metadata'] = metadata
 
 
-def get_page_last_mtime(page: str) -> float:
-    entry = get_page_index_entry(page)
+def get_page_last_mtime(name: str) -> float:
+    entry = get_page_index_entry(name)
     return entry.setdefault('mtime', 0)
 
 
-def set_page_last_mtime(page: str, mtime: float):
-    entry = get_page_index_entry(page)
+def set_page_last_mtime(name: str, mtime: float):
+    entry = get_page_index_entry(name)
     entry['mtime'] = mtime
 
 
-def get_subpage_last_mtime(page: str, subpage: str) -> float:
-    entry = get_page_index_entry(page)
+def get_subpage_last_mtime(name: str, subpage: str) -> float:
+    entry = get_page_index_entry(name)
     subpages: dict = entry.setdefault('subpages', {})
     return subpages.setdefault(subpage, 0)
 
 
-def set_subpage_last_mtime(page: str, subpage: str, mtime: float):
-    entry = get_page_index_entry(page)
+def set_subpage_last_mtime(name: str, subpage: str, mtime: float):
+    entry = get_page_index_entry(name)
     subpages: dict = entry.setdefault('subpages', {})
     subpages[subpage] = mtime
+
+
+def write_file(path: Path, contents: str):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, 'w+', encoding='utf-8') as f:
+        f.write(contents)
 
 
 def iter_input_files(dirpath: Path) -> Iterator[Path]:
@@ -105,39 +113,43 @@ def file_needs_build(path: Path):
     return needs_build
 
 
-def build_input_file(path: Path):
-    ast = parse.parse(path)
+def build_input_file(path: Path, outdir: Path):
+    metadata, ast = parse.parse(path)
 
-    # TODO Finish rewrite
-    # metadata.setdefault('type', 'doc')
-    # set_page_metadata(metadata)
-
-    # views = render.render_page(fname, metadata, ast)
-
-    # page_dir = output_dir / 'pages' / fname
-    # for view_name, view_html in views:
-    #     view_path = page_dir / view_name / 'index.html'
-    #     view_path.parent.mkdir(parents=True, exist_ok=True)
-    #     with open(view_path, 'w+', encoding='utf-8') as f:
-    #         f.write(view_html)
-
-
-def process_input_file(path: Path, force_rebuild=False):
-    page = path.stem
+    page = Page(path.stem, metadata)
     
-    logger.info(f'Page: {page}')
+    for view in page.iter_views():
+        write_file(outdir / view.url, view.render(ast))
+
+    return page
+
+
+def process_input_file(path: Path, outdir: Path, force_rebuild=False) -> Page:
+    name = path.stem
+    
+    logger.info(f'Page: {name}')
 
     if force_rebuild or file_needs_build(path):
         logger.info(f'Building page')
 
-        build_input_file(path)
+        page = build_input_file(path, outdir)
     else:
         logger.debug(f'Page up-to-date; skipping build')
 
+        metadata = get_page_metadata(name)
+        page = Page(name, metadata)
+    
+    return page
 
-def process_input_dir(dirpath: Path, rebuild_all=False):
-    for path in iter_input_files(dirpath):
-        process_input_file(path, force_rebuild=rebuild_all)
+
+def process_input_dir(indir: Path, outdir: Path, rebuild_all=False) -> list[Page]:
+    pages = []
+
+    for path in iter_input_files(indir):
+        page = process_input_file(path, outdir, force_rebuild=rebuild_all)
+        pages.append(page)
+    
+    return pages
 
 
 def build_home_page(pages):
@@ -168,13 +180,11 @@ def build(indir: Path,
     if not clean:
         load_page_index()
 
-    pages = process_input_dir(indir, rebuild_all=clean)
-
-    home = build_home_page(pages)
-
     make_output_dir(outdir, clean)
 
-    # TODO Write pages
+    pages = process_input_dir(indir, outdir, rebuild_all=clean)
+
+    home = build_home_page(pages)
 
     copy_resource_dirs(resource_dirs, outdir)
 

@@ -1,10 +1,12 @@
-import logging
-logger = logging.getLogger(__name__)
-import jinja2
 from parse import NodeType
-import util
+import jinja2
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 TEMPLATES_DIR = 'templates'
+
 
 class DocView:
     name = 'doc'
