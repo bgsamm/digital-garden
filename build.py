@@ -106,12 +106,12 @@ def file_needs_build(path: Path):
 
 
 def build_input_file(path: Path):
-    metadata, ast = parse.parse_input_file(path)
-
-    metadata.setdefault('type', 'doc')
-    set_page_metadata(metadata)
+    ast = parse.parse(path)
 
     # TODO Finish rewrite
+    # metadata.setdefault('type', 'doc')
+    # set_page_metadata(metadata)
+
     # views = render.render_page(fname, metadata, ast)
 
     # page_dir = output_dir / 'pages' / fname
@@ -164,7 +164,9 @@ def build(indir: Path,
           outdir: Path,
           resource_dirs: list[Path] | None = None,
           clean=False):
-    load_page_index()
+    # No need to load the index if rebuilding everything anyway
+    if not clean:
+        load_page_index()
 
     pages = process_input_dir(indir, rebuild_all=clean)
 

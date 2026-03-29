@@ -6,7 +6,7 @@
 :Abstract: Notes on fundamental algorithms and data structures in computer science.
 :END:
 
-#+INCLUDE: "global_options.org"
+#+INCLUDE: ".global_options"
 
 **** TODO Cite Intro to Algorithms textbook used as source        :easy:high:
 **** TODO Convert to proper C library                              :hard:low:

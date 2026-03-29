@@ -6,7 +6,7 @@
 :Abstract: Notes on abstract algebra, including group theory.
 :END:
 
-#+INCLUDE: "global_options.org"
+#+INCLUDE: ".global_options"
 #+OPTIONS: tex:nil
 
 **** TODO Insert proper inline math & math blocks (remove tex:nil) :easy:mid:

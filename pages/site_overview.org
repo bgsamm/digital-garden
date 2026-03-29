@@ -6,7 +6,7 @@
 :Abstract: A high-level overview of the principles behind the site's design.
 :END:
 
-#+INCLUDE: "global_options.org"
+#+INCLUDE: ".global_options"
 
 **** TODO Organize these TODOs...                                  :med:high:
 **** TODO Tag these TODOs                                         :easy:high:

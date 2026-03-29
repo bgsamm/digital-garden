@@ -7,7 +7,7 @@
 :Abstract: Progress tracking toward my goal of watching 100 new movies.
 :END:
 
-#+INCLUDE: "../global_options.org"
+#+INCLUDE: ".global_options"
 
 #+PROPERTY: link_prefix https://beta.icheckmovies.com/movies/
 #+PROPERTY: image_prefix  https://beta.icheckmovies.com/assets/img/posters/medium/

@@ -6,7 +6,7 @@
 :Abstract: Notes on binary analysis with a focus on GameCube/Wii reverse engineering.
 :END:
 
-#+INCLUDE: "global_options.org"
+#+INCLUDE: ".global_options"
 
 **** TODO Delineate between general principles and case-specifics :hard:high:
 

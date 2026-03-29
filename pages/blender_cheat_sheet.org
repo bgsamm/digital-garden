@@ -6,7 +6,7 @@
 :Abstract: List of useful shortcuts and other tips and tricks for Blender.
 :END:
 
-#+INCLUDE: "global_options.org"
+#+INCLUDE: ".global_options"
 
 * Keyboard shortcuts
 

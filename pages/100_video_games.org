@@ -7,7 +7,7 @@
 :Abstract: Progress tracking toward beating 100 acclaimed video games.
 :END:
 
-#+INCLUDE: "../global_options.org"
+#+INCLUDE: ".global_options"
 
 #+PROPERTY: link_prefix https://backloggd.com/games/
 #+PROPERTY: image_prefix https://images.igdb.com/igdb/image/upload/t_cover_big_2x/

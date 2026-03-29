@@ -6,7 +6,7 @@
 :Abstract: A literate programming reimplementation of the MINIX 3 OS.
 :END:
 
-#+INCLUDE: "global_options.org"
+#+INCLUDE: ".global_options"
 
 * Overview
 

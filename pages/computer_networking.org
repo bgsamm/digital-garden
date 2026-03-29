@@ -6,7 +6,7 @@
 :Abstract: A reimplementation of the Net/3 version of the Berkeley sockets API.
 :END:
 
-#+INCLUDE: "global_options.org"
+#+INCLUDE: ".global_options"
 
 * Overview
 

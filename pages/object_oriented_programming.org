@@ -6,7 +6,7 @@
 :Abstract: Notes on object oriented principles and design patterns.
 :END:
 
-#+INCLUDE: "global_options.org"
+#+INCLUDE: ".global_options"
 
 * Principles
 

@@ -6,7 +6,7 @@
 :Abstract: My implementation of the nand2tetris course.
 :END:
 
-#+INCLUDE: "../global_options.org"
+#+INCLUDE: ".global_options"
 
 **** TODO Add symbolic derivations of chips                        :easy:mid:
 

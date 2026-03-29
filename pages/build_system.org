@@ -6,7 +6,7 @@
 :Abstract: Details of the source code for the site's build system.
 :END:
 
-#+INCLUDE: "../global_options.org"
+#+INCLUDE: ".global_options"
 
 **** DONE Tag all the tasks!                                      :easy:high:
 **** DONE Add filtering to task view                               :med:high:

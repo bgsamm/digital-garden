@@ -7,7 +7,7 @@
 :Abstract: Progress tracking toward my goal of listening to 100 new albums.
 :END:
 
-#+INCLUDE: "../global_options.org"
+#+INCLUDE: ".global_options"
 
 #+PROPERTY: link_prefix https://rateyourmusic.com/release/album/
 #+PROPERTY: image_prefix https://e.snmc.io/i/600/s/
