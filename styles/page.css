@@ -191,7 +191,7 @@ code {
 
 /* Doc view */
 
-#doc-view {
+.doc-view {
     display: grid;
     grid-template-columns: 25% 1fr 25%;
     grid-gap: 20px;
@@ -199,7 +199,7 @@ code {
     padding: 20px 20px;
 }
 
-#doc-view .table-of-contents {
+.doc-view .table-of-contents {
     display: flex;
     flex-direction: column;
 
@@ -220,14 +220,14 @@ code {
     transition: var(--highlight-transition);
 }
 
-#doc-view .table-of-contents:hover {
+.doc-view .table-of-contents:hover {
     border: 2px solid var(--theme-highlight);
     box-shadow: 0 0 15px var(--theme-glow);
 
     transition: var(--highlight-transition);
 }
 
-#doc-view .table-of-contents ul {
+.doc-view .table-of-contents ul {
     padding-left: 20px;
 
     list-style: none;
@@ -237,7 +237,7 @@ code {
     overflow-y: auto;
 }
 
-#doc-view .content {
+.doc-view .content {
     padding: 20px 30px;
 
     background-color: var(--theme-panel);
@@ -246,35 +246,35 @@ code {
 
 /* Dex view */
 
-#dex-view {
+.dex-view {
     padding: 20px 5%;
 }
 
-#dex-view .dex-grid {
+.dex-view .dex-grid {
     display: grid;
     grid-template-columns: repeat(10, 1fr);
     grid-gap: 15px;
 }
 
-#dex-view .dex-item.checked {
+.dex-view .dex-item.checked {
     opacity: 0.4;
 }
 
-#dex-view .dex-item img {
+.dex-view .dex-item img {
     height: 100%;
     border: 2px solid var(--theme-accent);
     border-radius: 5px;
 }
 
-#dex-view .dex-item.checked img {
+.dex-view .dex-item.checked img {
     border: 2px solid var(--theme-highlight);
 }
 
-#dex-view .dex-progress {
+.dex-view .dex-progress {
     margin-bottom: 20px;
 }
 
-#dex-view .progress-bar {
+.dex-view .progress-bar {
     position: relative;
 
     width: 100%;
@@ -284,7 +284,7 @@ code {
     border-radius: 5px;
 }
 
-#dex-view .progress-fill {
+.dex-view .progress-fill {
     height: 100%;
 
     background-color: var(--theme-highlight);
@@ -293,7 +293,7 @@ code {
     text-align: center;
 }
 
-#dex-view .progress-text {
+.dex-view .progress-text {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -302,13 +302,13 @@ code {
 
 /* Log view */
 
-#log-view {
+.log-view {
     padding: 20px;
 }
 
 /* Task view */
 
-#task-view {
+.task-view {
     display: grid;
     grid-template-columns: 25% 1fr 25%;
     grid-gap: 20px;
@@ -316,7 +316,7 @@ code {
     padding: 20px;
 }
 
-#task-view #task-filters {
+.task-view #task-filters {
 
     height: min-content;
     max-height: calc(100vh - 2 * 20px);
@@ -335,18 +335,18 @@ code {
     transition: var(--highlight-transition);
 }
 
-#task-view #task-filters-container {
+.task-view #task-filters-container {
     display: flex;
     flex-direction: column;
     gap: 10px;
 }
 
-#task-view #task-filters-container fieldset {
+.task-view #task-filters-container fieldset {
     border: 2px solid var(--theme-border);
     border-radius: 5px;
 }
 
-#task-view #task-filters-container input {
+.task-view #task-filters-container input {
     appearance: none;
 
     position: relative;
@@ -363,50 +363,50 @@ code {
     transition: 0.2s border linear;
 }
 
-#task-view #task-filters-container input:checked {
+.task-view #task-filters-container input:checked {
     border: 4px solid var(--theme-highlight);
 }
 
-#task-view #task-filters:hover {
+.task-view #task-filters:hover {
     border: 2px solid var(--theme-highlight);
     box-shadow: 0 0 15px var(--theme-glow);
 
     transition: var(--highlight-transition);
 }
 
-#task-view #task-list.state-todo .task:not(.todo) {
+.task-view #task-list.state-todo .task:not(.todo) {
     display: none;
 }
 
-#task-view #task-list.state-done .task:not(.done) {
+.task-view #task-list.state-done .task:not(.done) {
     display: none;
 }
 
-#task-view #task-list.diff-easy .task:not(.easy) {
+.task-view #task-list.diff-easy .task:not(.easy) {
     display: none;
 }
 
-#task-view #task-list.diff-med .task:not(.med) {
+.task-view #task-list.diff-med .task:not(.med) {
     display: none;
 }
 
-#task-view #task-list.diff-hard .task:not(.hard) {
+.task-view #task-list.diff-hard .task:not(.hard) {
     display: none;
 }
 
-#task-view #task-list.prio-low .task:not(.low) {
+.task-view #task-list.prio-low .task:not(.low) {
     display: none;
 }
 
-#task-view #task-list.prio-mid .task:not(.mid) {
+.task-view #task-list.prio-mid .task:not(.mid) {
     display: none;
 }
 
-#task-view #task-list.prio-high .task:not(.high) {
+.task-view #task-list.prio-high .task:not(.high) {
     display: none;
 }
 
-#task-view .task {
+.task-view .task {
     display: block;
 
     padding: 10px;
@@ -421,40 +421,40 @@ code {
     transition: var(--highlight-transition);
 }
 
-#task-view .task:hover {
+.task-view .task:hover {
     box-shadow: 0 0 10px var(--theme-glow);
     border: 2px solid var(--theme-highlight);
 
     transition: var(--highlight-transition);
 }
 
-#task-view .task.todo {
+.task-view .task.todo {
     border-left: 2px solid var(--theme-accent);
 }
 
-#task-view .task.done {
+.task-view .task.done {
     border-left: 2px solid var(--theme-highlight);
 }
 
-#task-view .task-header {
+.task-view .task-header {
     display: flex;
     justify-content: space-between;
 }
 
-#task-view .task.todo .task-state {
+.task-view .task.todo .task-state {
     color: var(--theme-accent);
 }
 
-#task-view .task.done .task-state {
+.task-view .task.done .task-state {
     color: var(--theme-highlight);
 }
 
-#task-view .task-tags {
+.task-view .task-tags {
     display: flex;
     gap: 8px;
 }
 
-#task-view .task-tag {
+.task-view .task-tag {
     padding: 0 5px;
 
     border: 1px solid var(--theme-border);
@@ -464,24 +464,24 @@ code {
     font-size: 0.9rem;
 }
 
-#task-view .task-tag.easy,
-#task-view .task-tag.low {
+.task-view .task-tag.easy,
+.task-view .task-tag.low {
     border: 1px solid greenyellow;
     color: greenyellow;
 }
 
-#task-view .task-tag.med,
-#task-view .task-tag.mid {
+.task-view .task-tag.med,
+.task-view .task-tag.mid {
     border: 1px solid orange;
     color: orange;
 }
 
-#task-view .task-tag.hard,
-#task-view .task-tag.high {
+.task-view .task-tag.hard,
+.task-view .task-tag.high {
     border: 1px solid red;
     color: red;
 }
 
-#task-view .task-section {
+.task-view .task-section {
     color: var(--theme-text2);
 }

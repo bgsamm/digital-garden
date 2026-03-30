@@ -40,10 +40,13 @@ class DocTree:
 
     def walk(self, filter_type=None):
         stack = [self.root]
-        while len(stack) > 0:
+
+        while stack:
             node = stack.pop()
+
             if filter_type is None or node.type == filter_type:
                 yield node
+            
             for child in reversed(node.children):
                 stack.append(child)
 
@@ -54,8 +57,8 @@ class DocNode:
         self.parent: DocNode | None = None
         self.children: list[DocNode] = []
         
-        self.rawtext = None
-        self.inlines = []
+        self.rawtext = ''
+        self.inlines: list[DocNode] = []
         self.attrs = {}
     
     @property
@@ -79,9 +82,9 @@ class DocNode:
             if not bottom_up: yield self.parent
 
     def inner_text(self) -> str:
-        if self.rawtext is not None:
+        if self.rawtext:
             return self.rawtext
-        return ''.join([inline.inner_text() for inline in self.inlines])
+        return ''.join(inline.inner_text() for inline in self.inlines)
 
     def __str__(self):
         return f'{self.type.name} {self.attrs} {repr(self.inner_text())}'
@@ -114,7 +117,7 @@ def convert_code(type: str, content: list) -> DocNode:
     node.attrs['inline'] = (type == 'Code')
 
     classes = attr['cls']
-    if len(classes) > 0:
+    if classes:
         assert len(classes) == 1
         node.attrs['language'] = classes[0]
 
@@ -135,7 +138,7 @@ def convert_head_or_para(type: str, content: list) -> DocNode:
 
     node.inlines = inlines = convert_blocks(inlines)
 
-    if len(inlines) > 0 and inlines[0].type == NodeType.TASK:
+    if inlines and inlines[0].type == NodeType.TASK:
         # TODO Extract to subfunction
         tnode = inlines[0]
 
@@ -158,7 +161,7 @@ def convert_head_or_para(type: str, content: list) -> DocNode:
                 logger.warning(f'Unknown tag "{tag}"')
         
         # Strip task keyword + following space, and all tags + preceding space
-        stop = (inlines.index(tags[0]) - 1) if len(tags) > 0 else None
+        stop = (inlines.index(tags[0]) - 1) if tags else None
         tnode.inlines = inlines[2:stop]
 
         return tnode
@@ -317,7 +320,7 @@ def convert_table(type: str, content: list) -> DocNode:
         attr, rowheadcols, head, rows = body[0]
         attr = unwrap_block_attr(attr)
 
-        if len(head) > 0:
+        if head:
             logger.warning(f'Table body with non-empty head encountered')
 
         return [unwrap_row(row) for row in rows]
