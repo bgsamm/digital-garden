@@ -1,6 +1,6 @@
 from datetime import datetime
-from page import Page
 from pathlib import Path
+from render import Page
 from typing import Iterator
 import json
 import logging
