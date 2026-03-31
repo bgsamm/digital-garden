@@ -60,7 +60,7 @@
         </div>
     </div>
     <div id="task-list" class="state-todo diff-any prio-any">
-    {% for task in view.tasks %}
+    {% for task in tasks %}
         <div class="task {{ task.state }} {{ task.tags|join(' ') }}">
             <div class="task-header">
                 <div class="task-state">{{ task.state|upper }}</div>

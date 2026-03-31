@@ -308,7 +308,7 @@ code {
 
 /* Task view */
 
-.task-view {
+.tasks-view {
     display: grid;
     grid-template-columns: 25% 1fr 25%;
     grid-gap: 20px;
@@ -316,7 +316,7 @@ code {
     padding: 20px;
 }
 
-.task-view #task-filters {
+.tasks-view #task-filters {
 
     height: min-content;
     max-height: calc(100vh - 2 * 20px);
@@ -335,18 +335,18 @@ code {
     transition: var(--highlight-transition);
 }
 
-.task-view #task-filters-container {
+.tasks-view #task-filters-container {
     display: flex;
     flex-direction: column;
     gap: 10px;
 }
 
-.task-view #task-filters-container fieldset {
+.tasks-view #task-filters-container fieldset {
     border: 2px solid var(--theme-border);
     border-radius: 5px;
 }
 
-.task-view #task-filters-container input {
+.tasks-view #task-filters-container input {
     appearance: none;
 
     position: relative;
@@ -363,50 +363,50 @@ code {
     transition: 0.2s border linear;
 }
 
-.task-view #task-filters-container input:checked {
+.tasks-view #task-filters-container input:checked {
     border: 4px solid var(--theme-highlight);
 }
 
-.task-view #task-filters:hover {
+.tasks-view #task-filters:hover {
     border: 2px solid var(--theme-highlight);
     box-shadow: 0 0 15px var(--theme-glow);
 
     transition: var(--highlight-transition);
 }
 
-.task-view #task-list.state-todo .task:not(.todo) {
+.tasks-view #task-list.state-todo .task:not(.todo) {
     display: none;
 }
 
-.task-view #task-list.state-done .task:not(.done) {
+.tasks-view #task-list.state-done .task:not(.done) {
     display: none;
 }
 
-.task-view #task-list.diff-easy .task:not(.easy) {
+.tasks-view #task-list.diff-easy .task:not(.easy) {
     display: none;
 }
 
-.task-view #task-list.diff-med .task:not(.med) {
+.tasks-view #task-list.diff-med .task:not(.med) {
     display: none;
 }
 
-.task-view #task-list.diff-hard .task:not(.hard) {
+.tasks-view #task-list.diff-hard .task:not(.hard) {
     display: none;
 }
 
-.task-view #task-list.prio-low .task:not(.low) {
+.tasks-view #task-list.prio-low .task:not(.low) {
     display: none;
 }
 
-.task-view #task-list.prio-mid .task:not(.mid) {
+.tasks-view #task-list.prio-mid .task:not(.mid) {
     display: none;
 }
 
-.task-view #task-list.prio-high .task:not(.high) {
+.tasks-view #task-list.prio-high .task:not(.high) {
     display: none;
 }
 
-.task-view .task {
+.tasks-view .task {
     display: block;
 
     padding: 10px;
@@ -421,40 +421,40 @@ code {
     transition: var(--highlight-transition);
 }
 
-.task-view .task:hover {
+.tasks-view .task:hover {
     box-shadow: 0 0 10px var(--theme-glow);
     border: 2px solid var(--theme-highlight);
 
     transition: var(--highlight-transition);
 }
 
-.task-view .task.todo {
+.tasks-view .task.todo {
     border-left: 2px solid var(--theme-accent);
 }
 
-.task-view .task.done {
+.tasks-view .task.done {
     border-left: 2px solid var(--theme-highlight);
 }
 
-.task-view .task-header {
+.tasks-view .task-header {
     display: flex;
     justify-content: space-between;
 }
 
-.task-view .task.todo .task-state {
+.tasks-view .task.todo .task-state {
     color: var(--theme-accent);
 }
 
-.task-view .task.done .task-state {
+.tasks-view .task.done .task-state {
     color: var(--theme-highlight);
 }
 
-.task-view .task-tags {
+.tasks-view .task-tags {
     display: flex;
     gap: 8px;
 }
 
-.task-view .task-tag {
+.tasks-view .task-tag {
     padding: 0 5px;
 
     border: 1px solid var(--theme-border);
@@ -464,24 +464,24 @@ code {
     font-size: 0.9rem;
 }
 
-.task-view .task-tag.easy,
-.task-view .task-tag.low {
+.tasks-view .task-tag.easy,
+.tasks-view .task-tag.low {
     border: 1px solid greenyellow;
     color: greenyellow;
 }
 
-.task-view .task-tag.med,
-.task-view .task-tag.mid {
+.tasks-view .task-tag.med,
+.tasks-view .task-tag.mid {
     border: 1px solid orange;
     color: orange;
 }
 
-.task-view .task-tag.hard,
-.task-view .task-tag.high {
+.tasks-view .task-tag.hard,
+.tasks-view .task-tag.high {
     border: 1px solid red;
     color: red;
 }
 
-.task-view .task-section {
+.tasks-view .task-section {
     color: var(--theme-text2);
 }

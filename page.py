@@ -11,7 +11,8 @@ TEMPLATES_DIR = Path('templates')
 
 
 class View:
-    name = 'null'
+    name = ''
+    template = ''
 
     def __init__(self, page: Page):
         self.page = page
@@ -19,13 +20,16 @@ class View:
     def render(self, *args) -> str:
         return ''
     
+    def apply_template(self, **kwargs):
+        return apply_jinja_template(self.template, page=self.page, view=self, **kwargs)
+    
     @property
     def title(self):
         return self.name.capitalize()
     
     @property
     def url(self):
-        return self.page.base_url / self.name / 'index.html'
+        return self.page.base_url / self.name
 
 
 class DocView(View):
@@ -33,10 +37,7 @@ class DocView(View):
     template = 'view_doc.html'
     
     def render(self, ast: DocTree) -> str:
-        return apply_jinja_template(
-            self.template,
-            page=self.page,
-            view=self,
+        return self.apply_template(
             content=self.render_content(ast),
             toc=self.render_toc(ast)
         )
@@ -47,27 +48,22 @@ class DocView(View):
     def render_toc(self, ast: DocTree) -> str:
         def render_toc_item(node: DocNode) -> str:
             target = f'#{node.attrs['id']}'
+
             content = make_html_tag('a', node.rawtext, href=target)
-
-            subitems = [render_toc_item(child) for child in node.children
-                        if child.type == NodeType.SECTION]
-
-            if subitems:
-                content += make_html_tag('ul', ''.join(subitems))
+            content += make_child_list(node)
             
             return make_html_tag('li', content)
+        
+        def make_child_list(node: DocNode) -> str:
+            items = [render_toc_item(child) for child in node.children
+                    if child.type == NodeType.SECTION]
 
-        items = [render_toc_item(child) for child in ast.root.children
-                 if child.type == NodeType.SECTION]
-        return make_html_tag('ul', ''.join(items))
-
-
-class TaskView(View):
-    name = 'task'
-    template = 'view_task.html'
-    
-    def render(self, *args) -> str:
-        return ''
+            if items:
+                return make_html_tag('ul', ''.join(items))
+            
+            return ''
+        
+        return make_child_list(ast.root)
 
 
 class DexView(View):
@@ -82,8 +78,38 @@ class LogView(View):
     name = 'log'
     template = 'view_log.html'
     
-    def render(self, *args) -> str:
+    def render(self, ast: DocTree) -> str:
         return ''
+
+
+class TaskView(View):
+    name = 'tasks'
+    template = 'view_task.html'
+    
+    def render(self, ast: DocTree) -> str:
+        return self.apply_template(tasks=self.get_tasks(ast))
+    
+    def get_tasks(self, ast: DocTree) -> list:
+        return [self.make_task_from_node(node) for node in ast.walk(NodeType.TASK)]
+    
+    def make_task_from_node(self, node: DocNode) -> dict:
+        task = {}
+
+        task['state'] = node.attrs['state']
+        task['description'] = node.inner_text()
+
+        if node.parent.type == NodeType.ROOT:
+            section = '-'
+        else:
+            sections = [parent.rawtext for parent in node.iter_parents()
+                        if parent.type == NodeType.SECTION]
+            section = ' > '.join(sections)
+        task['section'] = section
+
+        task['diff'] = node.attrs.get('diff')
+        task['prio'] = node.attrs.get('prio')
+
+        return task
 
 
 class Page:

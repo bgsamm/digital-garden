@@ -119,7 +119,7 @@ def build_input_file(path: Path, outdir: Path):
     page = Page(path.stem, metadata)
     
     for view in page.iter_views():
-        write_file(outdir / view.url, view.render(ast))
+        write_file(outdir / view.url / 'index.html', view.render(ast))
 
     return page
 
