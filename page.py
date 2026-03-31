@@ -83,16 +83,17 @@ class DexView(View):
     
     def get_dex_list(self, ast: DocTree) -> list:
         dex_table = self.find_dex_table(ast)
-
-        image_prefix = ast.get_meta_value('image_prefix', default='')
-        link_prefix = ast.get_meta_value('link_prefix', default='')
     
         if dex_table is None:
             logger.error('No dex table found!')
             return []
+
+        image_prefix = ast.get_meta_value('image_prefix', default='')
+        link_prefix = ast.get_meta_value('link_prefix', default='')
         
         return self.read_dex_table(dex_table, image_prefix, link_prefix)
     
+    # TODO Move into DocTree
     def find_dex_table(self, ast: DocTree) -> DocNode:
         for node in ast.walk(NodeType.TABLE):
             if node.attrs['name'] == 'dex':
@@ -104,7 +105,7 @@ class DexView(View):
 
         cols = [col.lower() for col in table.attrs['cols']]
         
-        for row in table.children[1:]: # Skip header row
+        for row in table.children[1:]:  # Skip header row
             values = [cell.inner_text() for cell in row.children]
             entry = dict(zip(cols, values))
     
@@ -124,8 +125,35 @@ class LogView(View):
     name = 'log'
     template = 'view_log.html'
     
-    def render(self, *args) -> str:
-        return ''
+    def render(self, ast: DocTree) -> str:
+        return self.apply_template(log=self.get_log_list(ast))
+    
+    def get_log_list(self, ast: DocTree) -> list:
+        log_table = self.find_log_table(ast)
+
+        if log_table is None:
+            logger.error('No dex table found!')
+            return []
+        
+        return self.read_log_table(log_table)
+    
+    # TODO Move into DocTree
+    def find_log_table(self, ast: DocTree) -> DocNode:
+        for node in ast.walk(NodeType.TABLE):
+            if node.attrs['name'] == 'log':
+                return node
+        return None
+    
+    def read_log_table(self, table: DocNode) -> list:
+        log = { 'cols': [], 'rows': [] }
+
+        log['cols'] = table.attrs['cols']
+
+        for row in table.children[1:]:  # Skip header row
+            values = [cell.inner_text() for cell in row.children]
+            log['rows'].append(values)
+    
+        return log
 
 
 class TaskView(View):

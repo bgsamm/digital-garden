@@ -3,11 +3,11 @@
 {% block view %}
     <table class="log-table">
         <tr>
-        {% for col in view.log.cols %}
+        {% for col in log.cols %}
             <th>{{ col }}</th>
         {% endfor %}
         </tr>
-    {% for row in view.log.rows %}
+    {% for row in log.rows %}
         <tr>
         {% for value in row %}
             <td>{{ value }}</td>
