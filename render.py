@@ -189,7 +189,7 @@ class TaskView(View):
 class Page:
     view_lookup = {
         'doc': [DocView, TaskView],
-        'dex': [DexView, LogView, TaskView],
+        'dex': [DexView, LogView, TaskView]
     }
 
     def __init__(self, name: str, metadata: dict):
@@ -197,10 +197,13 @@ class Page:
         self.type = metadata.get('type', 'doc')
         self.metadata = metadata
 
+        self._init_views()
+
+    def _init_views(self):
         views = self.view_lookup.get(self.type, [])
         if len(views) == 0:
             logger.error(f'Unknown view type "{self.type}"')
-        self.views: list[View] = [cls(self) for cls in views]
+        self.views = [cls(self) for cls in views]
     
     def iter_views(self) -> Iterator[View]:
         yield from self.views
@@ -400,3 +403,7 @@ def init_jinja_environment(templates_dir: Path):
 jinja_env = None
 
 init_jinja_environment(TEMPLATES_DIR)
+
+
+def render_home_page(pages: list[Page]):
+    return apply_jinja_template('index.html', pages=pages)

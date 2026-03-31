@@ -5,6 +5,7 @@ from typing import Iterator
 import json
 import logging
 import parse
+import render
 import shutil
 
 logger = logging.getLogger(__name__)
@@ -97,6 +98,7 @@ def file_needs_build(path: Path):
     set_page_last_mtime(page, mtime)
 
     logger.debug(f'Last modified: {datetime.fromtimestamp(mtime)}')
+    logger.debug(f'Indexed mtime: {datetime.fromtimestamp(last_mtime)}')
 
     for subpath in iter_input_file_subfiles(path):
         subpage = subpath.stem
@@ -109,15 +111,20 @@ def file_needs_build(path: Path):
 
         logger.debug(f'> Subpage: "{subpage}"')
         logger.debug(f'> Last modified: {datetime.fromtimestamp(mtime)}')
+        logger.debug(f'> Indexed mtime: {datetime.fromtimestamp(last_mtime)}')
     
     return needs_build
 
 
 def build_input_file(path: Path, outdir: Path):
-    metadata, ast = parse.parse(path)
+    name = path.stem
 
-    page = Page(path.stem, metadata)
+    metadata, ast = parse.parse(path)
+    set_page_metadata(name, metadata)
+
+    page = Page(name, metadata)
     
+    # TODO Move into render.py
     for view in page.iter_views():
         write_file(outdir / view.url / 'index.html', view.render(ast))
 
@@ -129,6 +136,7 @@ def process_input_file(path: Path, outdir: Path, force_rebuild=False) -> Page:
     
     logger.info(f'Page: {name}')
 
+    # TODO Figure out better flow of control (see duplication in build_input_file)
     if force_rebuild or file_needs_build(path):
         logger.info(f'Building page')
 
@@ -138,6 +146,10 @@ def process_input_file(path: Path, outdir: Path, force_rebuild=False) -> Page:
 
         metadata = get_page_metadata(name)
         page = Page(name, metadata)
+    
+    # TODO Fix mtime handling (duplication here, + subpages skipped if force_rebuild is True)
+    page.mtime = path.stat().st_mtime
+    set_page_last_mtime(name, page.mtime)
     
     return page
 
@@ -152,13 +164,8 @@ def process_input_dir(indir: Path, outdir: Path, rebuild_all=False) -> list[Page
     return pages
 
 
-def build_home_page(pages):
-    # TODO Finish rewrite
-    # home_html = render.render_home_page(index)
-    # outpath = Path(output_dir, 'index.html')
-    # with open(outpath, 'w+', encoding='utf-8') as f:
-    #     f.write(home_html)
-    ...
+def build_home_page(outdir: Path, pages: list[Page]) -> Page:
+    write_file(outdir / 'index.html', render.render_home_page(pages))
 
 
 def make_output_dir(dirpath: Path, clean=False):
@@ -184,7 +191,7 @@ def build(indir: Path,
 
     pages = process_input_dir(indir, outdir, rebuild_all=clean)
 
-    home = build_home_page(pages)
+    build_home_page(outdir, pages)
 
     copy_resource_dirs(resource_dirs, outdir)
 

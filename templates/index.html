@@ -15,13 +15,14 @@
             <div class="channel-grid">
             {% for j in range(i, i + 12) %}
                 {% if j < pages|count %}
-                    {% set name, page = pages[j] %}
+                    {% set page = pages[j] %}
+                    {% set meta = page.metadata %}
                     <div class="channel">
-                        <div class="channel-category">// {{ page.category }}</div>
-                        <div class="channel-title">{{ page.title }}</div>
-                        <div class="channel-date">{{ page.date }} | {{ page.mtime|timestamp_to_date }}</div>
-                        <div class="channel-abstract">{{ page.abstract }}</div>
-                        <a class="channel-link" href="/pages/{{ name }}/{{ page.type }}"></a>
+                        <div class="channel-category">// {{ meta.category }}</div>
+                        <div class="channel-title">{{ meta.title }}</div>
+                        <div class="channel-date">{{ meta.date }} | {{ page.mtime|timestamp_to_date }}</div>
+                        <div class="channel-abstract">{{ meta.abstract }}</div>
+                        <a class="channel-link" href="/{{ page.default_url }}"></a>
                     </div>
                 {% else %}
                     <div class="channel empty"></div>
