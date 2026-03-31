@@ -88,14 +88,14 @@ def iter_input_file_subfiles(path: Path) -> Iterator[Path]:
     yield from dirpath.glob('*.org')
 
 
-def file_needs_build(path: Path):
-    page = path.stem
+def update_page_mtimes(path: Path) -> bool:
+    name = path.stem
 
     mtime = path.stat().st_mtime
-    last_mtime = get_page_last_mtime(page)
+    last_mtime = get_page_last_mtime(name)
     needs_build = (mtime > last_mtime)
 
-    set_page_last_mtime(page, mtime)
+    set_page_last_mtime(name, mtime)
 
     logger.debug(f'Last modified: {datetime.fromtimestamp(mtime)}')
     logger.debug(f'Indexed mtime: {datetime.fromtimestamp(last_mtime)}')
@@ -104,10 +104,10 @@ def file_needs_build(path: Path):
         subpage = subpath.stem
 
         mtime = subpath.stat().st_mtime
-        last_mtime = get_subpage_last_mtime(page, subpage)
+        last_mtime = get_subpage_last_mtime(name, subpage)
         needs_build = needs_build or (mtime > last_mtime)
 
-        set_subpage_last_mtime(page, subpage, mtime)
+        set_subpage_last_mtime(name, subpage, mtime)
 
         logger.debug(f'> Subpage: "{subpage}"')
         logger.debug(f'> Last modified: {datetime.fromtimestamp(mtime)}')
@@ -136,8 +136,10 @@ def process_input_file(path: Path, outdir: Path, force_rebuild=False) -> Page:
     
     logger.info(f'Page: {name}')
 
+    needs_build = update_page_mtimes(path)
+
     # TODO Figure out better flow of control (see duplication in build_input_file)
-    if force_rebuild or file_needs_build(path):
+    if force_rebuild or needs_build:
         logger.info(f'Building page')
 
         page = build_input_file(path, outdir)
@@ -147,9 +149,8 @@ def process_input_file(path: Path, outdir: Path, force_rebuild=False) -> Page:
         metadata = get_page_metadata(name)
         page = Page(name, metadata)
     
-    # TODO Fix mtime handling (duplication here, + subpages skipped if force_rebuild is True)
+    # TODO De-duplicate this!!
     page.mtime = path.stat().st_mtime
-    set_page_last_mtime(name, page.mtime)
     
     return page
 

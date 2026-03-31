@@ -186,6 +186,7 @@ class TaskView(View):
         return task
 
 
+# TODO Decouple views from Page
 class Page:
     view_lookup = {
         'doc': [DocView, TaskView],
@@ -211,6 +212,22 @@ class Page:
     @property
     def title(self):
         return self.metadata.get('title')
+    
+    @property
+    def category(self):
+        return self.metadata.get('category')
+    
+    @property
+    def abstract(self):
+        return self.metadata.get('abstract')
+    
+    @property
+    def creation_date(self):
+        return self.metadata.get('date')
+    
+    @property
+    def modified_date(self):
+        return timestamp_to_date(self.mtime)
     
     @property
     def base_url(self):
@@ -396,8 +413,6 @@ def init_jinja_environment(templates_dir: Path):
         trim_blocks=True,
         lstrip_blocks=True
     )
-
-    jinja_env.filters['timestamp_to_date'] = timestamp_to_date
 
 
 jinja_env = None
