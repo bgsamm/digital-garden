@@ -9,6 +9,8 @@
 
 #+INCLUDE: ".global_options"
 
+**** TODO Update image links to use smaller versions
+
 #+PROPERTY: link_prefix https://rateyourmusic.com/release/album/
 #+PROPERTY: image_prefix https://e.snmc.io/i/600/s/
 

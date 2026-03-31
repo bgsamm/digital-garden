@@ -37,6 +37,7 @@ class NodeType(enum.Enum):
 class DocTree:
     def __init__(self):
         self.root = DocNode(NodeType.ROOT)
+        self._meta_lookup: dict | None = None
 
     def walk(self, filter_type=None):
         stack = [self.root]
@@ -49,6 +50,16 @@ class DocTree:
             
             for child in reversed(node.children):
                 stack.append(child)
+    
+    def _build_meta_lookup(self):
+        self._meta_lookup = {}
+        for node in self.walk(NodeType.META):
+            self._meta_lookup[node.attrs['key']] = node.attrs['value']
+
+    def get_meta_value(self, key: str, default: Any | None = None):
+        if self._meta_lookup is None:
+            self._build_meta_lookup()
+        return self._meta_lookup.get(key, default)
 
 
 class DocNode:
@@ -288,7 +299,9 @@ def convert_table(type: str, content: list) -> DocNode:
         node.attrs['rowspan'] = rowspan
         node.attrs['colspan'] = colspan
 
-        node.add_children(convert_blocks(children))
+        # TODO Handle non-Plain child
+        assert len(children) == 1 and get_block_type(children[0]) == 'Plain'
+        node.inlines = convert_blocks(get_block_content(children[0]))
 
         return node
 

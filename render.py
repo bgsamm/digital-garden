@@ -70,51 +70,8 @@ class LogView:
     
         return { 'log': log }
 
-class TaskView:
-    name = 'task'
-
-    def generate(self, ast):
-        tasks = []
-    
-        for node in ast.get_nodes_of_type(NodeType.TASK):
-            task = {}
-            task['state'] = node.attrs['state']
-            task['description'] = node.inner_text()
-            if node.parent.type == NodeType.ROOT:
-                section = '-'
-            else:
-                sections = [section.rawtext for section in node.walk_parents()]
-                section = ' > '.join(sections[1:])
-            task['section'] = section
-            task['diff'] = node.attrs.get('diff', None)
-            task['prio'] = node.attrs.get('prio', None)
-            tasks.append(task)
-    
-        return {'tasks': tasks}
 
 def render_home_page(index):
     pages = list(index.items())
     return _apply_jinja_template('index.html', pages=pages)
 
-def render_page(name, meta, ast):
-    views = []
-
-    page_type = meta.get('type', 'doc')
-    view_objs = [cls() for cls in _view_map[page_type]]
-    for view in view_objs:
-        view_data = view.generate(ast)
-        view_data['name'] = view.name
-        view_html = _apply_jinja_template(
-            f'view_{view.name}.html',
-            page=meta,
-            view=view_data,
-            views=view_objs,
-            name=name)
-        views.append((view.name, view_html))
-
-    return views
-
-_view_map = {
-    'doc': [DocView, TaskView],
-    'dex': [DexView, LogView, TaskView],
-}

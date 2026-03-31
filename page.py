@@ -70,15 +70,61 @@ class DexView(View):
     name = 'dex'
     template = 'view_dex.html'
     
-    def render(self, *args) -> str:
-        return ''
+    def render(self, ast: DocTree) -> str:
+        dex_list = self.get_dex_list(ast)
+        progress = self.calc_progress_stats(dex_list)
+        return self.apply_template(dex=dex_list, progress=progress)
+    
+    def calc_progress_stats(self, dex: list) -> dict:
+        count = sum(entry['checked'] for entry in dex)
+        total = len(dex)
+        percent = round(count / total * 100)
+        return { 'count': count, 'total': total, 'percent': percent }
+    
+    def get_dex_list(self, ast: DocTree) -> list:
+        dex_table = self.find_dex_table(ast)
+
+        image_prefix = ast.get_meta_value('image_prefix', default='')
+        link_prefix = ast.get_meta_value('link_prefix', default='')
+    
+        if dex_table is None:
+            logger.error('No dex table found!')
+            return []
+        
+        return self.read_dex_table(dex_table, image_prefix, link_prefix)
+    
+    def find_dex_table(self, ast: DocTree) -> DocNode:
+        for node in ast.walk(NodeType.TABLE):
+            if node.attrs['name'] == 'dex':
+                return node
+        return None
+    
+    def read_dex_table(self, table: DocNode, image_prefix: str = '', link_prefix: str = '') -> list:
+        dex = []
+
+        cols = [col.lower() for col in table.attrs['cols']]
+        
+        for row in table.children[1:]: # Skip header row
+            values = [cell.inner_text() for cell in row.children]
+            entry = dict(zip(cols, values))
+    
+            entry['checked'] = (entry['checked'].lower() == 'y')
+            
+            if 'image' in entry and entry['image']:
+                entry['image'] = image_prefix + entry['image']
+            if 'link' in entry and entry['link']:
+                entry['link'] = link_prefix + entry['link']
+    
+            dex.append(entry)
+        
+        return dex
 
 
 class LogView(View):
     name = 'log'
     template = 'view_log.html'
     
-    def render(self, ast: DocTree) -> str:
+    def render(self, *args) -> str:
         return ''
 
 
